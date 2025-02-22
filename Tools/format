@@ -1,0 +1,21 @@
+#!/bin/zsh
+
+set -e
+
+root_dir="${0%/*}"/..
+
+# Swiftformat
+
+swift-format \
+  format $root_dir \
+  -r \
+  -i \
+  -p
+
+# Swiftlint
+
+swiftlint \
+  --config "${root_dir}/.swiftlint.yml" \
+  --strict \
+  --progress \
+  $root_dir

@@ -1,0 +1,64 @@
+name: Snapshot Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ios-integration-tests:
+    name: Integration Tests
+    runs-on: macos-15
+
+    steps:
+      - name: Select Xcode 16.3
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.3'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+
+      - name: Install xcpretty
+        run: gem install xcpretty
+
+      - name: Run SnapshotsIntegrationTests (iOS)
+        run: |
+          xcodebuild test \
+            -scheme SnapshotsIntegrationTests \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' \
+            | xcpretty
+
+  macos-unit-tests:
+    name: Unit Tests
+    runs-on: macos-15
+
+    steps:
+      - name: Select Xcode 16.3
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.3'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+
+      - name: Install xcpretty
+        run: gem install xcpretty
+
+      - name: Run SnapshotsUnitTests (macOS)
+        run: |
+          xcodebuild test \
+            -scheme SnapshotsUnitTests \
+            -destination 'platform=macOS' \
+            | xcpretty

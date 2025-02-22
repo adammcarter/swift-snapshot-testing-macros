@@ -1,0 +1,14 @@
+{
+  "indentConditionalCompilationBlocks": false,
+  "indentSwitchCaseLabels": true,
+  "lineBreakAroundMultilineExpressionChainComponents": true,
+  "lineBreakBeforeControlFlowKeywords": true,
+  "lineBreakBeforeEachArgument": true,
+  "lineBreakBetweenDeclarationAttributes": true,
+  "lineLength": 200,
+  "multiElementCollectionTrailingCommas": true,
+  "prioritizeKeepingFunctionOutputTogether": true,
+  "respectsExistingLineBreaks": true,
+  "spacesAroundRangeFormationOperators": true,
+  "version" : 1
+}

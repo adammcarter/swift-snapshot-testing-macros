@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "E87B3923-10AA-4EE9-AF1A-BEC806ECE8F2",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "SnapshotsUnitTests",
+        "name" : "SnapshotsUnitTests"
+      }
+    }
+  ],
+  "version" : 1
+}

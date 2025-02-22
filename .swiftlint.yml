@@ -1,0 +1,35 @@
+disabled_rules:
+  - file_length
+  - function_body_length
+  - function_parameter_count
+  - line_length
+  - nesting
+  - opening_brace
+  - statement_position
+  - switch_case_alignment
+  - todo
+  - trailing_comma
+  - type_body_length
+
+opt_in_rules:
+  - direct_return
+  - sorted_imports
+  - unused_parameter
+  - yoda_condition
+
+included: 
+  - Sources
+  - Tests
+
+excluded:
+  - .build/*
+
+analyzer_rules:
+  - unused_declaration
+  - unused_import
+
+strict: 
+  true
+
+unused_declaration:
+  - severity: error
