@@ -26,22 +26,17 @@ extension SnapshotSuiteTests.FunctionModifiers {
         @MainActor
         @Suite
         struct SnapshotTests {
-          @SnapshotTest
           func makeMyView() async throws -> some View {
             Text("my view")
           }
 
-          @MainActor
-          @Suite
-          struct _GeneratedSnapshotSuite {
-
+          enum __generator_container_makeMyView {
             @MainActor
-            @Test()
-            func assertSnapshotMakeMyView() async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
+              SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeMyView",
                 traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: .none,
+                configuration: configuration,
                 makeValue: {
                   try await SnapshotTests().makeMyView()
                 },
@@ -50,41 +45,7 @@ extension SnapshotSuiteTests.FunctionModifiers {
                 line: 5,
                 column: 3
               )
-
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
-          }
-        }
-        """
-      }
-    }
-
-    @Test
-    func testInit() {
-      assertMacro {
-        """
-        @MainActor
-        @Suite
-        @SnapshotSuite
-        class SnapshotTests {
-          init() async throws { }
-
-          @SnapshotTest
-          func makeMyView() -> some View {
-            Text("my view")
-          }
-        }
-        """
-      } expansion: {
-        """
-        @MainActor
-        @Suite
-        class SnapshotTests {
-          init() async throws { }
-
-          @SnapshotTest
-          func makeMyView() -> some View {
-            Text("my view")
           }
 
           @MainActor
@@ -94,20 +55,9 @@ extension SnapshotSuiteTests.FunctionModifiers {
             @MainActor
             @Test()
             func assertSnapshotMakeMyView() async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
-                displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: .none,
-                makeValue: {
-                  try await SnapshotTests().makeMyView()
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 7,
-                column: 3
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeMyView.makeGenerator(configuration: .none)
               )
-
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
           }
         }

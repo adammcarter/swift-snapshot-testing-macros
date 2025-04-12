@@ -4,7 +4,7 @@ extension SnapshotSuite.TestBlock.Test {
   struct TestMacro {
     var expr: LabeledExprListSyntax {
       LabeledExprListSyntax {
-        for trait in traits {
+        for trait in swiftTestingTraits {
           LabeledExprSyntax(expression: trait)
         }
 
@@ -14,7 +14,7 @@ extension SnapshotSuite.TestBlock.Test {
       }
     }
 
-    private let traits: [ExprSyntax]
+    private let swiftTestingTraits: [ExprSyntax]
     private let configurationExpression: ExprSyntax?
 
     private var argumentsExpression: ExprSyntax? {
@@ -30,8 +30,8 @@ extension SnapshotSuite.TestBlock.Test {
       }
     }
 
-    init(traits: [ExprSyntax], configurationExpression: ExprSyntax?) {
-      self.traits = traits
+    init(swiftTestingTraits: [ExprSyntax], configurationExpression: ExprSyntax?) {
+      self.swiftTestingTraits = swiftTestingTraits
       self.configurationExpression = configurationExpression
     }
   }

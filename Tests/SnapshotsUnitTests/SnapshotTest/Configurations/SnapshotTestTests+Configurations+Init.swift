@@ -42,6 +42,24 @@ extension SnapshotTestTests.Configurations {
             Text("my view")
           }
 
+          enum __generator_container_makeMyView {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotConfiguration<(String)>) -> SnapshotTestingMacros.SnapshotGenerator<(String)> {
+              SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "makeMyView",
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: configuration,
+                makeValue: {
+                  SnapshotTests().makeMyView(value: $0)
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 9,
+                column: 3
+              )
+            }
+          }
+
           @MainActor
           @Suite
           struct _GeneratedSnapshotSuite {
@@ -52,20 +70,9 @@ extension SnapshotTestTests.Configurations {
                   SnapshotConfiguration(name: "Config2", value: "2"),
                 ]))
             func assertSnapshotMakeMyView(configuration: SnapshotConfiguration<(String)>) async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
-                displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: configuration,
-                makeValue: {
-                  SnapshotTests(configuration: configuration).makeMyView(value: $0)
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 9,
-                column: 3
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeMyView.makeGenerator(configuration: configuration)
               )
-
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
           }
         }
@@ -108,6 +115,24 @@ extension SnapshotTestTests.Configurations {
             Text("my view")
           }
 
+          enum __generator_container_makeMyView {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotConfiguration<(String)>) -> SnapshotTestingMacros.SnapshotGenerator<(String)> {
+              SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "makeMyView",
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: configuration,
+                makeValue: {
+                  SnapshotTests().makeMyView(value: $0)
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 9,
+                column: 3
+              )
+            }
+          }
+
           @MainActor
           @Suite
           struct _GeneratedSnapshotSuite {
@@ -118,20 +143,9 @@ extension SnapshotTestTests.Configurations {
                   SnapshotConfiguration(name: "Config2", value: "2"),
                 ]))
             func assertSnapshotMakeMyView(configuration: SnapshotConfiguration<(String)>) async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
-                displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: configuration,
-                makeValue: {
-                  SnapshotTests(gfds: configuration).makeMyView(value: $0)
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 9,
-                column: 3
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeMyView.makeGenerator(configuration: configuration)
               )
-
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
           }
         }
@@ -174,17 +188,10 @@ extension SnapshotTestTests.Configurations {
             Text("my view")
           }
 
-          @MainActor
-          @Suite
-          struct _GeneratedSnapshotSuite {
-
+          enum __generator_container_makeMyView {
             @MainActor
-            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
-                  SnapshotConfiguration(name: "Config1", value: "1"),
-                  SnapshotConfiguration(name: "Config2", value: "2"),
-                ]))
-            func assertSnapshotMakeMyView(configuration: SnapshotConfiguration<(String)>) async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotConfiguration<(String)>) -> SnapshotTestingMacros.SnapshotGenerator<(String)> {
+              SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeMyView",
                 traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
@@ -196,8 +203,22 @@ extension SnapshotTestTests.Configurations {
                 line: 9,
                 column: 3
               )
+            }
+          }
 
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
+          @MainActor
+          @Suite
+          struct _GeneratedSnapshotSuite {
+
+            @MainActor
+            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
+                  SnapshotConfiguration(name: "Config1", value: "1"),
+                  SnapshotConfiguration(name: "Config2", value: "2"),
+                ]))
+            func assertSnapshotMakeMyView(configuration: SnapshotConfiguration<(String)>) async throws {
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeMyView.makeGenerator(configuration: configuration)
+              )
             }
           }
         }
@@ -240,17 +261,10 @@ extension SnapshotTestTests.Configurations {
             Text("my view")
           }
 
-          @MainActor
-          @Suite
-          struct _GeneratedSnapshotSuite {
-
+          enum __generator_container_makeMyView {
             @MainActor
-            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
-                  SnapshotConfiguration(name: "Config1", value: "1"),
-                  SnapshotConfiguration(name: "Config2", value: "2"),
-                ]))
-            func assertSnapshotMakeMyView(configuration: SnapshotConfiguration<(String)>) async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotConfiguration<(String)>) -> SnapshotTestingMacros.SnapshotGenerator<(String)> {
+              SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeMyView",
                 traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
@@ -262,8 +276,22 @@ extension SnapshotTestTests.Configurations {
                 line: 9,
                 column: 3
               )
+            }
+          }
 
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
+          @MainActor
+          @Suite
+          struct _GeneratedSnapshotSuite {
+
+            @MainActor
+            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
+                  SnapshotConfiguration(name: "Config1", value: "1"),
+                  SnapshotConfiguration(name: "Config2", value: "2"),
+                ]))
+            func assertSnapshotMakeMyView(configuration: SnapshotConfiguration<(String)>) async throws {
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeMyView.makeGenerator(configuration: configuration)
+              )
             }
           }
         }

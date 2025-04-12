@@ -11,16 +11,26 @@ extension SnapshotSuiteMacro: MemberMacro {
     conformingTo _: [TypeSyntax],
     in context: some MacroExpansionContext
   ) throws -> [DeclSyntax] {
-    let macroContext = MacroContext(node: node, declaration: declaration, context: context)
+    let macroContext = SnapshotSuiteMacroContext(
+      node: node,
+      declaration: declaration,
+      context: context
+    )
 
     guard
       canContinueAfterSanityChecks(macroContext: macroContext)
-    else { return [] }
+    else {
+      return []
+    }
 
     guard
       let snapshotSuite = SnapshotSuite(macroContext: macroContext)
-    else { return [] }
+    else {
+      return []
+    }
 
     return [snapshotSuite.expression]
   }
 }
+
+typealias SnapshotSuiteMacroContext = MacroContext<DeclGroupSyntax>

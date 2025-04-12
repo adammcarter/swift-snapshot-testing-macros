@@ -28,9 +28,26 @@ extension SnapshotSuiteTests.Parameters.Traits {
         @MainActor
         @Suite
         struct URL {
-          @SnapshotTest
           func makeView() -> some View {
             Text("")
+          }
+
+          enum __generator_container_makeView {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
+              SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "makeView",
+                traits: [.bug("https://bugs.swift.org/browse/some-bug"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: configuration,
+                makeValue: {
+                  URL().makeView()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 7,
+                column: 3
+              )
+            }
           }
 
           @MainActor
@@ -40,20 +57,9 @@ extension SnapshotSuiteTests.Parameters.Traits {
             @MainActor
             @Test(.bug("https://bugs.swift.org/browse/some-bug"))
             func assertSnapshotMakeView() async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
-                displayName: "makeView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: .none,
-                makeValue: {
-                  URL().makeView()
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 7,
-                column: 3
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
-
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
           }
         }
@@ -82,9 +88,26 @@ extension SnapshotSuiteTests.Parameters.Traits {
         @MainActor
         @Suite
         struct Title {
-          @SnapshotTest
           func makeView() -> some View {
             Text("")
+          }
+
+          enum __generator_container_makeView {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
+              SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "makeView",
+                traits: [.bug("https://bugs.swift.org/browse/some-bug", "A title"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: configuration,
+                makeValue: {
+                  Title().makeView()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 7,
+                column: 3
+              )
+            }
           }
 
           @MainActor
@@ -94,20 +117,9 @@ extension SnapshotSuiteTests.Parameters.Traits {
             @MainActor
             @Test(.bug("https://bugs.swift.org/browse/some-bug", "A title"))
             func assertSnapshotMakeView() async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
-                displayName: "makeView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: .none,
-                makeValue: {
-                  Title().makeView()
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 7,
-                column: 3
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
-
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
           }
         }
@@ -136,9 +148,26 @@ extension SnapshotSuiteTests.Parameters.Traits {
         @MainActor
         @Suite
         struct ID {
-          @SnapshotTest
           func makeView() -> some View {
             Text("")
+          }
+
+          enum __generator_container_makeView {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
+              SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "makeView",
+                traits: [.bug(id: "some id"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: configuration,
+                makeValue: {
+                  ID().makeView()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 7,
+                column: 3
+              )
+            }
           }
 
           @MainActor
@@ -148,20 +177,9 @@ extension SnapshotSuiteTests.Parameters.Traits {
             @MainActor
             @Test(.bug(id: "some id"))
             func assertSnapshotMakeView() async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
-                displayName: "makeView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: .none,
-                makeValue: {
-                  ID().makeView()
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 7,
-                column: 3
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
-
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
           }
         }

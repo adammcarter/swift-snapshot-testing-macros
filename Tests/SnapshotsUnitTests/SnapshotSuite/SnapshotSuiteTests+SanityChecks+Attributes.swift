@@ -49,7 +49,6 @@ extension SnapshotSuiteTests.SanityChecks {
         """
         @Suite@MainActor
         struct SnapshotTests {
-          @SnapshotTest
           func makeMyView() -> some View {
             Text("my view")
           }
@@ -61,20 +60,9 @@ extension SnapshotSuiteTests.SanityChecks {
             @MainActor
             @Test()
             func assertSnapshotMakeMyView() async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
-                displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: .none,
-                makeValue: {
-                  SnapshotTests().makeMyView()
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 4,
-                column: 3
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeMyView.makeGenerator(configuration: .none)
               )
-
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
           }
         }

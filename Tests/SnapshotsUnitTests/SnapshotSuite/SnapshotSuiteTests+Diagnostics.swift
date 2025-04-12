@@ -59,7 +59,6 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-          @SnapshotTest
           func makeAnotherView(input: String) -> String {
             "another view"
           }
@@ -133,12 +132,6 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-          @SnapshotTest(
-            configurations: [
-              SnapshotConfiguration(name: "Config1", value: "1"),
-              SnapshotConfiguration(name: "Config2", value: "2"),
-            ]
-          )
           func makeAnotherView(input: String) -> String {
             Text("another view")
           }
@@ -323,14 +316,47 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-          @SnapshotTest
           func makeHostingController() -> UIViewController {
             UIHostingController(rootView: Text("hosting controller"))
           }
 
-          @SnapshotTest
+          enum __generator_container_makeHostingController {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
+              SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "makeHostingController",
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: configuration,
+                makeValue: {
+                  SnapshotTests().makeHostingController()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 5,
+                column: 3
+              )
+            }
+          }
           func makeViewController() -> UIViewController {
             UIViewController()
+          }
+
+          enum __generator_container_makeViewController {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
+              SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "makeViewController",
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: configuration,
+                makeValue: {
+                  SnapshotTests().makeViewController()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 10,
+                column: 3
+              )
+            }
           }
 
           @MainActor
@@ -340,39 +366,17 @@ extension SnapshotSuiteTests {
             @MainActor
             @Test()
             func assertSnapshotMakeHostingController() async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
-                displayName: "makeHostingController",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: .none,
-                makeValue: {
-                  SnapshotTests().makeHostingController()
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 5,
-                column: 3
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeHostingController.makeGenerator(configuration: .none)
               )
-
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
 
             @MainActor
             @Test()
             func assertSnapshotMakeViewController() async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
-                displayName: "makeViewController",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: .none,
-                makeValue: {
-                  SnapshotTests().makeViewController()
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 10,
-                column: 3
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeViewController.makeGenerator(configuration: .none)
               )
-
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
           }
         }

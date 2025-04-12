@@ -8,7 +8,7 @@ struct Declaration {
   let isInitializable: Bool
   let initConfigurationToken: TokenSyntax?
 
-  init(declaration: some DeclGroupSyntax) {
+  init(declaration: some DeclSyntaxProtocol) {
     self.isInitializable = makeIsInitializable(declaration: declaration)
     self.isAsync = makeIsAsync(declaration: declaration)
     self.isThrows = makeIsThrows(declaration: declaration)
@@ -16,21 +16,21 @@ struct Declaration {
   }
 }
 
-private func makeIsInitializable(declaration: some DeclGroupSyntax) -> Bool {
+private func makeIsInitializable(declaration: some DeclSyntaxProtocol) -> Bool {
   declaration.is(StructDeclSyntax.self)
     || declaration.is(ClassDeclSyntax.self)
     || declaration.is(ActorDeclSyntax.self)
 }
 
-private func makeIsAsync(declaration: some DeclGroupSyntax) -> Bool {
+private func makeIsAsync(declaration: some DeclSyntaxProtocol) -> Bool {
   initializer(in: declaration)?.signature.isAsync == true
 }
 
-private func makeIsThrows(declaration: some DeclGroupSyntax) -> Bool {
+private func makeIsThrows(declaration: some DeclSyntaxProtocol) -> Bool {
   initializer(in: declaration)?.signature.isThrows == true
 }
 
-private func makeInitConfigurationToken(declaration: some DeclGroupSyntax) -> TokenSyntax? {
+private func makeInitConfigurationToken(declaration: some DeclSyntaxProtocol) -> TokenSyntax? {
   initializer(in: declaration)?
     .signature
     .parameterClause
@@ -41,13 +41,12 @@ private func makeInitConfigurationToken(declaration: some DeclGroupSyntax) -> To
     .name
 }
 
-private func initializer(in declaration: some DeclGroupSyntax) -> InitializerDeclSyntax? {
-  declaration
+private func initializer(in declaration: some DeclSyntaxProtocol) -> InitializerDeclSyntax? {
+  (declaration as? DeclGroupSyntax)?
     .memberBlock
     .members
     .lazy
-    .compactMap {
-      $0.decl.as(InitializerDeclSyntax.self)
-    }
+    .compactMap { $0.decl.as(InitializerDeclSyntax.self) }
     .first
+    ?? declaration.as(InitializerDeclSyntax.self)
 }

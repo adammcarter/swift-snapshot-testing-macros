@@ -10,11 +10,11 @@ extension SnapshotSuite.TestBlock.Test {
       configurationExpression: ExprSyntax?,
       snapshotTestFunctionDecl: FunctionDeclSyntax
     ) {
-      nameExpr = IdentifierTypeSyntax(name: "assertSnapshot\(raw: testName.capitalizingFirst())")
-
-      let configurationGenericType = makeConfigurationGenericType(
-        snapshotTestFunctionDecl: snapshotTestFunctionDecl
+      nameExpr = IdentifierTypeSyntax(
+        name: "assertSnapshot\(raw: testName.capitalizingFirst())"
       )
+
+      let configurationGenericType = snapshotTestFunctionDecl.signature.parameterClauseAsTuple
 
       parametersExpr =
         if configurationExpression != nil || configurationExpression?.as(ArrayExprSyntax.self)?.elements.isEmpty == false {
@@ -24,17 +24,5 @@ extension SnapshotSuite.TestBlock.Test {
           nil
         }
     }
-  }
-}
-
-private func makeConfigurationGenericType(
-  snapshotTestFunctionDecl: FunctionDeclSyntax
-) -> TupleTypeElementListSyntax {
-  .init {
-    snapshotTestFunctionDecl
-      .signature
-      .parameterClause
-      .parameters
-      .map { .init(type: $0.type) }
   }
 }

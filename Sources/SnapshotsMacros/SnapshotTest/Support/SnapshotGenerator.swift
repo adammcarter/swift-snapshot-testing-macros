@@ -2,7 +2,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-extension SnapshotSuite.TestBlock.Test {
+extension SnapshotTest {
   struct SnapshotGenerator {
     let displayNameExpr: ExprSyntax
     let traitsExpr: ArrayExprSyntax?
@@ -10,37 +10,35 @@ extension SnapshotSuite.TestBlock.Test {
     let lineExpr: ExprSyntax
     let columnExpr: ExprSyntax
 
-    var configurationExpr: ExprSyntax? {
-      ExprSyntax(stringLiteral: hasConfigurations ? "configuration" : ".none")
-    }
-
-    private let configurationsExpr: ExprSyntax?
-    private let configurationValuesExpr: ExprSyntax?
-
-    private var configurationArrayExpr: ArrayExprSyntax? {
-      configurationsExpr?.as(ArrayExprSyntax.self)
-    }
-
-    private var hasConfigurations: Bool {
-      configurationsExpr != nil || configurationValuesExpr != nil
-    }
-
     init(
       suiteName: TokenSyntax,
       testName: String,
       displayName: String,
       declaration: Declaration,
       snapshotTestFunctionDecl: FunctionDeclSyntax,
-      testMacroArguments: SnapshotsMacroArguments,
       traits: ArrayExprSyntax,
-      macroContext: MacroContext
+      context: some MacroExpansionContext
     ) {
       displayNameExpr = .init(literal: displayName)
 
-      traitsExpr = traits
+      let suiteTrait = context.lexicalContext
+        .compactMap {
+          if let snapshotSuiteAttribute = $0.attributesList?.first(attributeNamed: Constants.AttributeName.snapshotSuite)?.as(AttributeSyntax.self) {
+            snapshotSuiteAttribute.arguments?.as(LabeledExprListSyntax.self)
+          }
+          else {
+            nil
+          }
+        }
+        .first
 
-      configurationsExpr = testMacroArguments.configurationsExpression
-      configurationValuesExpr = testMacroArguments.configurationValuesExpression
+      traitsExpr = makeTraitsArrayExpr(
+        suiteTraitExpressions: suiteTrait?.map(\.expression),
+        testTraitExpressions: traits.elements.map(\.expression),
+        context: context,
+        snapshotTestFunctionDecl: snapshotTestFunctionDecl,
+        addDefaults: true
+      )
 
       makeValueExpr = makeMakeValue(
         suiteName: suiteName,
@@ -49,7 +47,7 @@ extension SnapshotSuite.TestBlock.Test {
         snapshotTestFunctionDecl: snapshotTestFunctionDecl
       )
 
-      let functionLocation = macroContext.context.location(of: snapshotTestFunctionDecl)
+      let functionLocation = context.location(of: snapshotTestFunctionDecl)
 
       lineExpr = functionLocation?.line ?? "#line"
       columnExpr = functionLocation?.column ?? "#column"
@@ -89,7 +87,11 @@ private func makeMakeValue(
     rightParen: isStatic ? .none : .rightParenToken(),
     argumentsBuilder: {
       if let initConfigurationToken = declaration.initConfigurationToken {
-        LabeledExprSyntax(label: initConfigurationToken, colon: .colonToken(trailingTrivia: .space), expression: ExprSyntax(stringLiteral: "configuration"))
+        LabeledExprSyntax(
+          label: initConfigurationToken,
+          colon: .colonToken(trailingTrivia: .space),
+          expression: ExprSyntax(stringLiteral: "configuration")
+        )
       }
     }
   )

@@ -9,12 +9,8 @@ extension SnapshotSuite {
 
     init(
       member: MemberBlockItemSyntax,
-      suiteName: TokenSyntax,
-      suiteDisplayName: String?,
-      testDisplayName: String?,
-      declaration: Declaration,
       suiteMacroArguments: SnapshotsMacroArguments,
-      macroContext: MacroContext
+      macroContext: SnapshotSuiteMacroContext
     ) {
       var ifConfig: IfConfig?
       var test: Test?
@@ -23,10 +19,6 @@ extension SnapshotSuite {
         snapshotTestFunctionDecl.isSupportedForSnapshots
       {
         test = .init(
-          suiteName: suiteName,
-          suiteDisplayName: suiteDisplayName,
-          testDisplayName: testDisplayName,
-          declaration: declaration,
           suiteMacroArguments: suiteMacroArguments,
           snapshotTestFunctionDecl: snapshotTestFunctionDecl,
           macroContext: macroContext
@@ -35,11 +27,6 @@ extension SnapshotSuite {
       else if let ifConfigDecl = member.decl.as(IfConfigDeclSyntax.self) {
         ifConfig = .init(
           ifConfigDecl: ifConfigDecl,
-          member: member,
-          suiteName: suiteName,
-          suiteDisplayName: suiteDisplayName,
-          testDisplayName: testDisplayName,
-          declaration: declaration,
           suiteMacroArguments: suiteMacroArguments,
           macroContext: macroContext
         )

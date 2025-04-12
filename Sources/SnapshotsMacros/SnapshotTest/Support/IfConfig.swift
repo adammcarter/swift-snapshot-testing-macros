@@ -8,20 +8,10 @@ extension SnapshotSuite.TestBlock {
 
     init(
       ifConfigDecl: IfConfigDeclSyntax,
-      member: MemberBlockItemSyntax,
-      suiteName: TokenSyntax,
-      suiteDisplayName: String?,
-      testDisplayName: String?,
-      declaration: Declaration,
       suiteMacroArguments: SnapshotsMacroArguments,
-      macroContext: MacroContext
+      macroContext: SnapshotSuiteMacroContext
     ) {
       self.ifConfigDecl = ifConfigDecl.asIfConfigDeclTestExpr(
-        member: member,
-        suiteName: suiteName,
-        suiteDisplayName: suiteDisplayName,
-        testDisplayName: testDisplayName,
-        declaration: declaration,
         suiteMacroArguments: suiteMacroArguments,
         macroContext: macroContext
       )
@@ -31,13 +21,8 @@ extension SnapshotSuite.TestBlock {
 
 extension IfConfigDeclSyntax {
   fileprivate func asIfConfigDeclTestExpr(
-    member _: MemberBlockItemSyntax,
-    suiteName: TokenSyntax,
-    suiteDisplayName: String?,
-    testDisplayName: String?,
-    declaration: Declaration,
     suiteMacroArguments: SnapshotsMacroArguments,
-    macroContext: MacroContext
+    macroContext: SnapshotSuiteMacroContext
   ) -> IfConfigDeclSyntax {
     let clauses = clauses.compactMap { clause -> IfConfigClauseSyntax? in
       guard
@@ -47,10 +32,6 @@ extension IfConfigDeclSyntax {
       }
 
       let blockItems = memberBlockItemListExpr.blockItemTestExprs(
-        suiteName: suiteName,
-        suiteDisplayName: suiteDisplayName,
-        testDisplayName: testDisplayName,
-        declaration: declaration,
         suiteMacroArguments: suiteMacroArguments,
         macroContext: macroContext
       )
@@ -84,12 +65,8 @@ extension IfConfigDeclSyntax {
 
 extension MemberBlockItemListSyntax {
   fileprivate func blockItemTestExprs(
-    suiteName: TokenSyntax,
-    suiteDisplayName: String?,
-    testDisplayName: String?,
-    declaration: Declaration,
     suiteMacroArguments: SnapshotsMacroArguments,
-    macroContext: MacroContext
+    macroContext: SnapshotSuiteMacroContext
   ) -> [CodeBlockItemSyntax] {
     compactMap {
       $0.decl.as(FunctionDeclSyntax.self)
@@ -97,10 +74,6 @@ extension MemberBlockItemListSyntax {
     .filter(\.isSupportedForSnapshots)
     .compactMap { snapshotTestFunctionDecl in
       let test = SnapshotSuite.TestBlock.Test(
-        suiteName: suiteName,
-        suiteDisplayName: suiteDisplayName,
-        testDisplayName: testDisplayName,
-        declaration: declaration,
         suiteMacroArguments: suiteMacroArguments,
         snapshotTestFunctionDecl: snapshotTestFunctionDecl,
         macroContext: macroContext

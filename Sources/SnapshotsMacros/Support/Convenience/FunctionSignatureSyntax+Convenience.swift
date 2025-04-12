@@ -10,4 +10,12 @@ extension FunctionSignatureSyntax {
   var isThrows: Bool {
     effectSpecifiers?.throwsClause?.throwsSpecifier != nil
   }
+
+  var parameterClauseAsTuple: TupleTypeElementListSyntax {
+    .init {
+      parameterClause
+        .parameters
+        .map { .init(type: $0.type) }
+    }
+  }
 }
