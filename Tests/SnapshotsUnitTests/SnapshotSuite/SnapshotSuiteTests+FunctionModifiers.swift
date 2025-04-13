@@ -3,6 +3,6 @@ import Testing
 
 extension SnapshotSuiteTests {
   @Suite
-  struct NoParameters {}
+  struct FunctionModifiers {}
 }
 #endif
