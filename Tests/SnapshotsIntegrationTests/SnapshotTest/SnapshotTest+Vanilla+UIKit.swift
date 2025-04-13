@@ -7,12 +7,17 @@ extension SnapshotTest {
   @MainActor
   @Suite
   @SnapshotSuite
-  struct UIKitView {
+  struct UIKit {
 
     @SnapshotTest()
     func uiView() -> UIView {
+      makeLabel("Some UILabel text")
+    }
+
+    @SnapshotTest()
+    func clearBackground() -> UIView {
       let label = UILabel()
-      label.text = "Some UILabel text"
+      label.text = "UILabel with clear background"
       label.sizeToFit()
 
       return label
