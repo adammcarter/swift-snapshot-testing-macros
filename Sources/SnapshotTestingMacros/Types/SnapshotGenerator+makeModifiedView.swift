@@ -39,6 +39,8 @@ extension SnapshotGenerator {
       }
     }
 
+    view.backgroundColor = nil
+
     configureBackgroundColor(of: view, for: backgroundColorTrait)
 
     return view
@@ -101,13 +103,19 @@ extension SnapshotGenerator {
       return
     }
 
-    #if canImport(UIKit)
     view.backgroundColor = backgroundColor
-    #elseif canImport(AppKit)
-    view.layer?.backgroundColor = backgroundColor.cgColor
-    #endif
   }
 }
+
+#if canImport(AppKit)
+@MainActor
+extension NSView {
+  fileprivate var backgroundColor: NSColor? {
+    get { layer?.backgroundColor.flatMap { .init(cgColor: $0) } }
+    set { layer?.backgroundColor = newValue?.cgColor }
+  }
+}
+#endif
 
 // MARK: - Traits
 
