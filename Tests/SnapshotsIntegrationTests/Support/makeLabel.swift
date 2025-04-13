@@ -7,6 +7,7 @@ func makeLabel(_ text: String) -> UIView {
   label.text = text
   label.numberOfLines = 0
   label.sizeToFit()
+  label.backgroundColor = .systemBackground
 
   return label
 }
