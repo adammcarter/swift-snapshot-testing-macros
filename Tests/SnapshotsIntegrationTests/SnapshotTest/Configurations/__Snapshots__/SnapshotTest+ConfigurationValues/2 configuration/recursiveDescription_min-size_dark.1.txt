@@ -1,2 +1,2 @@
-<_TtGC7SwiftUI14_UIHostingViewGVS_19_ConditionalContentGS1_GVS_15ModifiedContentVS_4TextVS_14_PaddingLayout_GS2_S3_S4___S3___; frame = (0 0; 180.333 20.3333); gestureRecognizers = <NSArray>; backgroundColor = <UIDynamicSystemColor; name = systemBackgroundColor>; layer = <SwiftUI.UIHostingViewDebugLayer>>
+<_TtGC7SwiftUI14_UIHostingViewGVS_19_ConditionalContentGS1_GVS_15ModifiedContentVS_4TextVS_14_PaddingLayout_GS2_S3_S4___S3___; frame = (0 0; 180.333 20.3333); gestureRecognizers = <NSArray>; layer = <SwiftUI.UIHostingViewDebugLayer>>
    | <SwiftUI.CGDrawingView; frame = (0 0; 180.333 20.3333); anchorPoint = (0, 0); opaque = NO; autoresizesSubviews = NO; layer = <_TtC7SwiftUIP33_65A81BD07F0108B0485D2E15DE104A7514CGDrawingLayer>>
