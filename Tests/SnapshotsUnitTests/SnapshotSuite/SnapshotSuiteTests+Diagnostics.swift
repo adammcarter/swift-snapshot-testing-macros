@@ -5,6 +5,7 @@ import SnapshotTestingMacros
 import Testing
 
 extension SnapshotSuiteTests {
+
   @Suite
   struct Diagnostics {
 
@@ -16,10 +17,10 @@ extension SnapshotSuiteTests {
         @Suite
         @SnapshotSuite
         struct SnapshotTests {
-            @SnapshotTest
-            func makeAnotherView(input: String) -> String {
-                "another view"
-            }
+          @SnapshotTest
+          func makeAnotherView(input: String) -> String {
+            "another view"
+          }
         }
         """
       } diagnostics: {
@@ -36,10 +37,10 @@ extension SnapshotSuiteTests {
            ✏️ Add a function to make a NSView.
            ✏️ Add a function to make a NSViewController.
         struct SnapshotTests {
-            @SnapshotTest
-            func makeAnotherView(input: String) -> String {
-                "another view"
-            }
+          @SnapshotTest
+          func makeAnotherView(input: String) -> String {
+            "another view"
+          }
         }
         """
       } fixes: {
@@ -47,10 +48,10 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            @SnapshotTest
-            func makeAnotherView(input: String) -> String {
-                "another view"
-            }
+          @SnapshotTest
+          func makeAnotherView(input: String) -> String {
+            "another view"
+          }
         }
         """
       } expansion: {
@@ -58,10 +59,10 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            @SnapshotTest
-            func makeAnotherView(input: String) -> String {
-                "another view"
-            }
+          @SnapshotTest
+          func makeAnotherView(input: String) -> String {
+            "another view"
+          }
         }
         """
       }
@@ -75,15 +76,15 @@ extension SnapshotSuiteTests {
         @Suite
         @SnapshotSuite
         struct SnapshotTests {
-            @SnapshotTest(
-                configurations: [
-                    SnapshotConfiguration(name: "Config1", value: "1"),
-                    SnapshotConfiguration(name: "Config2", value: "2"),
-                ]
-            )
-            func makeAnotherView(input: String) -> String {
-                Text("another view")
-            }
+          @SnapshotTest(
+            configurations: [
+              SnapshotConfiguration(name: "Config1", value: "1"),
+              SnapshotConfiguration(name: "Config2", value: "2"),
+            ]
+          )
+          func makeAnotherView(input: String) -> String {
+            Text("another view")
+          }
         }
         """
       } diagnostics: {
@@ -100,15 +101,15 @@ extension SnapshotSuiteTests {
            ✏️ Add a function to make a NSView.
            ✏️ Add a function to make a NSViewController.
         struct SnapshotTests {
-            @SnapshotTest(
-                configurations: [
-                    SnapshotConfiguration(name: "Config1", value: "1"),
-                    SnapshotConfiguration(name: "Config2", value: "2"),
-                ]
-            )
-            func makeAnotherView(input: String) -> String {
-                Text("another view")
-            }
+          @SnapshotTest(
+            configurations: [
+              SnapshotConfiguration(name: "Config1", value: "1"),
+              SnapshotConfiguration(name: "Config2", value: "2"),
+            ]
+          )
+          func makeAnotherView(input: String) -> String {
+            Text("another view")
+          }
         }
         """
       } fixes: {
@@ -116,15 +117,15 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            @SnapshotTest(
-                configurations: [
-                    SnapshotConfiguration(name: "Config1", value: "1"),
-                    SnapshotConfiguration(name: "Config2", value: "2"),
-                ]
-            )
-            func makeAnotherView(input: String) -> String {
-                Text("another view")
-            }
+          @SnapshotTest(
+            configurations: [
+              SnapshotConfiguration(name: "Config1", value: "1"),
+              SnapshotConfiguration(name: "Config2", value: "2"),
+            ]
+          )
+          func makeAnotherView(input: String) -> String {
+            Text("another view")
+          }
         }
         """
       } expansion: {
@@ -132,15 +133,15 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            @SnapshotTest(
-                configurations: [
-                    SnapshotConfiguration(name: "Config1", value: "1"),
-                    SnapshotConfiguration(name: "Config2", value: "2"),
-                ]
-            )
-            func makeAnotherView(input: String) -> String {
-                Text("another view")
-            }
+          @SnapshotTest(
+            configurations: [
+              SnapshotConfiguration(name: "Config1", value: "1"),
+              SnapshotConfiguration(name: "Config2", value: "2"),
+            ]
+          )
+          func makeAnotherView(input: String) -> String {
+            Text("another view")
+          }
         }
         """
       }
@@ -154,9 +155,9 @@ extension SnapshotSuiteTests {
         @Suite
         @SnapshotSuite
         struct SnapshotTests {
-            static func makeMyView() -> some View {
-                Text("my view")
-            }
+          static func makeMyView() -> some View {
+            Text("my view")
+          }
         }
         """
       } diagnostics: {
@@ -174,9 +175,9 @@ extension SnapshotSuiteTests {
            ✏️ Add a function to make a NSViewController.
            ✏️ Add @SnapshotTest annotations to viable functions.
         struct SnapshotTests {
-            static func makeMyView() -> some View {
-                Text("my view")
-            }
+          static func makeMyView() -> some View {
+            Text("my view")
+          }
         }
         """
       } fixes: {
@@ -184,9 +185,9 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            static func makeMyView() -> some View {
-                Text("my view")
-            }
+          static func makeMyView() -> some View {
+            Text("my view")
+          }
         }
         """
       } expansion: {
@@ -194,9 +195,9 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            static func makeMyView() -> some View {
-                Text("my view")
-            }
+          static func makeMyView() -> some View {
+            Text("my view")
+          }
         }
         """
       }
@@ -210,9 +211,9 @@ extension SnapshotSuiteTests {
         @Suite
         @SnapshotSuite
         struct SnapshotTests {
-            static func makeMyView() -> some View {
-                Text("my view")
-            }
+          static func makeMyView() -> some View {
+            Text("my view")
+          }
         }
         """
       } diagnostics: {
@@ -230,9 +231,9 @@ extension SnapshotSuiteTests {
            ✏️ Add a function to make a NSViewController.
            ✏️ Add @SnapshotTest annotations to viable functions.
         struct SnapshotTests {
-            static func makeMyView() -> some View {
-                Text("my view")
-            }
+          static func makeMyView() -> some View {
+            Text("my view")
+          }
         }
         """
       } fixes: {
@@ -240,9 +241,9 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            static func makeMyView() -> some View {
-                Text("my view")
-            }
+          static func makeMyView() -> some View {
+            Text("my view")
+          }
         }
         """
       } expansion: {
@@ -250,9 +251,9 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            static func makeMyView() -> some View {
-                Text("my view")
-            }
+          static func makeMyView() -> some View {
+            Text("my view")
+          }
         }
         """
       }
@@ -306,15 +307,15 @@ extension SnapshotSuiteTests {
         @Suite
         @SnapshotSuite
         struct SnapshotTests {
-            @SnapshotTest
-            func makeHostingController() -> UIViewController {
-                UIHostingController(rootView: Text("hosting controller"))
-            }
+          @SnapshotTest
+          func makeHostingController() -> UIViewController {
+            UIHostingController(rootView: Text("hosting controller"))
+          }
 
-            @SnapshotTest
-            func makeViewController() -> UIViewController {
-                UIViewController()
-            }
+          @SnapshotTest
+          func makeViewController() -> UIViewController {
+            UIViewController()
+          }
         }
         """
       } expansion: {
@@ -322,58 +323,58 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            @SnapshotTest
-            func makeHostingController() -> UIViewController {
-                UIHostingController(rootView: Text("hosting controller"))
-            }
+          @SnapshotTest
+          func makeHostingController() -> UIViewController {
+            UIHostingController(rootView: Text("hosting controller"))
+          }
 
-            @SnapshotTest
-            func makeViewController() -> UIViewController {
-                UIViewController()
+          @SnapshotTest
+          func makeViewController() -> UIViewController {
+            UIViewController()
+          }
+
+          @MainActor
+          @Suite
+          struct _GeneratedSnapshotSuite {
+
+            @MainActor
+            @Test()
+            func assertSnapshotMakeHostingController() async throws {
+              let generator = SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "makeHostingController",
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: .none,
+                makeValue: {
+                  SnapshotTests().makeHostingController()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 5,
+                column: 3
+              )
+
+              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
 
             @MainActor
-            @Suite
-            struct _GeneratedSnapshotSuite {
+            @Test()
+            func assertSnapshotMakeViewController() async throws {
+              let generator = SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "makeViewController",
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: .none,
+                makeValue: {
+                  SnapshotTests().makeViewController()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 10,
+                column: 3
+              )
 
-              @MainActor
-              @Test()
-              func assertSnapshotMakeHostingController() async throws {
-                let generator = SnapshotTestingMacros.SnapshotGenerator(
-                  displayName: "makeHostingController",
-                  traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                  configuration: .none,
-                  makeValue: {
-                      SnapshotTests().makeHostingController()
-                  },
-                  fileID: #fileID,
-                  filePath: #filePath,
-                  line: 5,
-                  column: 5
-                )
-
-                try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-              }
-
-              @MainActor
-              @Test()
-              func assertSnapshotMakeViewController() async throws {
-                let generator = SnapshotTestingMacros.SnapshotGenerator(
-                  displayName: "makeViewController",
-                  traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                  configuration: .none,
-                  makeValue: {
-                      SnapshotTests().makeViewController()
-                  },
-                  fileID: #fileID,
-                  filePath: #filePath,
-                  line: 10,
-                  column: 5
-                )
-
-                try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-              }
+              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
+          }
         }
         """
       }
@@ -388,10 +389,10 @@ extension SnapshotSuiteTests {
         @Suite
         @SnapshotSuite
         enum MyEnum {
-            @SnapshotTest
-            func makeView() -> some View {
-                Text("")
-            }
+          @SnapshotTest
+          func makeView() -> some View {
+            Text("")
+          }
         }
         """
       } diagnostics: {
@@ -400,12 +401,12 @@ extension SnapshotSuiteTests {
         @Suite
         @SnapshotSuite
         enum MyEnum {
-            @SnapshotTest
-            ╰─ ⚠️ Cannot create a test for instance functions on types that cannot be initialised.
-               ✏️ Make function static
-            func makeView() -> some View {
-                Text("")
-            }
+          @SnapshotTest
+          ╰─ ⚠️ Cannot create a test for instance functions on types that cannot be initialised.
+             ✏️ Make function static
+          func makeView() -> some View {
+            Text("")
+          }
         }
         """
       } fixes: {
@@ -414,10 +415,10 @@ extension SnapshotSuiteTests {
         @Suite
         @SnapshotSuite
         enum MyEnum {
-            @SnapshotTeststatic
-            func makeView() -> some View {
-                Text("")
-            }
+          @SnapshotTeststatic
+          func makeView() -> some View {
+            Text("")
+          }
         }
         """
       } expansion: {
@@ -425,17 +426,17 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         enum MyEnum {
-            @SnapshotTeststatic
-            func makeView() -> some View {
-                Text("")
-            }
+          @SnapshotTeststatic
+          func makeView() -> some View {
+            Text("")
+          }
 
-            @MainActor
-            @Suite
-            struct _GeneratedSnapshotSuite {
+          @MainActor
+          @Suite
+          struct _GeneratedSnapshotSuite {
 
 
-            }
+          }
         }
         """
       }

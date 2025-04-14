@@ -14,22 +14,22 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         @SnapshotSuite(
-            .theme(.dark),
-            configurations: [
-                SnapshotConfiguration(name: "1", value: 1),
-            ]
+          .theme(.dark),
+          configurations: [
+            SnapshotConfiguration(name: "1", value: 1),
+          ]
         )
         struct SnapshotTests {
-            @SnapshotTest(
-                .theme(.light),
-                configurations: [
-                    SnapshotConfiguration(name: "2", value: 2),
-                ],
-                behaviour: .inheritingConfigurations
-            )
-            func aTest(value: Int) -> some View {
-                Text("\(value)")
-            }
+          @SnapshotTest(
+            .theme(.light),
+            configurations: [
+              SnapshotConfiguration(name: "2", value: 2),
+            ],
+            behaviour: .inheritingConfigurations
+          )
+          func aTest(value: Int) -> some View {
+            Text("\(value)")
+          }
         }
         """#
       } expansion: {
@@ -37,35 +37,35 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            func aTest(value: Int) -> some View {
-                Text("\(value)")
-            }
+          func aTest(value: Int) -> some View {
+            Text("\(value)")
+          }
+
+          @MainActor
+          @Suite
+          struct _GeneratedSnapshotSuite {
 
             @MainActor
-            @Suite
-            struct _GeneratedSnapshotSuite {
+            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
+                  SnapshotConfiguration(name: "2", value: 2),
+                ]))
+            func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
+              let generator = SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "aTest",
+                traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: configuration,
+                makeValue: {
+                  SnapshotTests().aTest(value: $0)
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 10,
+                column: 3
+              )
 
-              @MainActor
-              @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
-                          SnapshotConfiguration(name: "2", value: 2),
-                      ]))
-              func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
-                let generator = SnapshotTestingMacros.SnapshotGenerator(
-                  displayName: "aTest",
-                  traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
-                  configuration: configuration,
-                  makeValue: {
-                      SnapshotTests().aTest(value: $0)
-                  },
-                  fileID: #fileID,
-                  filePath: #filePath,
-                  line: 10,
-                  column: 5
-                )
-
-                try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-              }
+              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
+          }
         }
         """#
       }
@@ -78,22 +78,22 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         @SnapshotSuite(
-            .theme(.dark),
-            configurations: [
-                SnapshotConfiguration(name: "1", value: 1),
-            ]
+          .theme(.dark),
+          configurations: [
+            SnapshotConfiguration(name: "1", value: 1),
+          ]
         )
         struct SnapshotTests {
-            @SnapshotTest(
-                .theme(.light),
-                configurations: [
-                    SnapshotConfiguration(name: "2", value: 2),
-                ],
-                behaviour: .replacingConfigurations
-            )
-            func aTest(value: Int) -> some View {
-                Text("\(value)")
-            }
+          @SnapshotTest(
+            .theme(.light),
+            configurations: [
+              SnapshotConfiguration(name: "2", value: 2),
+            ],
+            behaviour: .replacingConfigurations
+          )
+          func aTest(value: Int) -> some View {
+            Text("\(value)")
+          }
         }
         """#
       } expansion: {
@@ -101,35 +101,35 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            func aTest(value: Int) -> some View {
-                Text("\(value)")
-            }
+          func aTest(value: Int) -> some View {
+            Text("\(value)")
+          }
+
+          @MainActor
+          @Suite
+          struct _GeneratedSnapshotSuite {
 
             @MainActor
-            @Suite
-            struct _GeneratedSnapshotSuite {
+            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
+                  SnapshotConfiguration(name: "2", value: 2),
+                ]))
+            func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
+              let generator = SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "aTest",
+                traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: configuration,
+                makeValue: {
+                  SnapshotTests().aTest(value: $0)
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 10,
+                column: 3
+              )
 
-              @MainActor
-              @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
-                          SnapshotConfiguration(name: "2", value: 2),
-                      ]))
-              func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
-                let generator = SnapshotTestingMacros.SnapshotGenerator(
-                  displayName: "aTest",
-                  traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
-                  configuration: configuration,
-                  makeValue: {
-                      SnapshotTests().aTest(value: $0)
-                  },
-                  fileID: #fileID,
-                  filePath: #filePath,
-                  line: 10,
-                  column: 5
-                )
-
-                try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-              }
+              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
+          }
         }
         """#
       }
@@ -142,21 +142,21 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         @SnapshotSuite(
-            .theme(.dark),
-            configurations: [
-                SnapshotConfiguration(name: "1", value: 1),
-            ]
+          .theme(.dark),
+          configurations: [
+            SnapshotConfiguration(name: "1", value: 1),
+          ]
         )
         struct SnapshotTests {
-            @SnapshotTest(
-                .theme(.light),
-                configurations: [
-                    SnapshotConfiguration(name: "2", value: 2),
-                ]
-            )
-            func aTest(value: Int) -> some View {
-                Text("\(value)")
-            }
+          @SnapshotTest(
+            .theme(.light),
+            configurations: [
+              SnapshotConfiguration(name: "2", value: 2),
+            ]
+          )
+          func aTest(value: Int) -> some View {
+            Text("\(value)")
+          }
         }
         """#
       } expansion: {
@@ -164,35 +164,35 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            func aTest(value: Int) -> some View {
-                Text("\(value)")
-            }
+          func aTest(value: Int) -> some View {
+            Text("\(value)")
+          }
+
+          @MainActor
+          @Suite
+          struct _GeneratedSnapshotSuite {
 
             @MainActor
-            @Suite
-            struct _GeneratedSnapshotSuite {
+            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
+                  SnapshotConfiguration(name: "2", value: 2),
+                ]))
+            func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
+              let generator = SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "aTest",
+                traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: configuration,
+                makeValue: {
+                  SnapshotTests().aTest(value: $0)
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 10,
+                column: 3
+              )
 
-              @MainActor
-              @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
-                          SnapshotConfiguration(name: "2", value: 2),
-                      ]))
-              func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
-                let generator = SnapshotTestingMacros.SnapshotGenerator(
-                  displayName: "aTest",
-                  traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
-                  configuration: configuration,
-                  makeValue: {
-                      SnapshotTests().aTest(value: $0)
-                  },
-                  fileID: #fileID,
-                  filePath: #filePath,
-                  line: 10,
-                  column: 5
-                )
-
-                try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-              }
+              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
+          }
         }
         """#
       }

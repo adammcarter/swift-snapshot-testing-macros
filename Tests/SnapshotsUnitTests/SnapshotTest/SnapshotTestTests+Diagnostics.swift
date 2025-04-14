@@ -17,9 +17,9 @@ extension SnapshotTestTests {
         @Suite
         @SnapshotSuite
         struct MyTests {
-            func aTest() -> some View {
-                Text("test")
-            }
+          func aTest() -> some View {
+            Text("test")
+          }
         }
         """
       } diagnostics: {
@@ -37,9 +37,9 @@ extension SnapshotTestTests {
            ✏️ Add a function to make a NSViewController.
            ✏️ Add @SnapshotTest annotations to viable functions.
         struct MyTests {
-            func aTest() -> some View {
-                Text("test")
-            }
+          func aTest() -> some View {
+            Text("test")
+          }
         }
         """
       } fixes: {
@@ -47,9 +47,9 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         struct MyTests {
-            func aTest() -> some View {
-                Text("test")
-            }
+          func aTest() -> some View {
+            Text("test")
+          }
         }
         """
       } expansion: {
@@ -57,9 +57,9 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         struct MyTests {
-            func aTest() -> some View {
-                Text("test")
-            }
+          func aTest() -> some View {
+            Text("test")
+          }
         }
         """
       }
