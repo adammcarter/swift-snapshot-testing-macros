@@ -33,24 +33,24 @@ extension SnapshotSuiteTests.FunctionModifiers {
             @Suite
             struct _GeneratedSnapshotSuite {
 
-                @MainActor
-                @Test()
-                func assertSnapshotMakeView() async throws {
-                    let generator = SnapshotTestingMacros.SnapshotGenerator(
-                        displayName: "makeView",
-                        traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                        configuration: .none,
-                        makeValue: {
-                            MyEnum.makeView()
-                        },
-                        fileID: #fileID,
-                        filePath: #filePath,
-                        line: 5,
-                        column: 5
-                    )
+              @MainActor
+              @Test()
+              func assertSnapshotMakeView() async throws {
+                let generator = SnapshotTestingMacros.SnapshotGenerator(
+                  displayName: "makeView",
+                  traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                  configuration: .none,
+                  makeValue: {
+                      MyEnum.makeView()
+                  },
+                  fileID: #fileID,
+                  filePath: #filePath,
+                  line: 5,
+                  column: 5
+                )
 
-                    try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-                }
+                try await SnapshotTestingMacros.assertSnapshot(generator: generator)
+              }
             }
         }
         """

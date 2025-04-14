@@ -9,18 +9,18 @@ extension SnapshotSuite.TestBlock {
       @MainActor
       @Test(\(testMacro.expr))
       func \(testFunction.nameExpr)(\(testFunction.parametersExpr)) async throws {
-          let generator = \(raw: Constants.Namespace.snapshotTestingMacros).SnapshotGenerator(
-              displayName: \(snapshotGenerator.displayNameExpr),
-              traits: \(snapshotGenerator.traitsExpr),
-              configuration: \(snapshotGenerator.configurationExpr),
-              makeValue: \(snapshotGenerator.makeValueExpr),
-              fileID: #fileID,
-              filePath: #filePath,
-              line: \(snapshotGenerator.lineExpr),
-              column: \(snapshotGenerator.columnExpr)
-          )
+        let generator = \(raw: Constants.Namespace.snapshotTestingMacros).SnapshotGenerator(
+          displayName: \(snapshotGenerator.displayNameExpr),
+          traits: \(snapshotGenerator.traitsExpr),
+          configuration: \(snapshotGenerator.configurationExpr),
+          makeValue: \(snapshotGenerator.makeValueExpr),
+          fileID: #fileID,
+          filePath: #filePath,
+          line: \(snapshotGenerator.lineExpr),
+          column: \(snapshotGenerator.columnExpr)
+        )
 
-          try await \(raw: Constants.Namespace.snapshotTestingMacros).assertSnapshot(generator: generator)
+        try await \(raw: Constants.Namespace.snapshotTestingMacros).assertSnapshot(generator: generator)
       }
       """
     }

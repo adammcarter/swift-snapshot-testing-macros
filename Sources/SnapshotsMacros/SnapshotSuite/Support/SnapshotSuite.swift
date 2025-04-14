@@ -6,8 +6,8 @@ struct SnapshotSuite {
     @MainActor
     @Suite
     struct \(nameExpr) {
-        \(commentExpr)
-        \(contentsExpr)
+      \(commentExpr)
+      \(contentsExpr)
     }
     """
   }

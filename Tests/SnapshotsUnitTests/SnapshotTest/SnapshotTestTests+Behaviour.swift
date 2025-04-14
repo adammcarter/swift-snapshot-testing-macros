@@ -45,26 +45,26 @@ extension SnapshotTestTests {
             @Suite
             struct _GeneratedSnapshotSuite {
 
-                @MainActor
-                @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
-                            SnapshotConfiguration(name: "2", value: 2),
-                        ]))
-                func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
-                    let generator = SnapshotTestingMacros.SnapshotGenerator(
-                        displayName: "aTest",
-                        traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
-                        configuration: configuration,
-                        makeValue: {
-                            SnapshotTests().aTest(value: $0)
-                        },
-                        fileID: #fileID,
-                        filePath: #filePath,
-                        line: 10,
-                        column: 5
-                    )
+              @MainActor
+              @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
+                          SnapshotConfiguration(name: "2", value: 2),
+                      ]))
+              func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
+                let generator = SnapshotTestingMacros.SnapshotGenerator(
+                  displayName: "aTest",
+                  traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
+                  configuration: configuration,
+                  makeValue: {
+                      SnapshotTests().aTest(value: $0)
+                  },
+                  fileID: #fileID,
+                  filePath: #filePath,
+                  line: 10,
+                  column: 5
+                )
 
-                    try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-                }
+                try await SnapshotTestingMacros.assertSnapshot(generator: generator)
+              }
             }
         }
         """#
@@ -109,26 +109,26 @@ extension SnapshotTestTests {
             @Suite
             struct _GeneratedSnapshotSuite {
 
-                @MainActor
-                @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
-                            SnapshotConfiguration(name: "2", value: 2),
-                        ]))
-                func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
-                    let generator = SnapshotTestingMacros.SnapshotGenerator(
-                        displayName: "aTest",
-                        traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
-                        configuration: configuration,
-                        makeValue: {
-                            SnapshotTests().aTest(value: $0)
-                        },
-                        fileID: #fileID,
-                        filePath: #filePath,
-                        line: 10,
-                        column: 5
-                    )
+              @MainActor
+              @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
+                          SnapshotConfiguration(name: "2", value: 2),
+                      ]))
+              func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
+                let generator = SnapshotTestingMacros.SnapshotGenerator(
+                  displayName: "aTest",
+                  traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
+                  configuration: configuration,
+                  makeValue: {
+                      SnapshotTests().aTest(value: $0)
+                  },
+                  fileID: #fileID,
+                  filePath: #filePath,
+                  line: 10,
+                  column: 5
+                )
 
-                    try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-                }
+                try await SnapshotTestingMacros.assertSnapshot(generator: generator)
+              }
             }
         }
         """#
@@ -172,26 +172,26 @@ extension SnapshotTestTests {
             @Suite
             struct _GeneratedSnapshotSuite {
 
-                @MainActor
-                @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
-                            SnapshotConfiguration(name: "2", value: 2),
-                        ]))
-                func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
-                    let generator = SnapshotTestingMacros.SnapshotGenerator(
-                        displayName: "aTest",
-                        traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
-                        configuration: configuration,
-                        makeValue: {
-                            SnapshotTests().aTest(value: $0)
-                        },
-                        fileID: #fileID,
-                        filePath: #filePath,
-                        line: 10,
-                        column: 5
-                    )
+              @MainActor
+              @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
+                          SnapshotConfiguration(name: "2", value: 2),
+                      ]))
+              func assertSnapshotATest(configuration: SnapshotConfiguration<(Int)>) async throws {
+                let generator = SnapshotTestingMacros.SnapshotGenerator(
+                  displayName: "aTest",
+                  traits: [.theme(.light), .strategy(.image), .sizes(.minimum), .record(false)],
+                  configuration: configuration,
+                  makeValue: {
+                      SnapshotTests().aTest(value: $0)
+                  },
+                  fileID: #fileID,
+                  filePath: #filePath,
+                  line: 10,
+                  column: 5
+                )
 
-                    try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-                }
+                try await SnapshotTestingMacros.assertSnapshot(generator: generator)
+              }
             }
         }
         """#

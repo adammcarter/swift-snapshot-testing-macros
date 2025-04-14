@@ -35,24 +35,24 @@ extension SnapshotSuiteTests.Parameters.Traits {
             @Suite
             struct _GeneratedSnapshotSuite {
 
-                @MainActor
-                @Test(.timeLimit(.minutes(1)))
-                func assertSnapshotMakeView() async throws {
-                    let generator = SnapshotTestingMacros.SnapshotGenerator(
-                        displayName: "makeView",
-                        traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                        configuration: .none,
-                        makeValue: {
-                            TimeLimit().makeView()
-                        },
-                        fileID: #fileID,
-                        filePath: #filePath,
-                        line: 5,
-                        column: 5
-                    )
+              @MainActor
+              @Test(.timeLimit(.minutes(1)))
+              func assertSnapshotMakeView() async throws {
+                let generator = SnapshotTestingMacros.SnapshotGenerator(
+                  displayName: "makeView",
+                  traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                  configuration: .none,
+                  makeValue: {
+                      TimeLimit().makeView()
+                  },
+                  fileID: #fileID,
+                  filePath: #filePath,
+                  line: 5,
+                  column: 5
+                )
 
-                    try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-                }
+                try await SnapshotTestingMacros.assertSnapshot(generator: generator)
+              }
             }
         }
         """
