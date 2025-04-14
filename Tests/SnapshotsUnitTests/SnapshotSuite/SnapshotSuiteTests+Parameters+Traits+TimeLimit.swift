@@ -15,10 +15,10 @@ extension SnapshotSuiteTests.Parameters.Traits {
         @Suite
         @SnapshotSuite(.timeLimit(.minutes(1)))
         struct TimeLimit {
-            @SnapshotTest
-            func makeView() -> some View {
-                Text("input")
-            }
+          @SnapshotTest
+          func makeView() -> some View {
+              Text("input")
+          }
         }
         """
       } expansion: {
@@ -26,34 +26,34 @@ extension SnapshotSuiteTests.Parameters.Traits {
         @MainActor
         @Suite
         struct TimeLimit {
-            @SnapshotTest
-            func makeView() -> some View {
-                Text("input")
-            }
+          @SnapshotTest
+          func makeView() -> some View {
+              Text("input")
+          }
+
+          @MainActor
+          @Suite
+          struct _GeneratedSnapshotSuite {
 
             @MainActor
-            @Suite
-            struct _GeneratedSnapshotSuite {
+            @Test(.timeLimit(.minutes(1)))
+            func assertSnapshotMakeView() async throws {
+              let generator = SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "makeView",
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: .none,
+                makeValue: {
+                  TimeLimit().makeView()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 5,
+                column: 3
+              )
 
-                @MainActor
-                @Test(.timeLimit(.minutes(1)))
-                func assertSnapshotMakeView() async throws {
-                    let generator = SnapshotTestingMacros.SnapshotGenerator(
-                        displayName: "makeView",
-                        traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                        configuration: .none,
-                        makeValue: {
-                            TimeLimit().makeView()
-                        },
-                        fileID: #fileID,
-                        filePath: #filePath,
-                        line: 5,
-                        column: 5
-                    )
-
-                    try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-                }
+              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
+          }
         }
         """
       }

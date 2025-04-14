@@ -14,10 +14,10 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         enum MyTests {
-            @SnapshotTest
-            func aTest() -> some View {
-                Text("test")
-            }
+          @SnapshotTest
+          func aTest() -> some View {
+            Text("test")
+          }
         }
         """
       } expansion: {
@@ -25,9 +25,9 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         enum MyTests {
-            func aTest() -> some View {
-                Text("test")
-            }
+          func aTest() -> some View {
+            Text("test")
+          }
         }
         """
       }
@@ -41,10 +41,10 @@ extension SnapshotTestTests {
         @Suite
         @SnapshotSuite
         struct SnapshotTests {
-            @SnapshotTest
-            func aTest() -> some View {
-                Text("test")
-            }
+          @SnapshotTest
+          func aTest() -> some View {
+            Text("test")
+          }
         }
         """
       } expansion: {
@@ -52,33 +52,33 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            func aTest() -> some View {
-                Text("test")
-            }
+          func aTest() -> some View {
+            Text("test")
+          }
+
+          @MainActor
+          @Suite
+          struct _GeneratedSnapshotSuite {
 
             @MainActor
-            @Suite
-            struct _GeneratedSnapshotSuite {
+            @Test()
+            func assertSnapshotATest() async throws {
+              let generator = SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "aTest",
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: .none,
+                makeValue: {
+                  SnapshotTests().aTest()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 5,
+                column: 3
+              )
 
-                @MainActor
-                @Test()
-                func assertSnapshotATest() async throws {
-                    let generator = SnapshotTestingMacros.SnapshotGenerator(
-                        displayName: "aTest",
-                        traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                        configuration: .none,
-                        makeValue: {
-                            SnapshotTests().aTest()
-                        },
-                        fileID: #fileID,
-                        filePath: #filePath,
-                        line: 5,
-                        column: 5
-                    )
-
-                    try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-                }
+              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
+          }
         }
         """
       }
@@ -92,14 +92,14 @@ extension SnapshotTestTests {
         @Suite
         @SnapshotSuite
         struct SnapshotTests {
-            func aSuiteTest() -> some View {
-                Text("suite")
-            }
+          func aSuiteTest() -> some View {
+            Text("suite")
+          }
 
-            @SnapshotTest
-            func aTest() -> some View {
-                Text("test")
-            }
+          @SnapshotTest
+          func aTest() -> some View {
+            Text("test")
+          }
         }
         """
       } expansion: {
@@ -107,36 +107,36 @@ extension SnapshotTestTests {
         @MainActor
         @Suite
         struct SnapshotTests {
-            func aSuiteTest() -> some View {
-                Text("suite")
-            }
-            func aTest() -> some View {
-                Text("test")
-            }
+          func aSuiteTest() -> some View {
+            Text("suite")
+          }
+          func aTest() -> some View {
+            Text("test")
+          }
+
+          @MainActor
+          @Suite
+          struct _GeneratedSnapshotSuite {
 
             @MainActor
-            @Suite
-            struct _GeneratedSnapshotSuite {
+            @Test()
+            func assertSnapshotATest() async throws {
+              let generator = SnapshotTestingMacros.SnapshotGenerator(
+                displayName: "aTest",
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                configuration: .none,
+                makeValue: {
+                  SnapshotTests().aTest()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 9,
+                column: 3
+              )
 
-                @MainActor
-                @Test()
-                func assertSnapshotATest() async throws {
-                    let generator = SnapshotTestingMacros.SnapshotGenerator(
-                        displayName: "aTest",
-                        traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                        configuration: .none,
-                        makeValue: {
-                            SnapshotTests().aTest()
-                        },
-                        fileID: #fileID,
-                        filePath: #filePath,
-                        line: 9,
-                        column: 5
-                    )
-
-                    try await SnapshotTestingMacros.assertSnapshot(generator: generator)
-                }
+              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
             }
+          }
         }
         """
       }
