@@ -1,10 +1,11 @@
 #if os(macOS)
 import MacroTesting
+import SnapshotTestSupport
 import Testing
 
 extension SnapshotSuiteTests.Parameters {
 
-  @Suite
+  @Suite(.tags(.traits))
   struct Traits {
 
     @Test

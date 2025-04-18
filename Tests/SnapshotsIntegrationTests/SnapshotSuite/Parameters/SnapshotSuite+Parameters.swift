@@ -3,7 +3,8 @@ import SwiftUI
 import Testing
 
 extension SnapshotSuite {
-  @Suite
+
+  @Suite(.tags(.parameters))
   struct Parameters {
 
     @Suite

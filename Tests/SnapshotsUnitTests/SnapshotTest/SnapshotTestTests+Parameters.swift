@@ -4,7 +4,7 @@ import Testing
 
 extension SnapshotTestTests {
 
-  @Suite
-  struct Configurations {}
+  @Suite(.tags(.parameters))
+  struct Parameters {}
 }
 #endif

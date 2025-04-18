@@ -80,6 +80,7 @@ let package = Package(
     .testTarget(
       name: "SnapshotsUnitTests",
       dependencies: [
+        "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
@@ -101,17 +102,26 @@ let package = Package(
     .testTarget(
       name: "SnapshotsIntegrationTests",
       dependencies: [
+        "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
       ],
       exclude: [
         "__Snapshots__",
         "SnapshotSuite/__Snapshots__",
-        "SnapshotSuite/Traits/__Snapshots__",
+        "SnapshotSuite/Parameters/Traits/__Snapshots__",
         "SnapshotTest/__Snapshots__",
         "SnapshotTest/Traits/__Snapshots__",
         "SnapshotTest/Configurations/__Snapshots__",
       ]
+    ),
+
+    /*
+     Support target for tests.
+     */
+    .target(
+      name: "SnapshotTestSupport",
+      path: "Tests/SnapshotTestSupport"
     ),
   ]
 )

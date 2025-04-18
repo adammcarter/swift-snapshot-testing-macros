@@ -1,6 +1,8 @@
+import SnapshotTestSupport
 import Testing
 
 extension SnapshotTest {
-  @Suite
+
+  @Suite(.tags(.traits))
   struct Traits {}
 }
