@@ -2,7 +2,7 @@
 import MacroTesting
 import Testing
 
-extension SnapshotTestTests {
+extension SnapshotTestTests.Parameters {
 
   @Suite
   struct Name {

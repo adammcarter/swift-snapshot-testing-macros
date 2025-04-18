@@ -2,7 +2,7 @@
 import MacroTesting
 import Testing
 
-extension SnapshotSuiteTests {
+extension SnapshotTestTests {
 
   @Suite(.tags(.parameters))
   struct Parameters {}
