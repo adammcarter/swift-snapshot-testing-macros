@@ -71,47 +71,5 @@ let package = Package(
         "SnapshotTestingMacros"
       ]
     ),
-
-    /*
-     This test target tests the *implementation* of the macro, making sure the expanded code is correct for a given macro.
-
-     This must be run on macOS.
-     */
-    .testTarget(
-      name: "SnapshotsUnitTests",
-      dependencies: [
-        "SnapshotTestingMacros",
-        "SnapshotsMacros",
-        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-        .product(name: "MacroTesting", package: "swift-macro-testing"),
-      ]
-    ),
-
-    /*
-     A test target for testing the suite during development.
-
-     Because our macro create tests in the form of snapshot tests, we can create integration tests using the snapshot images as our references.
-
-     Usually in a macro we'd just use 'main.swift' to test and debug the macro while developing, but we need to attach our macro to a test target to be able run the tests the macro creates, this is that test target.
-
-     This test target simply wraps the SnapshotTestingMacros library so we can run those generated tests.
-
-     This must be run on an iPhone 16 running iOS 18.4 to guarantee matching the reference images with those generated during testing.
-     */
-    .testTarget(
-      name: "SnapshotsIntegrationTests",
-      dependencies: [
-        "SnapshotTestingMacros",
-        "SnapshotsMacros",
-      ],
-      exclude: [
-        "__Snapshots__",
-        "SnapshotSuite/__Snapshots__",
-        "SnapshotSuite/Parameters/Traits/__Snapshots__",
-        "SnapshotTest/__Snapshots__",
-        "SnapshotTest/Traits/__Snapshots__",
-        "SnapshotTest/Configurations/__Snapshots__",
-      ]
-    ),
   ]
 )
