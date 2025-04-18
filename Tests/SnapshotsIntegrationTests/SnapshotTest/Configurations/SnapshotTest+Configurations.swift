@@ -3,7 +3,8 @@ import SwiftUI
 import Testing
 
 extension SnapshotTest {
-  @Suite
+
+  @Suite(.tags(.configurations))
   struct Configurations {
 
     // MARK: - No display name
