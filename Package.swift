@@ -107,7 +107,7 @@ let package = Package(
       exclude: [
         "__Snapshots__",
         "SnapshotSuite/__Snapshots__",
-        "SnapshotSuite/Traits/__Snapshots__",
+        "SnapshotSuite/Parameters/Traits/__Snapshots__",
         "SnapshotTest/__Snapshots__",
         "SnapshotTest/Traits/__Snapshots__",
         "SnapshotTest/Configurations/__Snapshots__",
