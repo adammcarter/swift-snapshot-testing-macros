@@ -19,7 +19,7 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/swiftlang/swift-syntax", exact: "601.0.1"),
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.18.3"),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.18.4"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", exact: "0.6.2"),
   ],
   targets: [
