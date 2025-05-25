@@ -35,17 +35,10 @@ extension SnapshotTestTests.Configurations {
             Text("another view")
           }
 
-          @MainActor
-          @Suite
-          struct _GeneratedSnapshotSuite {
-
+          enum __generator_container_makeAnotherView {
             @MainActor
-            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
-                  SnapshotConfiguration(name: "Config1", value: "1"),
-                  SnapshotConfiguration(name: "Config2", value: "2"),
-                ]))
-            func assertSnapshotMakeAnotherView(configuration: SnapshotConfiguration<(String)>) async throws {
-              let generator = SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotConfiguration<(String)>) -> SnapshotTestingMacros.SnapshotGenerator<(String)> {
+              SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeAnotherView",
                 traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
@@ -57,8 +50,22 @@ extension SnapshotTestTests.Configurations {
                 line: 5,
                 column: 3
               )
+            }
+          }
 
-              try await SnapshotTestingMacros.assertSnapshot(generator: generator)
+          @MainActor
+          @Suite
+          struct _GeneratedSnapshotSuite {
+
+            @MainActor
+            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
+                  SnapshotConfiguration(name: "Config1", value: "1"),
+                  SnapshotConfiguration(name: "Config2", value: "2"),
+                ]))
+            func assertSnapshotMakeAnotherView(configuration: SnapshotConfiguration<(String)>) async throws {
+              try await SnapshotTestingMacros.assertSnapshot(
+                generator: __generator_container_makeAnotherView.makeGenerator(configuration: configuration)
+              )
             }
           }
         }

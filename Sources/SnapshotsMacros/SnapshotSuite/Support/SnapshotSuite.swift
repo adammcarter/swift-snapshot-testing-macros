@@ -1,4 +1,5 @@
 import SwiftSyntax
+import SwiftSyntaxMacros
 
 struct SnapshotSuite {
   var expression: DeclSyntax {
@@ -12,7 +13,7 @@ struct SnapshotSuite {
     """
   }
 
-  private let macroContext: MacroContext
+  private let macroContext: SnapshotSuiteMacroContext
   private let comment: String?
   private let testBlocks: [TestBlock]
 
@@ -47,13 +48,10 @@ struct SnapshotSuite {
     }
   }
 
-  init?(comment: String? = nil, macroContext: MacroContext) {
+  init?(comment: String? = nil, macroContext: SnapshotSuiteMacroContext) {
     self.comment = comment
     self.macroContext = macroContext
 
-    guard let suiteName = (macroContext.declaration as? NamedDeclSyntax)?.name else { return nil }
-
-    let suiteDisplayName = makeSuiteDisplayName(from: macroContext.node)
     let suiteMacroArguments = SnapshotsMacroArguments(node: macroContext.node)
 
     self.testBlocks = macroContext
@@ -63,60 +61,9 @@ struct SnapshotSuite {
       .map { member in
         .init(
           member: member,
-          suiteName: suiteName,
-          suiteDisplayName: suiteDisplayName,
-          testDisplayName: makeTestDisplayName(from: member),
-          declaration: Declaration(declaration: macroContext.declaration),
           suiteMacroArguments: suiteMacroArguments,
           macroContext: macroContext
         )
       }
   }
-}
-
-private func makeSuiteDisplayName(from attribute: AttributeSyntax) -> String? {
-  makeDisplayName(from: attribute)
-}
-
-private func makeTestDisplayName(from member: MemberBlockItemSyntax) -> String? {
-  let functionMember: MemberBlockItemSyntax?
-
-  if let ifConfigDecl = member.decl.as(IfConfigDeclSyntax.self) {
-    functionMember =
-      ifConfigDecl
-      .clauses
-      .compactMap {
-        $0.elements?.as(MemberBlockItemListSyntax.self)
-      }
-      .first?
-      .first
-  }
-  else {
-    functionMember = member
-  }
-
-  guard let functionMember else {
-    return nil
-  }
-
-  let attribute = functionMember
-    .decl
-    .as(FunctionDeclSyntax.self)?
-    .attributes
-    .first {
-      $0.hasAttributeNamed(Constants.AttributeName.snapshotTest)
-    }?
-    .as(AttributeSyntax.self)
-
-  return makeDisplayName(from: attribute)
-}
-
-private func makeDisplayName(from attribute: AttributeSyntax?) -> String? {
-  attribute?
-    .arguments?
-    .as(LabeledExprListSyntax.self)?
-    .first?
-    .expression
-    .as(StringLiteralExprSyntax.self)?
-    .representedLiteralValue
 }

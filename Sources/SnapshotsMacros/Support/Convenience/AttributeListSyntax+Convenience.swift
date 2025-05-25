@@ -5,6 +5,10 @@ extension AttributeListSyntax {
     contains { $0.hasAttributeNamed(name) }
   }
 
+  func first(attributeNamed name: String) -> AttributeListSyntax.Element? {
+    first { $0.hasAttributeNamed(name) }
+  }
+
   mutating func removingFirstAttributeNamed(_ name: String) {
     if let index = firstIndex(where: { $0.hasAttributeNamed(name) }) {
       remove(at: index)

@@ -7,7 +7,8 @@ import Testing
 @Suite(
   .macros(
     [
-      "SnapshotSuite": SnapshotSuiteMacro.self
+      "SnapshotSuite": SnapshotSuiteMacro.self,
+      "SnapshotTest": SnapshotTestMacro.self,
     ],
     record: .missing
   )

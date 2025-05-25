@@ -1,7 +1,7 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-func canContinueAfterSanityChecks(macroContext: MacroContext) -> Bool {
+func canContinueAfterSanityChecks(macroContext: SnapshotSuiteMacroContext) -> Bool {
 
   let passesErrorChecks = [
     // TODO: No error checks yet...
@@ -29,7 +29,7 @@ func canContinueAfterSanityChecks(macroContext: MacroContext) -> Bool {
 
 // MARK: Warnings
 
-private func checkSuiteAttribute(macroContext: MacroContext) -> Bool {
+private func checkSuiteAttribute(macroContext: SnapshotSuiteMacroContext) -> Bool {
   let isSnapshotTest = macroContext
     .declaration
     .attributes
@@ -49,7 +49,7 @@ private func checkSuiteAttribute(macroContext: MacroContext) -> Bool {
 private func attributeIsPresent(
   attributeName: String,
   diagnosticSuffix: String? = nil,
-  macroContext: MacroContext
+  macroContext: SnapshotSuiteMacroContext
 ) -> Bool {
   let hasAttribute = macroContext
     .declaration
