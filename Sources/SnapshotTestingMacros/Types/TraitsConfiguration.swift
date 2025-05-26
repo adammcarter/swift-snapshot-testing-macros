@@ -15,16 +15,18 @@ struct TraitsConfiguration<ConfigurationValue: Sendable> {
   let strategy: StrategySnapshotTrait.Strategy?
   let themes: [SnapshotTheme]
   
-  let setUp: SnapshotSetUpTrait.SetUp?
-  let setUpConfiguration: SnapshotConfigurationSetUpTrait<ConfigurationValue>.SetUp?
+  let scoping: SnapshotScoping?
+  let configurationScoping: (any SnapshotConfigurationScoping)?
+//  let setUpConfiguration: SnapshotConfigurationSetUpTrait<ConfigurationValue>.SetUp?
 
   init(traits: [SnapshotTrait]) throws(String) {
     self.record = makeRecord(traits: traits)
     self.sizes = makeSizes(traits: traits)
     self.strategy = makeStrategy(traits: traits)
     self.themes = try makeThemes(traits: traits)
-    self.setUp = makeSetUp(traits: traits)
-    self.setUpConfiguration = makeSetUpConfiguration(traits: traits)
+    self.scoping = makeScoping(traits: traits)
+    self.configurationScoping = traits.first(as: (any SnapshotConfigurationScoping).self)
+//    self.setUpConfiguration = makeSetUpConfiguration(traits: traits)
   }
 }
 
@@ -32,21 +34,28 @@ struct TraitsConfiguration<ConfigurationValue: Sendable> {
 
 // MARK: Set up
 
-private func makeSetUp(
+private func makeScoping(
   traits: [SnapshotTrait]
-) -> SnapshotSetUpTrait.SetUp? {
+) -> SnapshotScoping? {
   traits
-    .first(as: SnapshotSetUpTrait.self)?
-    .setUp
+    .first(as: SnapshotScoping.self)
 }
 
-private func makeSetUpConfiguration<T: Sendable>(
-  traits: [SnapshotTrait]
-) -> SnapshotConfigurationSetUpTrait<T>.SetUp? {
-  traits
-    .first(as: SnapshotConfigurationSetUpTrait<T>.self)?
-    .setUp
-}
+//private func makeSetUp(
+//  traits: [SnapshotTrait]
+//) -> SnapshotSetUpTrait.SetUp? {
+//  traits
+//    .first(as: SnapshotSetUpTrait.self)?
+//    .setUp
+//}
+
+//private func makeSetUpConfiguration<T: Sendable>(
+//  traits: [SnapshotTrait]
+//) -> SnapshotConfigurationSetUpTrait<T>.SetUp? {
+//  traits
+//    .first(as: SnapshotConfigurationSetUpTrait<T>.self)?
+//    .setUp
+//}
 
 // MARK: Record
 

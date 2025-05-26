@@ -12,8 +12,11 @@ public func assertSnapshot<ConfigurationValue: Sendable>(
   do {
     let unpackedTraits = try TraitsConfiguration<ConfigurationValue>(traits: generator.traits)
 
-    try await unpackedTraits.setUp?()
-    try await unpackedTraits.setUpConfiguration?(generator.configuration)
+    try await unpackedTraits.configurationScoping?.provideScope(for: generator.configuration)
+    try await unpackedTraits.scoping?.provideScope()
+
+//    try await unpackedTraits.setUp?()
+//    try await unpackedTraits.setUpConfiguration?(generator.con)
 
     let view = try await generator.makeValue(
       generator.configuration.value
