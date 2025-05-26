@@ -2,11 +2,11 @@ import SwiftUI
 
 @available(*, message: "This is an implementation detail. Do not initialise this type directly.")
 @MainActor
-public struct SnapshotGenerator<T: Sendable> {
+public struct SnapshotGenerator<ConfigurationValue: Sendable> {
   let displayName: String
   let traits: [SnapshotTrait]
-  let configuration: SnapshotConfiguration<T>
-  let makeValue: @MainActor (T) async throws -> SnapshotView
+  let configuration: SnapshotConfiguration<ConfigurationValue>
+  let makeValue: @MainActor (ConfigurationValue) async throws -> SnapshotView
   let fileID: StaticString
   let filePath: StaticString
   let line: UInt
@@ -15,8 +15,8 @@ public struct SnapshotGenerator<T: Sendable> {
   public init(
     displayName: String,
     traits: [SnapshotTrait],
-    configuration: SnapshotConfiguration<T>,
-    makeValue: @escaping @MainActor (T) async throws -> SnapshotView,
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    makeValue: @escaping @MainActor (ConfigurationValue) async throws -> SnapshotView,
     fileID: StaticString,
     filePath: StaticString,
     line: UInt,
@@ -53,8 +53,8 @@ extension SnapshotGenerator {
   public init<V: SwiftUI.View>(
     displayName: String,
     traits: [SnapshotTrait],
-    configuration: SnapshotConfiguration<T>,
-    makeValue: @escaping @MainActor (T) async throws -> V,
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    makeValue: @escaping @MainActor (ConfigurationValue) async throws -> V,
     fileID: StaticString,
     filePath: StaticString,
     line: UInt,
@@ -109,8 +109,8 @@ extension SnapshotGenerator {
   public init(
     displayName: String,
     traits: [SnapshotTrait],
-    configuration: SnapshotConfiguration<T>,
-    makeValue: @escaping @MainActor (T) async throws -> UIViewController,
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    makeValue: @escaping @MainActor (ConfigurationValue) async throws -> UIViewController,
     fileID: StaticString,
     filePath: StaticString,
     line: UInt,

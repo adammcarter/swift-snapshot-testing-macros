@@ -41,11 +41,24 @@ struct SnapshotTest {
       return nil
     }
 
+    guard
+      let suiteNode = snapshotSuite(from: macroContext.context.lexicalContext)
+    else {
+      return nil
+    }
+
+    guard
+      let testNode = snapshotTest(from: snapshotTestFunctionDecl)
+    else {
+      return nil
+    }
+
     let suiteDisplayName = makeSuiteDisplayName(
       from: macroContext.context.lexicalContext
     )
 
-    let suiteMacroArguments = SnapshotsMacroArguments(node: macroContext.node)
+    let suiteMacroArguments = SnapshotsMacroArguments(node: suiteNode)
+    let testMacroArguments = SnapshotsMacroArguments(node: testNode)
 
     let testDisplayName = makeTestDisplayName(from: snapshotTestFunctionDecl)
 
@@ -53,10 +66,11 @@ struct SnapshotTest {
 
     let declaration = Declaration(declaration: macroContext.declaration)
 
-    let testMacroArguments = makeArguments(
-      functionDecl: snapshotTestFunctionDecl,
-      suiteArguments: suiteMacroArguments
-    )
+    // Old combination - but we probably don't want this ...
+//    let combinedMacroArguments = makeArguments(
+//      functionDecl: snapshotTestFunctionDecl,
+//      suiteArguments: suiteMacroArguments
+//    )
 
     let traitsArrayExpr = makeTraitsArrayExpr(
       suiteTraitExpressions: suiteMacroArguments.traitExpressions,
@@ -109,7 +123,7 @@ private func makeTestDisplayName(from functionDecl: FunctionDeclSyntax) -> Strin
   return makeDisplayName(from: attribute)
 }
 
-private func makeSuiteDisplayName(from lexicalContext: [Syntax]) -> String? {
+private func snapshotSuite(from lexicalContext: [Syntax]) -> AttributeSyntax? {
   lexicalContext
     .lazy
     .compactMap {
@@ -119,6 +133,17 @@ private func makeSuiteDisplayName(from lexicalContext: [Syntax]) -> String? {
         .as(AttributeSyntax.self)
     }
     .first
+}
+
+private func snapshotTest(from functionDecl: FunctionDeclSyntax) -> AttributeSyntax? {
+  functionDecl
+    .attributes
+    .first(attributeNamed: Constants.AttributeName.snapshotTest)?
+    .as(AttributeSyntax.self)
+}
+
+private func makeSuiteDisplayName(from lexicalContext: [Syntax]) -> String? {
+  snapshotSuite(from: lexicalContext)
     .flatMap { makeDisplayName(from: $0) }
 }
 
@@ -144,14 +169,17 @@ func combiningTraits(
   }
 }
 
-func makeDeduped(from traits: [ExprSyntax]) -> [ExprSyntax] {
+func makeDeduped(from traitExpressions: [ExprSyntax]) -> [ExprSyntax] {
   var deduped: [ExprSyntax] = []
 
-  for trait in traits {
-    if let asTrait = Constants.Trait(expression: trait),
+  for traitExpression in traitExpressions {
+    if
+      let asTrait = Constants.Trait(expression: traitExpression),
       deduped.containsTraitWithPrefix(asTrait) == false
     {
-      deduped.append(trait)
+      deduped.append(traitExpression)
+    } else if Constants.Trait.isUnknown(traitExpression) {
+      deduped.append(traitExpression)
     }
   }
 

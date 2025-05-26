@@ -6,27 +6,27 @@ import XCTest
 
 @available(*, message: "This is an implementation detail. Do not call this function directly.")
 @MainActor
-public func assertSnapshot<T: Sendable>(
-  generator: SnapshotGenerator<T>
+public func assertSnapshot<ConfigurationValue: Sendable>(
+  generator: SnapshotGenerator<ConfigurationValue>
 ) async throws {
   do {
+    let unpackedTraits = try TraitsConfiguration<ConfigurationValue>(traits: generator.traits)
+
+    try await unpackedTraits.setUp?()
+    try await unpackedTraits.setUpConfiguration?(generator.configuration)
+
     let view = try await generator.makeValue(
       generator.configuration.value
-    )
-
-    let traitsConfiguration = try TraitsConfiguration(
-      traits: generator.traits,
-      view: view
     )
 
     try assertSnapshots(
       testNamePrefix: generator.displayName,
       configurationName: generator.configuration.name,
       view: view,
-      themes: traitsConfiguration.themes,
-      sizes: traitsConfiguration.sizes,
-      strategy: traitsConfiguration.strategy,
-      record: traitsConfiguration.record,
+      themes: unpackedTraits.themes,
+      sizes: makeSizes(sizes: unpackedTraits.sizes, view: view),
+      strategy: unpackedTraits.strategy,
+      record: unpackedTraits.record,
       fileID: generator.fileID,
       filePath: generator.filePath,
       line: generator.line,
@@ -212,6 +212,54 @@ private func assertSnapshot<Value, Format>(
     line: line,
     column: column
   )
+}
+
+@MainActor
+private func makeSizes(
+  sizes: [SizesSnapshotTrait.Size]?,
+  view: SnapshotView
+) throws(String) -> [(SizesSnapshotTrait.Size, CGSize)] {
+  do {
+    return try sizes?
+      .compactMap { traitSize -> (SizesSnapshotTrait.Size, CGSize) in
+        let absoluteSize = traitSize.absoluteSize(for: view)
+
+        guard absoluteSize.width > 0 else {
+          throw "0 width for snapshot"
+        }
+
+        guard absoluteSize.height > 0 else {
+          throw "0 height for snapshot"
+        }
+
+        return (traitSize, absoluteSize)
+      } ?? []
+  }
+  catch let error as String {
+    throw error
+  }
+  catch {
+    fatalError("Caught unexpected error: \(error.localizedDescription)")
+  }
+}
+
+@MainActor
+extension SizesSnapshotTrait.Size {
+  fileprivate func absoluteSize(for view: SnapshotView) -> CGSize {
+    switch (width, height) {
+    case let (.fixed(width), .fixed(height)):
+        .init(width: width, height: height)
+
+    case (.minimum, .minimum):
+      view.compressedSizeWhenConstrained()
+
+    case let (.fixed(width), .minimum):
+      view.compressedSizeWhenConstrained(toWidth: width)
+
+    case let (.minimum, .fixed(height)):
+      view.compressedSizeWhenConstrained(toHeight: height)
+    }
+  }
 }
 
 // MARK: - Errors

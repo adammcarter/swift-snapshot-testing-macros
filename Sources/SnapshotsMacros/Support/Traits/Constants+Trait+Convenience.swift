@@ -92,3 +92,12 @@ extension Constants.Trait {
     self = trait
   }
 }
+
+extension Constants.Trait {
+  static func isUnknown(_ expression: ExprSyntax) -> Bool {
+    Constants.Trait(expression: expression) == nil
+    // We need this or display names (which are strings) get passed along too due to them being the first argument if present...
+    // The problem with this is you might initialise a trait the long way around eg 'MyCustomTrait()' ?
+    && expression.is(MemberAccessExprSyntax.self)
+  }
+}

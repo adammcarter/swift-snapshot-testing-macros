@@ -4,23 +4,39 @@ import Testing
 
 // Playground: noun - A place where people can play.
 
-@SnapshotSuite("My Snapshots")
 @Suite
+@SnapshotSuite("My Snapshots")
 struct MySnapshots {
-  @SnapshotTest
-  func myView() -> some View {
+
+//  @SnapshotTest(.mySetUp)
+//  func myView() -> some View {
+//    Text("Snapshot me")
+//  }
+
+  @SnapshotTest(.myConfigurationSetUp)
+  func anotherView() -> some View {
     Text("Snapshot me")
   }
+}
 
-  @SnapshotTest(
-    .sizes(devices: .iPhoneX, fitting: .widthAndHeight)
-  )
-  @ViewBuilder
-  func anotherView() -> some View {
-    VStack {
-      Text("Full iPhone snapshot")
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(Color.secondary)
+extension SnapshotTrait where Self == SnapshotSetUpTrait {
+  static var mySetUp: Self {
+    Self(setUp: { try await setUpTest() })
   }
+}
+
+private func setUpTest() async throws {
+  print("Doing some setup ...")
+}
+
+// Needs type safety to only add this to a 'SnapshotConfiguration' ??
+// This will also make sure that we get compiler errors if adding a bad configuration setup to a non-matching configuration value
+extension SnapshotTrait where Self == SnapshotConfigurationSetUpTrait<Void> {
+  static var myConfigurationSetUp: Self {
+    Self(setUp: { try await setUpConfigurationTest(value: $0.value) })
+  }
+}
+
+private func setUpConfigurationTest(value: Void) async throws {
+  print("Doing some setup for configuration...", value)
 }

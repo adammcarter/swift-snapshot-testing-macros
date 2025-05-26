@@ -9,24 +9,44 @@ import AppKit
 #endif
 
 @MainActor
-struct TraitsConfiguration {
+struct TraitsConfiguration<ConfigurationValue: Sendable> {
   let record: Bool?
-  let sizes: [(SizesSnapshotTrait.Size, CGSize)]
+  let sizes: [SizesSnapshotTrait.Size]?
   let strategy: StrategySnapshotTrait.Strategy?
   let themes: [SnapshotTheme]
+  
+  let setUp: SnapshotSetUpTrait.SetUp?
+  let setUpConfiguration: SnapshotConfigurationSetUpTrait<ConfigurationValue>.SetUp?
 
-  init(
-    traits: [SnapshotTrait],
-    view: SnapshotView
-  ) throws(String) {
+  init(traits: [SnapshotTrait]) throws(String) {
     self.record = makeRecord(traits: traits)
-    self.sizes = try makeSizes(traits: traits, view: view)
+    self.sizes = makeSizes(traits: traits)
     self.strategy = makeStrategy(traits: traits)
     self.themes = try makeThemes(traits: traits)
+    self.setUp = makeSetUp(traits: traits)
+    self.setUpConfiguration = makeSetUpConfiguration(traits: traits)
   }
 }
 
 // MARK: - Support
+
+// MARK: Set up
+
+private func makeSetUp(
+  traits: [SnapshotTrait]
+) -> SnapshotSetUpTrait.SetUp? {
+  traits
+    .first(as: SnapshotSetUpTrait.self)?
+    .setUp
+}
+
+private func makeSetUpConfiguration<T: Sendable>(
+  traits: [SnapshotTrait]
+) -> SnapshotConfigurationSetUpTrait<T>.SetUp? {
+  traits
+    .first(as: SnapshotConfigurationSetUpTrait<T>.self)?
+    .setUp
+}
 
 // MARK: Record
 
@@ -41,54 +61,10 @@ private func makeRecord(
 // MARK: Sizes
 
 @MainActor
-private func makeSizes(
-  traits: [SnapshotTrait],
-  view: SnapshotView
-) throws(String) -> [(SizesSnapshotTrait.Size, CGSize)] {
-  let sizeTrait = traits.first(as: SizesSnapshotTrait.self)
-
-  do {
-    return try sizeTrait?
-      .sizes
-      .compactMap { traitSize -> (SizesSnapshotTrait.Size, CGSize) in
-        let absoluteSize = traitSize.absoluteSize(for: view)
-
-        guard absoluteSize.width > 0 else {
-          throw "0 width for snapshot"
-        }
-
-        guard absoluteSize.height > 0 else {
-          throw "0 height for snapshot"
-        }
-
-        return (traitSize, absoluteSize)
-      } ?? []
-  }
-  catch let error as String {
-    throw error
-  }
-  catch {
-    fatalError("Caught unexpected error: \(error.localizedDescription)")
-  }
-}
-
-@MainActor
-extension SizesSnapshotTrait.Size {
-  fileprivate func absoluteSize(for view: SnapshotView) -> CGSize {
-    switch (width, height) {
-      case let (.fixed(width), .fixed(height)):
-        .init(width: width, height: height)
-
-      case (.minimum, .minimum):
-        view.compressedSizeWhenConstrained()
-
-      case let (.fixed(width), .minimum):
-        view.compressedSizeWhenConstrained(toWidth: width)
-
-      case let (.minimum, .fixed(height)):
-        view.compressedSizeWhenConstrained(toHeight: height)
-    }
-  }
+private func makeSizes(traits: [SnapshotTrait]) -> [SizesSnapshotTrait.Size]? {
+  traits
+    .first(as: SizesSnapshotTrait.self)?
+    .sizes
 }
 
 // MARK: Strategy
