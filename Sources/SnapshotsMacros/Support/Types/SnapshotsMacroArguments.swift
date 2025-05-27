@@ -5,7 +5,7 @@ struct SnapshotsMacroArguments {
   let configurationsExpression: ExprSyntax?
   let configurationValuesExpression: ExprSyntax?
 
-  init(node: AttributeSyntax) {
+  init(node: AttributeSyntax?) {
     traitExpressions = makeTraitExpressions(node: node)
     configurationsExpression = valueForParameterNamed("configurations", in: node)
     configurationValuesExpression = valueForParameterNamed("configurationValues", in: node)
@@ -22,8 +22,8 @@ struct SnapshotsMacroArguments {
   }
 }
 
-private func makeTraitExpressions(node: AttributeSyntax) -> [ExprSyntax]? {
-  node
+private func makeTraitExpressions(node: AttributeSyntax?) -> [ExprSyntax]? {
+  node?
     .arguments?
     .as(LabeledExprListSyntax.self)?
     .filter {
@@ -33,8 +33,8 @@ private func makeTraitExpressions(node: AttributeSyntax) -> [ExprSyntax]? {
     .compactMap(\.expression)
 }
 
-private func valueForParameterNamed(_ name: String, in node: AttributeSyntax) -> ExprSyntax? {
-  node
+private func valueForParameterNamed(_ name: String, in node: AttributeSyntax?) -> ExprSyntax? {
+  node?
     .arguments?
     .as(LabeledExprListSyntax.self)?
     .first { $0.label?.tokenKind == .identifier(name) }?
