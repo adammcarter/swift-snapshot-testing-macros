@@ -12,25 +12,23 @@ public func assertSnapshot<ConfigurationValue: Sendable>(
   do {
     let unpackedTraits = try TraitsConfiguration(traits: generator.traits)
 
-    let view = try await generator.makeValue(
-      generator.configuration.value
-    )
-
-    try assertSnapshots(
-      testNamePrefix: generator.displayName,
-      configurationName: generator.configuration.name,
-      view: view,
-      themes: unpackedTraits.themes,
-      sizes: makeSizes(sizes: unpackedTraits.sizes, view: view),
-      strategy: unpackedTraits.strategy,
-      record: unpackedTraits.record,
-      fileID: generator.fileID,
-      filePath: generator.filePath,
-      line: generator.line,
-      column: generator.column
-    )
-  }
-  catch {
+    if let scopeProvider = unpackedTraits.scopeProvider {
+      try await scopeProvider.provideScope(
+        configuration: generator.configuration,
+        performing: {
+          try await assertSnapshots(
+            generator: generator,
+            unpackedTraits: unpackedTraits,
+          )
+        }
+      )
+    } else {
+      try await assertSnapshots(
+        generator: generator,
+        unpackedTraits: unpackedTraits,
+      )
+    }
+  } catch {
     let traitsDescription = generator
       .traits
       .map(\.debugDescription)
@@ -50,6 +48,30 @@ public func assertSnapshot<ConfigurationValue: Sendable>(
 // MARK: - Support
 
 // MARK: Assertion
+
+@MainActor
+private func assertSnapshots<ConfigurationValue: Sendable>(
+  generator: SnapshotGenerator<ConfigurationValue>,
+  unpackedTraits: TraitsConfiguration,
+) async throws {
+  let view = try await generator.makeValue(
+    generator.configuration.value
+  )
+
+  try assertSnapshots(
+    testNamePrefix: generator.displayName,
+    configurationName: generator.configuration.name,
+    view: view,
+    themes: unpackedTraits.themes,
+    sizes: makeSizes(sizes: unpackedTraits.sizes, view: view),
+    strategy: unpackedTraits.strategy,
+    record: unpackedTraits.record,
+    fileID: generator.fileID,
+    filePath: generator.filePath,
+    line: generator.line,
+    column: generator.column
+  )
+}
 
 @MainActor
 private func assertSnapshots(

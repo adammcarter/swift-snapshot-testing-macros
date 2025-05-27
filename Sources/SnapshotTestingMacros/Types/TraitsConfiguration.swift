@@ -14,12 +14,14 @@ struct TraitsConfiguration {
   let sizes: [SizesSnapshotTrait.Size]?
   let strategy: StrategySnapshotTrait.Strategy?
   let themes: [SnapshotTheme]
+  let scopeProvider: SnapshotScopeProviding?
 
   init(traits: [SnapshotTrait]) throws(String) {
     self.record = makeRecord(traits: traits)
     self.sizes = makeSizes(traits: traits)
     self.strategy = makeStrategy(traits: traits)
     self.themes = try makeThemes(traits: traits)
+    self.scopeProvider = makeScopeProvider(traits: traits)
   }
 }
 
@@ -100,3 +102,10 @@ extension SnapshotTheme {
   }
 }
 #endif
+
+// MARK: Scope provider
+
+@MainActor
+private func makeScopeProvider(traits: [SnapshotTrait]) -> SnapshotScopeProviding? {
+  traits.first(as: SnapshotScopeProviding.self)
+}
