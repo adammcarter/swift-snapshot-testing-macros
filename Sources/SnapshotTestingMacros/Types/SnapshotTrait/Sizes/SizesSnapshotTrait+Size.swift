@@ -4,14 +4,20 @@ extension SizesSnapshotTrait {
   public struct Size: Sendable, CustomDebugStringConvertible {
     let width: SizesSnapshotTrait.Length
     let height: SizesSnapshotTrait.Length
+    let scale: Double
 
     public let displayName: String
     public let debugDescription: String
     public let testNameDescription: String
 
-    public init(width: SizesSnapshotTrait.Length, height: SizesSnapshotTrait.Length) {
+    public init(
+      width: SizesSnapshotTrait.Length,
+      height: SizesSnapshotTrait.Length,
+      scale: Double = defaultScale
+    ) {
       self.width = width
       self.height = height
+      self.scale = scale
       self.displayName = "size"
       self.debugDescription = "width: \(width), height: \(height)"
 
@@ -30,12 +36,14 @@ extension SizesSnapshotTrait {
     init(
       width: SizesSnapshotTrait.Length,
       height: SizesSnapshotTrait.Length,
+      scale: Double = defaultScale,
       displayName: String,
       debugDescription: String,
       testNameDescription: String
     ) {
       self.width = width
       self.height = height
+      self.scale = scale
       self.displayName = displayName
       self.debugDescription = debugDescription
       self.testNameDescription = testNameDescription
@@ -68,4 +76,7 @@ extension SizesSnapshotTrait {
       )
     }
   }
+
+  @usableFromInline
+  static let defaultScale = 1.0
 }

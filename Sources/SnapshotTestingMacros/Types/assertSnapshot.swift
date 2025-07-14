@@ -66,7 +66,7 @@ private func assertSnapshots(
   column: UInt
 ) throws {
   for (sizeTrait, size) in sizes {
-    for theme in themes {
+    for traits in themes {
       /*
        The following, in order, joined by an underscore.
        Any subcomponent should replace spaces with a hyphen.
@@ -77,7 +77,7 @@ private func assertSnapshots(
       let testName = [
         testNamePrefix,
         sizeTrait.testNameDescription,
-        theme.testNameDescription,
+        traits.testNameDescription,
       ]
       .joined(separator: "_")
 
@@ -86,7 +86,7 @@ private func assertSnapshots(
         folderName: configurationName,
         view: view,
         size: size,
-        theme: theme,
+        traits: traits,
         strategy: strategy,
         record: record,
         fileID: fileID,
@@ -104,7 +104,7 @@ private func assertSnapshot(
   folderName: String?,
   view: SnapshotView,
   size: CGSize,
-  theme: SnapshotTheme,
+  traits: SnapshotTheme,
   strategy: StrategySnapshotTrait.Strategy?,
   record: Bool?,
   fileID: StaticString,
@@ -129,7 +129,7 @@ private func assertSnapshot(
     case .image, .none:
       assertSnapshot(
         of: view,
-        as: makeImageStrategy(size: size, theme: theme),
+        as: makeImageStrategy(size: size, traits: traits),
         record: record,
         folderName: folderName,
         fileID: fileID,
@@ -144,12 +144,12 @@ private func assertSnapshot(
 @MainActor
 private func makeImageStrategy(
   size: CGSize,
-  theme: SnapshotTheme
+  traits: SnapshotTheme
 ) -> Snapshotting<SnapshotView, SnapshotImage> {
   #if canImport(AppKit)
   .image(size: size)
   #elseif canImport(UIKit)
-  .image(size: size, traits: theme)
+  .image(size: size, traits: traits)
   #else
   #error("Unsupported platform")
   #endif
@@ -233,7 +233,14 @@ private func makeSizes(
           throw "0 height for snapshot"
         }
 
-        return (traitSize, absoluteSize)
+        let scale = traitSize.scale
+
+        let scaledSize = CGSize(
+          width: absoluteSize.width * scale,
+          height: absoluteSize.height * scale
+        )
+
+        return (traitSize, scaledSize)
       } ?? []
   }
   catch let error as String {
