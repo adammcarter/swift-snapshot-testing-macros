@@ -25,6 +25,18 @@ extension SizesSnapshotTrait {
       }
     }
 
+    public var scale: Double {
+      switch self {
+        case .iPhoneX,
+          .iPhone12:
+          3
+
+        case .iPadPro11,
+          .iPadPro12_9:
+          2
+      }
+    }
+
     public var debugDescription: String {
       switch self {
         case .iPhoneX: "iPhoneX"

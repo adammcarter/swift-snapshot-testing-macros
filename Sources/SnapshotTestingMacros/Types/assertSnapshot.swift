@@ -66,6 +66,8 @@ private func assertSnapshots(
   column: UInt
 ) throws {
   for (sizeTrait, size) in sizes {
+    let displayScale = makeDisplayScale(sizeTrait: sizeTrait)
+
     for theme in themes {
       /*
        The following, in order, joined by an underscore.
@@ -87,6 +89,7 @@ private func assertSnapshots(
         view: view,
         size: size,
         theme: theme,
+        displayScale: displayScale,
         strategy: strategy,
         record: record,
         fileID: fileID,
@@ -99,12 +102,28 @@ private func assertSnapshots(
 }
 
 @MainActor
+private func makeDisplayScale(sizeTrait: SizesSnapshotTrait.Size) -> Double {
+  let inheritedSclae: Double? = {
+    #if canImport(UIKit)
+    UIWindow().traitCollection.displayScale
+    #elseif canImport(AppKit)
+    NSScreen.main.flatMap {
+      Double($0.backingScaleFactor)
+    }
+    #endif
+  }()
+
+  return sizeTrait.scale ?? inheritedSclae ?? 1.0
+}
+
+@MainActor
 private func assertSnapshot(
   testName: String,
   folderName: String?,
   view: SnapshotView,
   size: CGSize,
   theme: SnapshotTheme,
+  displayScale: Double,
   strategy: StrategySnapshotTrait.Strategy?,
   record: Bool?,
   fileID: StaticString,
@@ -129,7 +148,11 @@ private func assertSnapshot(
     case .image, .none:
       assertSnapshot(
         of: view,
-        as: makeImageStrategy(size: size, theme: theme),
+        as: makeImageStrategy(
+          size: size,
+          theme: theme,
+          displayScale: displayScale
+        ),
         record: record,
         folderName: folderName,
         fileID: fileID,
@@ -144,12 +167,21 @@ private func assertSnapshot(
 @MainActor
 private func makeImageStrategy(
   size: CGSize,
-  theme: SnapshotTheme
+  theme: SnapshotTheme,
+  displayScale: Double
 ) -> Snapshotting<SnapshotView, SnapshotImage> {
   #if canImport(AppKit)
   .image(size: size)
   #elseif canImport(UIKit)
-  .image(size: size, traits: theme)
+  let traitCollection = UITraitCollection(traitsFrom: [
+    .init(displayScale: displayScale),
+    .init(userInterfaceStyle: theme),
+  ])
+
+  return .image(
+    size: size,
+    traits: traitCollection
+  )
   #else
   #error("Unsupported platform")
   #endif
@@ -224,12 +256,16 @@ private func makeSizes(
       .compactMap { traitSize -> (SizesSnapshotTrait.Size, CGSize) in
         let absoluteSize = traitSize.absoluteSize(for: view)
 
+        guard absoluteSize != .zero else {
+          throw "size is zero for snapshot"
+        }
+
         guard absoluteSize.width > 0 else {
-          throw "0 width for snapshot"
+          throw "zero width for snapshot"
         }
 
         guard absoluteSize.height > 0 else {
-          throw "0 height for snapshot"
+          throw "zero height for snapshot"
         }
 
         return (traitSize, absoluteSize)
@@ -247,16 +283,28 @@ private func makeSizes(
 extension SizesSnapshotTrait.Size {
   fileprivate func absoluteSize(for view: SnapshotView) -> CGSize {
     switch (width, height) {
-      case let (.fixed(width), .fixed(height)):
+      case let (
+        .fixed(width),
+        .fixed(height)
+      ):
         .init(width: width, height: height)
 
-      case (.minimum, .minimum):
+      case (
+        .minimum,
+        .minimum
+      ):
         view.compressedSizeWhenConstrained()
 
-      case let (.fixed(width), .minimum):
+      case let (
+        .fixed(width),
+        .minimum
+      ):
         view.compressedSizeWhenConstrained(toWidth: width)
 
-      case let (.minimum, .fixed(height)):
+      case let (
+        .minimum,
+        .fixed(height)
+      ):
         view.compressedSizeWhenConstrained(toHeight: height)
     }
   }
