@@ -5,6 +5,10 @@ extension SizesSnapshotTrait {
     case fixed(Double)
     case minimum
 
+    public static func fixed(_ int: Int) -> Self {
+      .init(integerLiteral: int)
+    }
+
     public var debugDescription: String {
       switch self {
         case .fixed(let value): "\(value)"

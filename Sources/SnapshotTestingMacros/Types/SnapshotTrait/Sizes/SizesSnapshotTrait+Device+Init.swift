@@ -7,7 +7,9 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
     fitting sizingOption: SizesSnapshotTrait.DeviceSizingOption = .widthAndHeight
   ) -> Self {
     Self(
-      sizes: devices.map { .init(device: $0, sizingOption: sizingOption) }
+      sizes: devices.map {
+        .init(device: $0, sizingOption: sizingOption)
+      }
     )
   }
 }
