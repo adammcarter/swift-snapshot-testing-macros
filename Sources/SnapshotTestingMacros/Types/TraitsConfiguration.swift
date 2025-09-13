@@ -64,20 +64,17 @@ private func makeThemes(
   }
 
   return switch themeTrait.theme {
-    case .all: [.lightTraits, .darkTraits]
-    case .dark: [.darkTraits]
-    case .light: [.lightTraits]
+    case .all: [.light, .dark]
+    case .dark: [.dark]
+    case .light: [.light]
   }
 }
 
 #if canImport(UIKit)
 @MainActor
 extension SnapshotTheme {
-  static let darkTraits = SnapshotTheme(userInterfaceStyle: .dark)
-  static let lightTraits = SnapshotTheme(userInterfaceStyle: .light)
-
   var testNameDescription: String {
-    switch userInterfaceStyle {
+    switch self {
       case .dark: "dark"
       case .light: "light"
       case .unspecified: "unspecified"
@@ -88,13 +85,13 @@ extension SnapshotTheme {
 #elseif canImport(AppKit)
 @MainActor
 extension SnapshotTheme {
-  static let darkTraits = SnapshotTheme(named: .darkAqua)!
-  static let lightTraits = SnapshotTheme(named: .aqua)!
+  static let dark = SnapshotTheme(named: .darkAqua)!
+  static let light = SnapshotTheme(named: .aqua)!
 
   var testNameDescription: String {
     switch self {
-      case .darkTraits: "dark"
-      case .lightTraits: "light"
+      case .dark: "dark"
+      case .light: "light"
       default: "unknown"
     }
   }

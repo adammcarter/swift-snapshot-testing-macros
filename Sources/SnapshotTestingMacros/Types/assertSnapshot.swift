@@ -81,12 +81,17 @@ private func assertSnapshots(
       ]
       .joined(separator: "_")
 
+      let traits = SnapshotTraits(
+        displayScale: sizeTrait.scale
+      )
+
       assertSnapshot(
         testName: testName,
         folderName: configurationName,
         view: view,
         size: size,
         theme: theme,
+        traits: traits,
         strategy: strategy,
         record: record,
         fileID: fileID,
@@ -105,6 +110,7 @@ private func assertSnapshot(
   view: SnapshotView,
   size: CGSize,
   theme: SnapshotTheme,
+  traits: SnapshotTraits,
   strategy: StrategySnapshotTrait.Strategy?,
   record: Bool?,
   fileID: StaticString,
@@ -129,7 +135,11 @@ private func assertSnapshot(
     case .image, .none:
       assertSnapshot(
         of: view,
-        as: makeImageStrategy(size: size, theme: theme),
+        as: makeImageStrategy(
+          size: size,
+          theme: theme,
+          traits: traits
+        ),
         record: record,
         folderName: folderName,
         fileID: fileID,
@@ -144,12 +154,21 @@ private func assertSnapshot(
 @MainActor
 private func makeImageStrategy(
   size: CGSize,
-  theme: SnapshotTheme
+  theme: SnapshotTheme,
+  traits: SnapshotTraits
 ) -> Snapshotting<SnapshotView, SnapshotImage> {
   #if canImport(AppKit)
   .image(size: size)
   #elseif canImport(UIKit)
-  .image(size: size, traits: theme)
+  let traitCollection = UITraitCollection(traitsFrom: [
+    .init(displayScale: traits.displayScale),
+    .init(userInterfaceStyle: theme),
+  ])
+
+  return .image(
+    size: size,
+    traits: traitCollection
+  )
   #else
   #error("Unsupported platform")
   #endif
@@ -225,12 +244,16 @@ private func makeSizes(
       .compactMap { traitSize -> (SizesSnapshotTrait.Size, CGSize) in
         let absoluteSize = traitSize.absoluteSize(for: view)
 
+        guard absoluteSize != .zero else {
+          throw "size is zero for snapshot"
+        }
+
         guard absoluteSize.width > 0 else {
-          throw "0 width for snapshot"
+          throw "zero width for snapshot"
         }
 
         guard absoluteSize.height > 0 else {
-          throw "0 height for snapshot"
+          throw "zero height for snapshot"
         }
 
         return (traitSize, absoluteSize)
