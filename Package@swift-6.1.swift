@@ -117,6 +117,23 @@ let package = Package(
     ),
 
     /*
+     A test target with the specific purpose of testing what happens on repetitions.
+
+     Previously there was a bug where repetitions of tests would create new snapshot references on subsequent retries, this test target explicitly checks this behaviour to avoid this regression in future.
+     */
+    .testTarget(
+      name: "SnapshotsIntegrationRepetitionTests",
+      dependencies: [
+        "SnapshotTestSupport",
+        "SnapshotTestingMacros",
+        "SnapshotsMacros",
+      ],
+      exclude: [
+        "__Snapshots__"
+      ]
+    ),
+
+    /*
      Support target for tests.
      */
     .target(
