@@ -75,7 +75,7 @@ extension SnapshotSuiteTests.NoParameters {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -167,7 +167,7 @@ extension SnapshotSuiteTests.NoParameters {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -275,7 +275,7 @@ extension SnapshotSuiteTests.NoParameters {
         #endif
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -398,7 +398,7 @@ extension SnapshotSuiteTests.NoParameters {
         #endif
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor

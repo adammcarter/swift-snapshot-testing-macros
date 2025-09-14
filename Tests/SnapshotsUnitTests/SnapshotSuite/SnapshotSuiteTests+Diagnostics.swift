@@ -360,7 +360,7 @@ extension SnapshotSuiteTests {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -436,7 +436,7 @@ extension SnapshotSuiteTests {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
 

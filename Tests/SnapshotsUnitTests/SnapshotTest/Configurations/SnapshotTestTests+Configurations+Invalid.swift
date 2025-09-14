@@ -54,7 +54,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor

@@ -2,10 +2,16 @@ import SwiftSyntax
 import SwiftSyntaxMacros
 
 struct SnapshotSuite {
+  /*
+   ⚠️
+
+   Important to include '.snapshots' trait to reset the counter for test repetitions. Without it
+   the counter will continue to count up and create new reference images on each retry.
+   */
   var expression: DeclSyntax {
     """
     @MainActor
-    @Suite
+    @Suite(.snapshots)
     struct \(nameExpr) {
       \(commentExpr)
       \(contentsExpr)

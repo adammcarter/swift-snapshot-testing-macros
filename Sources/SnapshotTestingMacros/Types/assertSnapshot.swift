@@ -178,7 +178,6 @@ private func makeImageStrategy(
 private func assertSnapshot<Value, Format>(
   of value: @autoclosure () throws -> Value,
   as snapshotting: Snapshotting<Value, Format>,
-  named name: String? = nil,
   record recording: Bool? = nil,
   folderName: String?,
   timeout: TimeInterval = 5,
@@ -210,7 +209,7 @@ private func assertSnapshot<Value, Format>(
   let message = SnapshotTesting.verifySnapshot(
     of: try value(),
     as: snapshotting,
-    named: name,
+    named: nil,
     record: recording,
     snapshotDirectory: snapshotDirectory.path,
     timeout: timeout,
