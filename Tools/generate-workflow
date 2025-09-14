@@ -1,0 +1,157 @@
+#!/usr/bin/swift
+
+import Foundation
+
+// Constants
+let XCODE_VERSIONS = ["16.1", "16.2", "16.3", "16.4"]
+let LATEST_XCODE = XCODE_VERSIONS.last!
+let IOS_SIMULATOR = "iPhone 16"
+let IOS_VERSION = "18.6"
+let RUBY_VERSION = "3.1"
+let RUNNER = "macos-15"
+
+
+func yamlArray(_ items: [String]) -> String {
+    "[\(items.map { "'\($0)'" }.joined(separator: ", "))]"
+}
+
+
+let yaml = """
+name: Run Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  format-and-lint:
+    name: Format and Lint
+    runs-on: \(RUNNER)
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+  
+      - name: Make bundled tools executable
+        run: chmod +x Tools/bin/*
+
+      - name: Run Tools/format
+        run: ./Tools/format
+    
+  build-legacy-swift-versions:
+    name: Build Legacy Swift Versions
+    needs: [format-and-lint]
+    runs-on: \(RUNNER)
+    strategy:
+      matrix:
+        xcode: \(yamlArray(XCODE_VERSIONS))
+        
+    steps:
+      - name: Select Xcode version (${{ matrix.xcode }})
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Swift build
+        run: swift build
+    
+  ios-integration-tests:
+    name: Integration Tests
+    needs: [format-and-lint, build-legacy-swift-versions]
+    runs-on: \(RUNNER)
+
+    steps:
+      - name: Select Xcode version (\(LATEST_XCODE))
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '\(LATEST_XCODE)'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '\(RUBY_VERSION)'
+
+      - name: Run SnapshotsIntegrationTests (iOS)
+        run: |
+          xcodebuild test \\
+            -scheme SnapshotsIntegrationTests \\
+            -destination "platform=iOS Simulator,name=\(IOS_SIMULATOR),OS=\(IOS_VERSION)"
+    
+  ios-integration-repetition-tests:
+    name: Integration Repetition Tests
+    needs: [format-and-lint, build-legacy-swift-versions]
+    runs-on: \(RUNNER)
+
+    steps:
+      - name: Select Xcode version (\(LATEST_XCODE))
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '\(LATEST_XCODE)'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '\(RUBY_VERSION)'
+
+      - name: Run SnapshotsIntegrationRepetitionTests (iOS)
+        run: |
+          xcodebuild test \\
+            -scheme SnapshotsIntegrationRepetitionTests \\
+            -destination "platform=iOS Simulator,name=\(IOS_SIMULATOR),OS=\(IOS_VERSION)"
+
+  macos-unit-tests:
+    name: Unit Tests
+    needs: [format-and-lint, build-legacy-swift-versions]
+    runs-on: \(RUNNER)
+
+    steps:
+      - name: Select Xcode version (\(LATEST_XCODE))
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '\(LATEST_XCODE)'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '\(RUBY_VERSION)'
+
+      - name: Run SnapshotsUnitTests (macOS)
+        run: |
+          xcodebuild test \\
+            -scheme SnapshotsUnitTests \\
+            -destination 'platform=macOS'
+"""
+
+
+func copyToClipboard(_ text: String) {
+    let process = Process()
+    process.launchPath = "/usr/bin/pbcopy"
+		
+    let pipe = Pipe()
+    process.standardInput = pipe
+    process.launch()
+    
+		pipe.fileHandleForWriting.write(text.data(using: .utf8)!)
+    pipe.fileHandleForWriting.closeFile()
+    
+		process.waitUntilExit()
+}
+
+copyToClipboard(yaml)
+
+print("Copied to clipboard!")
