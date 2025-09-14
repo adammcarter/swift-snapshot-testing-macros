@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1630"
+   LastUpgradeVersion = "1640"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,7 +14,7 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:Tests/IntegrationTests.xctestplan"
+            reference = "container:Tests/SnapshotsIntegrationRepetitionTests.xctestplan"
             default = "YES">
          </TestPlanReference>
       </TestPlans>
@@ -23,9 +23,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "SnapshotsIntegrationTests"
-               BuildableName = "SnapshotsIntegrationTests"
-               BlueprintName = "SnapshotsIntegrationTests"
+               BlueprintIdentifier = "SnapshotsIntegrationRepetitionTests"
+               BuildableName = "SnapshotsIntegrationRepetitionTests"
+               BlueprintName = "SnapshotsIntegrationRepetitionTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>
@@ -41,15 +41,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "SnapshotsClient"
-            BuildableName = "SnapshotsClient"
-            BlueprintName = "SnapshotsClient"
-            ReferencedContainer = "container:">
-         </BuildableReference>
-      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

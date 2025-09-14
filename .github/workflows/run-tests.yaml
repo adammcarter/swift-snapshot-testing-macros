@@ -66,6 +66,31 @@ jobs:
           xcodebuild test \
             -scheme SnapshotsIntegrationTests \
             -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6"
+    
+  ios-integration-repetition-tests:
+    name: Integration Repetition Tests
+    needs: [format-and-lint, build-legacy-swift-versions]
+    runs-on: macos-15
+
+    steps:
+      - name: Select Xcode version (16.4)
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.4'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+
+      - name: Run SnapshotsIntegrationRepetitionTests (iOS)
+        run: |
+          xcodebuild test \
+            -scheme SnapshotsIntegrationRepetitionTests \
+            -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6"
 
   macos-unit-tests:
     name: Unit Tests

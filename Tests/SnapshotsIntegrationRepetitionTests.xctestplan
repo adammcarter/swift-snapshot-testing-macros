@@ -1,0 +1,25 @@
+{
+  "configurations" : [
+    {
+      "id" : "9B8A8221-8D6F-4266-8BD1-C1B979770F82",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "maximumTestRepetitions" : 3,
+    "testRepetitionMode" : "fixedIterations"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "SnapshotsIntegrationRepetitionTests",
+        "name" : "SnapshotsIntegrationRepetitionTests"
+      }
+    }
+  ],
+  "version" : 1
+}

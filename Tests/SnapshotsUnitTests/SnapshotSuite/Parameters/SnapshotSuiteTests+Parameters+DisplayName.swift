@@ -49,7 +49,7 @@ extension SnapshotSuiteTests.Parameters {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -107,7 +107,7 @@ extension SnapshotSuiteTests.Parameters {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -165,7 +165,7 @@ extension SnapshotSuiteTests.Parameters {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -223,7 +223,7 @@ extension SnapshotSuiteTests.Parameters {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -270,7 +270,7 @@ extension SnapshotSuiteTests.Parameters {
         #endif
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             #if swift(>=6.1)

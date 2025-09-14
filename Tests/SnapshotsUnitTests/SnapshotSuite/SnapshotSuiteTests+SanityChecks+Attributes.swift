@@ -54,7 +54,7 @@ extension SnapshotSuiteTests.SanityChecks {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
