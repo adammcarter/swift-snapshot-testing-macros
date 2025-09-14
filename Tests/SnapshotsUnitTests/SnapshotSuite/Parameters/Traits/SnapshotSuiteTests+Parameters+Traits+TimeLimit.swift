@@ -49,7 +49,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor

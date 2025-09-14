@@ -51,7 +51,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -109,7 +109,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -167,7 +167,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -225,7 +225,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor

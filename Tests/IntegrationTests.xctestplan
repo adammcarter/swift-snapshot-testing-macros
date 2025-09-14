@@ -9,7 +9,9 @@
     }
   ],
   "defaultOptions" : {
+    "maximumTestRepetitions" : 3,
     "testExecutionOrdering" : "random",
+    "testRepetitionMode" : "fixedIterations",
     "testTimeoutsEnabled" : true
   },
   "testTargets" : [

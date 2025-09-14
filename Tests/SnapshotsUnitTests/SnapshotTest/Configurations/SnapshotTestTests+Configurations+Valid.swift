@@ -83,7 +83,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -189,7 +189,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -312,7 +312,7 @@ extension SnapshotTestTests.Configurations {
         #endif
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -422,7 +422,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
@@ -496,7 +496,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor

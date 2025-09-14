@@ -49,7 +49,7 @@ extension SnapshotSuiteTests.FunctionModifiers {
           }
 
           @MainActor
-          @Suite
+          @Suite(.snapshots)
           struct _GeneratedSnapshotSuite {
 
             @MainActor
