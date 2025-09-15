@@ -5,15 +5,27 @@ extension SizesSnapshotTrait {
     let width: SizesSnapshotTrait.Length
     let height: SizesSnapshotTrait.Length
 
+    /**
+     When `nil`, inherit the scale from the device on which the tests are being run.
+
+     This allows for backwards compatability to avoid breaking changes while allowing for a custom override when wanting to use a specific setup.
+     */
+    let scale: Double?
+
     public let displayName: String
     public let debugDescription: String
     public let testNameDescription: String
 
-    public init(width: SizesSnapshotTrait.Length, height: SizesSnapshotTrait.Length) {
+    public init(
+      width: SizesSnapshotTrait.Length,
+      height: SizesSnapshotTrait.Length,
+      scale: Double? = nil
+    ) {
       self.width = width
       self.height = height
+      self.scale = scale
       self.displayName = "size"
-      self.debugDescription = "width: \(width), height: \(height)"
+      self.debugDescription = "width: \(width), height: \(height), scale: \(String(describing: scale))"
 
       let description =
         switch (width, height) {
@@ -24,18 +36,19 @@ extension SizesSnapshotTrait {
         }
 
       self.testNameDescription = description.replacingOccurrences(of: " ", with: "-")
-
     }
 
     init(
       width: SizesSnapshotTrait.Length,
       height: SizesSnapshotTrait.Length,
+      scale: Double? = nil,
       displayName: String,
       debugDescription: String,
       testNameDescription: String
     ) {
       self.width = width
       self.height = height
+      self.scale = scale
       self.displayName = displayName
       self.debugDescription = debugDescription
       self.testNameDescription = testNameDescription
@@ -47,9 +60,23 @@ extension SizesSnapshotTrait {
     ) {
       let (width, height): (SizesSnapshotTrait.Length, SizesSnapshotTrait.Length) =
         switch sizingOption {
-          case .widthAndHeight: (.fixed(device.width), .fixed(device.height))
-          case .widthButMinimumHeight: (.fixed(device.width), .minimum)
-          case .heightButMinimumWidth: (.minimum, .fixed(device.height))
+          case .widthAndHeight:
+            (
+              .fixed(device.width),
+              .fixed(device.height)
+            )
+
+          case .widthButMinimumHeight:
+            (
+              .fixed(device.width),
+              .minimum
+            )
+
+          case .heightButMinimumWidth:
+            (
+              .minimum,
+              .fixed(device.height)
+            )
         }
 
       let testNameDescription = [
@@ -62,6 +89,7 @@ extension SizesSnapshotTrait {
       self = Self(
         width: width,
         height: height,
+        scale: device.scale,
         displayName: "device",
         debugDescription: device.debugDescription,
         testNameDescription: testNameDescription

@@ -5,5 +5,5 @@ typealias SnapshotTheme = NSAppearance
 #elseif canImport(UIKit)
 import UIKit
 
-typealias SnapshotTheme = UITraitCollection
+typealias SnapshotTheme = UIUserInterfaceStyle
 #endif
