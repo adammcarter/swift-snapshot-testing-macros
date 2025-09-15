@@ -10,33 +10,85 @@ extension SnapshotTest.Traits.Size {
   @Suite
   struct FileDimensions {
 
-    @Suite
-    @SnapshotSuite(
-      .backgroundColor(uiColor: .systemBackground)
-    )
-    struct Explicit {
+    struct ExplicitSize {
 
       private static let width = 150
       private static let height = 250
 
-      @SnapshotTest(
-        .sizes(
-          width: .fixed(width),
-          height: .fixed(height)
-        )
+      @Suite
+      @SnapshotSuite(
+        .backgroundColor(uiColor: .systemBackground)
       )
-      func referenceImage() -> some View {
-        Text("\(Explicit.width) x \(Explicit.height) reference image")
+      struct DefaultScale {
+
+        @SnapshotTest(
+          .sizes(
+            width: .fixed(width),
+            height: .fixed(height)
+          )
+        )
+        func referenceImage() -> some View {
+          Text("\(ExplicitSize.width) x \(ExplicitSize.height) default scale reference image")
+        }
+
+        @Test(
+          arguments: referenceImageFilePaths(named: "referenceImage_fixed-size")
+        )
+        func referenceImageHasExactDimensions(imagePathUrl: URL) throws {
+          let (width, height) = try dimensionsOfImageAtURL(imagePathUrl)
+
+          #expect(width == ExplicitSize.width * 3)
+          #expect(height == ExplicitSize.height * 3)
+        }
       }
 
-      @Test(
-        arguments: referenceImageFilePaths(named: "referenceImage_fixed-size")
+      @Suite
+      @SnapshotSuite(
+        .backgroundColor(uiColor: .systemBackground)
       )
-      func referenceImageHasExactDimensions(imagePathUrl: URL) throws {
-        let (width, height) = try dimensionsOfImageAtURL(imagePathUrl)
+      struct ExplicitScale {
 
-        #expect(width == Explicit.width)
-        #expect(height == Explicit.height)
+        @SnapshotTest(
+          .sizes(
+            width: .fixed(width),
+            height: .fixed(height),
+            scale: 1.0
+          )
+        )
+        func oneReferenceImage() -> some View {
+          Text("\(ExplicitSize.width) x \(ExplicitSize.height) 1.0 scale reference image")
+        }
+
+        @Test(
+          arguments: referenceImageFilePaths(named: "oneReferenceImage_fixed-size")
+        )
+        func referenceImageHasExactDimensionsForSingleScale(imagePathUrl: URL) throws {
+          let (width, height) = try dimensionsOfImageAtURL(imagePathUrl)
+
+          #expect(width == ExplicitSize.width)
+          #expect(height == ExplicitSize.height)
+        }
+
+        @SnapshotTest(
+          .sizes(
+            width: .fixed(width),
+            height: .fixed(height),
+            scale: 2.0
+          )
+        )
+        func twoReferenceImage() -> some View {
+          Text("\(ExplicitSize.width) x \(ExplicitSize.height) 2.0 scale reference image")
+        }
+
+        @Test(
+          arguments: referenceImageFilePaths(named: "twoReferenceImage_fixed-size")
+        )
+        func referenceImageHasExactDimensionsForDoubleScale(imagePathUrl: URL) throws {
+          let (width, height) = try dimensionsOfImageAtURL(imagePathUrl)
+
+          #expect(width == ExplicitSize.width * 2)
+          #expect(height == ExplicitSize.height * 2)
+        }
       }
     }
 
@@ -44,7 +96,7 @@ extension SnapshotTest.Traits.Size {
     @SnapshotSuite(
       .backgroundColor(uiColor: .systemBackground)
     )
-    struct Device {
+    struct DeviceSize {
 
       private static let device = SizesSnapshotTrait.Device.iPhoneX
 
@@ -53,9 +105,9 @@ extension SnapshotTest.Traits.Size {
       )
       @ViewBuilder
       func referenceImage() -> some View {
-        let sizeDescription = "\(Int(Device.device.width))x\(Int(Device.device.height)) @\(Int(Device.device.scale))x"
+        let sizeDescription = "\(Int(DeviceSize.device.width))x\(Int(DeviceSize.device.height)) @\(Int(DeviceSize.device.scale))x"
 
-        Text("\(Device.device.debugDescription) \(sizeDescription) reference image")
+        Text("\(DeviceSize.device.debugDescription) \(sizeDescription) reference image")
       }
 
       @Test(
@@ -64,7 +116,7 @@ extension SnapshotTest.Traits.Size {
       func referenceImageHasExactDimensions(imagePathUrl: URL) throws {
         let (width, height) = try dimensionsOfImageAtURL(imagePathUrl)
 
-        let device = Device.device
+        let device = DeviceSize.device
 
         #expect(width == Int(device.width * device.scale))
         #expect(height == Int(device.height * device.scale))
