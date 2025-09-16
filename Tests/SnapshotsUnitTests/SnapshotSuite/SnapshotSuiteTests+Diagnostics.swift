@@ -361,11 +361,11 @@ extension SnapshotSuiteTests {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
-            func assertSnapshotMakeHostingController() async throws {
+            func makeHostingController_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeHostingController.makeGenerator(configuration: .none)
               )
@@ -373,7 +373,7 @@ extension SnapshotSuiteTests {
 
             @MainActor
             @Test()
-            func assertSnapshotMakeViewController() async throws {
+            func makeViewController_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeViewController.makeGenerator(configuration: .none)
               )
@@ -437,7 +437,7 @@ extension SnapshotSuiteTests {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct MyEnum_GeneratedSnapshotSuite {
 
 
           }

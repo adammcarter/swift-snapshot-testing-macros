@@ -52,11 +52,11 @@ extension SnapshotSuiteTests.Parameters.Traits {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct URL_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(.bug("https://bugs.swift.org/browse/some-bug"))
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
@@ -112,11 +112,11 @@ extension SnapshotSuiteTests.Parameters.Traits {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct Title_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(.bug("https://bugs.swift.org/browse/some-bug", "A title"))
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
@@ -172,11 +172,11 @@ extension SnapshotSuiteTests.Parameters.Traits {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct ID_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(.bug(id: "some id"))
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )

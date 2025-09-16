@@ -50,11 +50,11 @@ extension SnapshotSuiteTests.FunctionModifiers {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
-            func assertSnapshotMakeMyView() async throws {
+            func makeMyView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeMyView.makeGenerator(configuration: .none)
               )
