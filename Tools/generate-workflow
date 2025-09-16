@@ -3,12 +3,14 @@
 import Foundation
 
 // Constants
-let XCODE_VERSIONS = ["16.1", "16.2", "16.3", "16.4"]
+let XCODE_VERSIONS = ["16.1", "16.2", "16.3", "16.4", "26.0"]
 let LATEST_XCODE = XCODE_VERSIONS.last!
-let IOS_SIMULATOR = "iPhone 16"
-let IOS_VERSION = "18.6"
+let IOS_SIMULATOR = "iPhone 17"
+let IOS_VERSION = "26.0"
 let RUBY_VERSION = "3.1"
-let RUNNER = "macos-15"
+
+let LEGACY_RUNNER = "macos-15"
+let RUNNER = "macos-26"
 
 
 func yamlArray(_ items: [String]) -> String {
@@ -44,10 +46,10 @@ jobs:
   build-legacy-swift-versions:
     name: Build Legacy Swift Versions
     needs: [format-and-lint]
-    runs-on: \(RUNNER)
+    runs-on: \(LEGACY_RUNNER)
     strategy:
       matrix:
-        xcode: \(yamlArray(XCODE_VERSIONS))
+        xcode: \(yamlArray(XCODE_VERSIONS.dropLast()))
         
     steps:
       - name: Select Xcode version (${{ matrix.xcode }})
@@ -135,6 +137,7 @@ jobs:
           xcodebuild test \\
             -scheme SnapshotsUnitTests \\
             -destination 'platform=macOS'
+
 """
 
 
