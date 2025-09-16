@@ -37,6 +37,9 @@ let package = Package(
       dependencies: [
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
         .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+      ],
+      swiftSettings: [
+        .strictConcurrency
       ]
     ),
 
@@ -53,15 +56,11 @@ let package = Package(
       name: "SnapshotTestingMacros",
       dependencies: [
         "SnapshotsMacros",
-
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
+      swiftSettings: [
+        .strictConcurrency
       ]
-
-      // TODO: Commented out until Xcode 16.3
-      //      ,
-      //      swiftSettings: [
-      //        .enableUpcomingFeature("StrictConcurrency")
-      //      ]
     ),
 
     // A client of the library, which is able to use the macro in its own code.
@@ -142,3 +141,7 @@ let package = Package(
     ),
   ]
 )
+
+extension SwiftSetting {
+  static let strictConcurrency = SwiftSetting.enableUpcomingFeature("StrictConcurrency")
+}
