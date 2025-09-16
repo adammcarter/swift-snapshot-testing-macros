@@ -50,11 +50,11 @@ extension SnapshotSuiteTests.Parameters.Traits {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct Tags_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(.tags(.someTag))
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
@@ -112,11 +112,11 @@ extension SnapshotSuiteTests.Parameters.Traits {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct Tags_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(.tags(.snapshots))
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
@@ -170,11 +170,11 @@ extension SnapshotSuiteTests.Parameters.Traits {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct Tags_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )

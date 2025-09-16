@@ -94,11 +94,11 @@ extension SnapshotTestTests {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
-            func assertSnapshotATest() async throws {
+            func aTest_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_aTest.makeGenerator(configuration: .none)
               )
@@ -159,11 +159,11 @@ extension SnapshotTestTests {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
-            func assertSnapshotATest() async throws {
+            func aTest_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_aTest.makeGenerator(configuration: .none)
               )

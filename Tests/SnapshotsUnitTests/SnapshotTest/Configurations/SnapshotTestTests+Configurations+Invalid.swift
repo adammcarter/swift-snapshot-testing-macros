@@ -55,14 +55,14 @@ extension SnapshotTestTests.Configurations {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
                   SnapshotConfiguration(name: "Config1", value: "1"),
                   SnapshotConfiguration(name: "Config2", value: "2"),
                 ]))
-            func assertSnapshotMakeAnotherView(configuration: SnapshotConfiguration<(String)>) async throws {
+            func makeAnotherView_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeAnotherView.makeGenerator(configuration: configuration)
               )

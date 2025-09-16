@@ -23,8 +23,32 @@ struct SnapshotSuite {
   private let comment: String?
   private let testBlocks: [TestBlock]
 
-  private var nameExpr: ExprSyntax {
-    .init(stringLiteral: Constants.GeneratedTypeName.generatedSnapshotSuite)
+  private var nameExpr: TokenSyntax {
+    let syntaxNodes = [
+      macroContext.context.lexicalContext,
+      [Syntax(macroContext.declaration)],
+    ]
+    .flatMap { $0 }
+
+    let humanReadableUniqueName =
+      syntaxNodes
+      .compactMap(\.identifierName?.trimmedDescription)
+      .joined(separator: "_")
+      + Constants.GeneratedTypeName.generatedSnapshotSuite
+
+    /*
+     Avoid using the 'makeUniqueName()' function as it does create
+     guaranteed unique names but also gives us names that are much
+     more difficult to read at a glance.
+     */
+
+    /*
+     The above solution of joining the lexical contexts by an '_'
+     should be a good halfway point between almost guaranteed unique
+     code for the trade off of easy to read suite names.
+     */
+
+    return .init(stringLiteral: humanReadableUniqueName)
   }
 
   private var commentExpr: ExprSyntax? {

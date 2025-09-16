@@ -50,11 +50,11 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct MySuite_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(.disabled())
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
@@ -108,11 +108,11 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct DisabledWithComment_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(.disabled("Some comment"))
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
@@ -166,11 +166,11 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct DisabledIf_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(.disabled(if: true))
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
@@ -224,11 +224,11 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct DisabledIfWithComment_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(.disabled(if: !enableTests, "Some comment"))
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
@@ -282,11 +282,11 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct DisabledWithCondition_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(.disabled(if: true))
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
@@ -342,13 +342,13 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct DisabledWithCommentAndCondition_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(.disabled("Some comment", {
                 !enableTests
               }))
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )

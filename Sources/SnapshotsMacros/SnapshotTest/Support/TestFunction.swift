@@ -11,7 +11,7 @@ extension SnapshotSuite.TestBlock.Test {
       snapshotTestFunctionDecl: FunctionDeclSyntax
     ) {
       nameExpr = IdentifierTypeSyntax(
-        name: "assertSnapshot\(raw: testName.capitalizingFirst())"
+        name: "\(raw: testName)_snapshotTest"
       )
 
       let configurationGenericType = snapshotTestFunctionDecl.signature.parameterClauseAsTuple

@@ -51,11 +51,11 @@ extension SnapshotSuiteTests.Parameters {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct MySuite_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
-            func assertSnapshotMakeMyView() async throws {
+            func makeMyView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeMyView.makeGenerator(configuration: .none)
               )
@@ -109,11 +109,11 @@ extension SnapshotSuiteTests.Parameters {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct MySuite_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
-            func assertSnapshotMakeMyView() async throws {
+            func makeMyView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeMyView.makeGenerator(configuration: .none)
               )
@@ -167,11 +167,11 @@ extension SnapshotSuiteTests.Parameters {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct MySuite_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
-            func assertSnapshotMakeView() async throws {
+            func makeView_snapshotTest() async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: .none)
               )
@@ -228,14 +228,14 @@ extension SnapshotSuiteTests.Parameters {
 
           @MainActor
           @Suite(.snapshots)
-          struct _GeneratedSnapshotSuite {
+          struct MySuite_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
                 SnapshotConfiguration(name: "1", value: 1),
                 SnapshotConfiguration(name: "2", value: 2),
               ]))
-            func assertSnapshotMakeView(configuration: SnapshotConfiguration<(Int)>) async throws {
+            func makeView_snapshotTest(configuration: SnapshotConfiguration<(Int)>) async throws {
               try await SnapshotTestingMacros.assertSnapshot(
                 generator: __generator_container_makeView.makeGenerator(configuration: configuration)
               )
