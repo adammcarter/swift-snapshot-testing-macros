@@ -36,7 +36,7 @@ extension SnapshotSuiteTests.Parameters {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeMyView",
-                traits: [.sizes(devices: .iPhoneX), .theme(.all), .strategy(.image), .record(false)],
+                traits: [.sizes(devices: .iPhoneX), .theme(.all), .strategy(.image), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   MySuite().makeMyView()
@@ -50,7 +50,7 @@ extension SnapshotSuiteTests.Parameters {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct MySuite_GeneratedSnapshotSuite {
 
             @MainActor
@@ -94,7 +94,7 @@ extension SnapshotSuiteTests.Parameters {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeMyView",
-                traits: [.sizes(devices: .iPhoneX), .theme(.light), .strategy(.image), .record(false)],
+                traits: [.sizes(devices: .iPhoneX), .theme(.light), .strategy(.image), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   MySuite().makeMyView()
@@ -108,7 +108,7 @@ extension SnapshotSuiteTests.Parameters {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct MySuite_GeneratedSnapshotSuite {
 
             @MainActor
@@ -152,7 +152,7 @@ extension SnapshotSuiteTests.Parameters {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   MySuite().makeView()
@@ -166,7 +166,7 @@ extension SnapshotSuiteTests.Parameters {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct MySuite_GeneratedSnapshotSuite {
 
             @MainActor
@@ -213,7 +213,7 @@ extension SnapshotSuiteTests.Parameters {
             static func makeGenerator(configuration: SnapshotConfiguration<(Int)>) -> SnapshotTestingMacros.SnapshotGenerator<(Int)> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.record(true), .theme(.all), .strategy(.image), .sizes(.minimum)],
+                traits: [.record(true), .theme(.all), .strategy(.image), .sizes(.minimum), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   MySuite().makeView(value: $0)
@@ -227,7 +227,7 @@ extension SnapshotSuiteTests.Parameters {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct MySuite_GeneratedSnapshotSuite {
 
             @MainActor

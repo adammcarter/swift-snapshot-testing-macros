@@ -325,7 +325,7 @@ extension SnapshotSuiteTests {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeHostingController",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   SnapshotTests().makeHostingController()
@@ -346,7 +346,7 @@ extension SnapshotSuiteTests {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeViewController",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   SnapshotTests().makeViewController()
@@ -360,7 +360,7 @@ extension SnapshotSuiteTests {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
@@ -436,7 +436,7 @@ extension SnapshotSuiteTests {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct MyEnum_GeneratedSnapshotSuite {
 
 

@@ -35,7 +35,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.tags(.someTag), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                traits: [.tags(.someTag), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   Tags().makeView()
@@ -49,7 +49,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct Tags_GeneratedSnapshotSuite {
 
             @MainActor
@@ -97,7 +97,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.tags(.snapshots), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                traits: [.tags(.snapshots), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   Tags().makeView()
@@ -111,7 +111,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct Tags_GeneratedSnapshotSuite {
 
             @MainActor
@@ -155,7 +155,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   Tags().makeView()
@@ -169,7 +169,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct Tags_GeneratedSnapshotSuite {
 
             @MainActor

@@ -35,7 +35,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.enabled(if: false), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                traits: [.enabled(if: false), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   EnabledIf().makeView()
@@ -49,7 +49,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct EnabledIf_GeneratedSnapshotSuite {
 
             @MainActor
@@ -93,7 +93,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.enabled(if: enableTests, "Some comment"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                traits: [.enabled(if: enableTests, "Some comment"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   EnabledIfWithComment().makeView()
@@ -107,7 +107,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct EnabledIfWithComment_GeneratedSnapshotSuite {
 
             @MainActor
@@ -153,7 +153,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
                 displayName: "makeView",
                 traits: [.enabled {
                     false
-                  }, .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                  }, .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   EnabledWithCondition().makeView()
@@ -167,7 +167,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct EnabledWithCondition_GeneratedSnapshotSuite {
 
             @MainActor
@@ -215,7 +215,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
                 displayName: "makeView",
                 traits: [.enabled("Some comment", {
                       enableTests
-                    }), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                    }), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   EnabledWithCommentAndCondition().makeView()
@@ -229,7 +229,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct EnabledWithCommentAndCondition_GeneratedSnapshotSuite {
 
             @MainActor

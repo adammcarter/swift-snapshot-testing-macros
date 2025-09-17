@@ -5,19 +5,19 @@ import Testing
 extension SnapshotSuiteTests.Parameters.Traits {
 
   @Suite
-  struct Sizes {
+  struct DiffTool {
 
     @Test
-    func testWidthAndHeight() {
+    func missing() {
       assertMacro {
         """
         @MainActor
         @Suite
-        @SnapshotSuite(.sizes(width: .minimum, height: .minimum))
-        struct Tags {
+        @SnapshotSuite
+        struct MySnapshots {
           @SnapshotTest
           func makeView() -> some View {
-            Text("input")
+            Text("")
           }
         }
         """
@@ -25,9 +25,9 @@ extension SnapshotSuiteTests.Parameters.Traits {
         """
         @MainActor
         @Suite
-        struct Tags {
+        struct MySnapshots {
           func makeView() -> some View {
-            Text("input")
+            Text("")
           }
 
           enum __generator_container_makeView {
@@ -35,10 +35,10 @@ extension SnapshotSuiteTests.Parameters.Traits {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.sizes(width: .minimum, height: .minimum), .theme(.all), .strategy(.image), .record(false), .diffTool(.default)],
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
-                  Tags().makeView()
+                  MySnapshots().makeView()
                 },
                 fileID: #fileID,
                 filePath: #filePath,
@@ -50,7 +50,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
 
           @MainActor
           @Suite(.snapshots(diffTool: .default))
-          struct Tags_GeneratedSnapshotSuite {
+          struct MySnapshots_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
@@ -66,16 +66,18 @@ extension SnapshotSuiteTests.Parameters.Traits {
     }
 
     @Test
-    func testWidth() {
+    func testDefault() {
       assertMacro {
         """
         @MainActor
         @Suite
-        @SnapshotSuite(.sizes(width: .minimum))
-        struct Tags {
+        @SnapshotSuite(
+          .diffTool(.default)
+        )
+        struct MySnapshots {
           @SnapshotTest
           func makeView() -> some View {
-            Text("input")
+            Text("")
           }
         }
         """
@@ -83,9 +85,9 @@ extension SnapshotSuiteTests.Parameters.Traits {
         """
         @MainActor
         @Suite
-        struct Tags {
+        struct MySnapshots {
           func makeView() -> some View {
-            Text("input")
+            Text("")
           }
 
           enum __generator_container_makeView {
@@ -93,14 +95,14 @@ extension SnapshotSuiteTests.Parameters.Traits {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.sizes(width: .minimum), .theme(.all), .strategy(.image), .record(false), .diffTool(.default)],
+                traits: [.diffTool(.default), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
-                  Tags().makeView()
+                  MySnapshots().makeView()
                 },
                 fileID: #fileID,
                 filePath: #filePath,
-                line: 5,
+                line: 7,
                 column: 3
               )
             }
@@ -108,7 +110,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
 
           @MainActor
           @Suite(.snapshots(diffTool: .default))
-          struct Tags_GeneratedSnapshotSuite {
+          struct MySnapshots_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
@@ -124,16 +126,18 @@ extension SnapshotSuiteTests.Parameters.Traits {
     }
 
     @Test
-    func testHeight() {
+    func ksdiff() {
       assertMacro {
         """
         @MainActor
         @Suite
-        @SnapshotSuite(.sizes(height: .minimum))
-        struct Tags {
+        @SnapshotSuite(
+          .diffTool(.ksdiff)
+        )
+        struct MySnapshots {
           @SnapshotTest
           func makeView() -> some View {
-            Text("input")
+            Text("")
           }
         }
         """
@@ -141,9 +145,9 @@ extension SnapshotSuiteTests.Parameters.Traits {
         """
         @MainActor
         @Suite
-        struct Tags {
+        struct MySnapshots {
           func makeView() -> some View {
-            Text("input")
+            Text("")
           }
 
           enum __generator_container_makeView {
@@ -151,22 +155,22 @@ extension SnapshotSuiteTests.Parameters.Traits {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.sizes(height: .minimum), .theme(.all), .strategy(.image), .record(false), .diffTool(.default)],
+                traits: [.diffTool(.ksdiff), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
-                  Tags().makeView()
+                  MySnapshots().makeView()
                 },
                 fileID: #fileID,
                 filePath: #filePath,
-                line: 5,
+                line: 7,
                 column: 3
               )
             }
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
-          struct Tags_GeneratedSnapshotSuite {
+          @Suite(.snapshots(diffTool: .ksdiff))
+          struct MySnapshots_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
@@ -182,26 +186,28 @@ extension SnapshotSuiteTests.Parameters.Traits {
     }
 
     @Test
-    func testLength() {
+    func custom() {
       assertMacro {
-        """
+        #"""
         @MainActor
         @Suite
-        @SnapshotSuite(.sizes(.minimum))
-        struct Tags {
+        @SnapshotSuite(
+          .diffTool(.init { "someTool \($0) \($1)" })
+        )
+        struct MySnapshots {
           @SnapshotTest
           func makeView() -> some View {
-            Text("input")
+            Text("")
           }
         }
-        """
+        """#
       } expansion: {
-        """
+        #"""
         @MainActor
         @Suite
-        struct Tags {
+        struct MySnapshots {
           func makeView() -> some View {
-            Text("input")
+            Text("")
           }
 
           enum __generator_container_makeView {
@@ -209,22 +215,26 @@ extension SnapshotSuiteTests.Parameters.Traits {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.sizes(.minimum), .theme(.all), .strategy(.image), .record(false), .diffTool(.default)],
+                traits: [.diffTool(.init {
+                      "someTool \($0) \($1)"
+                    }), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
-                  Tags().makeView()
+                  MySnapshots().makeView()
                 },
                 fileID: #fileID,
                 filePath: #filePath,
-                line: 5,
+                line: 7,
                 column: 3
               )
             }
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
-          struct Tags_GeneratedSnapshotSuite {
+          @Suite(.snapshots(diffTool: .init {
+              "someTool \($0) \($1)"
+            }))
+          struct MySnapshots_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
@@ -235,7 +245,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
             }
           }
         }
-        """
+        """#
       }
     }
   }

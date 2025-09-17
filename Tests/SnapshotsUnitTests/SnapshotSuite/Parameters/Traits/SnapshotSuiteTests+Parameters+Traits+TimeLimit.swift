@@ -35,7 +35,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.timeLimit(.minutes(1)), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                traits: [.timeLimit(.minutes(1)), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   TimeLimit().makeView()
@@ -49,7 +49,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct TimeLimit_GeneratedSnapshotSuite {
 
             @MainActor

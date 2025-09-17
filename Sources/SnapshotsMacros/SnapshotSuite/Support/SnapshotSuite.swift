@@ -11,7 +11,7 @@ struct SnapshotSuite {
   var expression: DeclSyntax {
     """
     @MainActor
-    @Suite(.snapshots)
+    @Suite(\(suiteTraitsExpr))
     struct \(nameExpr) {
       \(commentExpr)
       \(contentsExpr)
@@ -22,6 +22,7 @@ struct SnapshotSuite {
   private let macroContext: SnapshotSuiteMacroContext
   private let comment: String?
   private let testBlocks: [TestBlock]
+  private let suiteTraitsExpr: FunctionCallExprSyntax
 
   private var nameExpr: TokenSyntax {
     let syntaxNodes = [
@@ -95,5 +96,46 @@ struct SnapshotSuite {
           macroContext: macroContext
         )
       }
+
+    let passedDiffTool = suiteMacroArguments
+      .traitExpressions?
+      .first {
+        guard Constants.Trait(expression: $0) == .diffTool else {
+          return false
+        }
+
+        return true
+      }?
+      .as(FunctionCallExprSyntax.self)?
+      .arguments
+      .first?
+      .expression
+      .trimmed
+
+    let diffToolExpr =
+      passedDiffTool
+      ?? Constants.Trait.diffTool.asDefaultValueExpression
+      ?? ""
+
+    self.suiteTraitsExpr = FunctionCallExprSyntax(
+      calledExpression: DeclReferenceExprSyntax(baseName: ".snapshots").trimmed,
+      leftParen: .leftParenToken(),
+      rightParen: .rightParenToken(),
+      argumentsBuilder: {
+        LabeledExprSyntax(
+          label: "diffTool",
+          colon: .colonToken(trailingTrivia: .space),
+          expression: diffToolExpr
+        )
+      }
+    )
+  }
+}
+
+extension Constants.Trait {
+  fileprivate var asDefaultValueExpression: ExprSyntax? {
+    defaultInnerValue.flatMap {
+      ExprSyntax(stringLiteral: $0)
+    }
   }
 }

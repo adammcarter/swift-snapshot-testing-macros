@@ -35,7 +35,7 @@ extension SnapshotSuiteTests.FunctionModifiers {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   MyEnum.makeView()
@@ -49,7 +49,7 @@ extension SnapshotSuiteTests.FunctionModifiers {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct MyEnum_GeneratedSnapshotSuite {
 
             @MainActor

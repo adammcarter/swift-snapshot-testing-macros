@@ -10,6 +10,7 @@ extension Constants {
   enum Trait: String, CaseIterable {
     case backgroundColor
     case bug
+    case diffTool
     case disabled
     case enabled
     case padding

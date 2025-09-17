@@ -40,7 +40,7 @@ extension SnapshotTestTests.Configurations {
             static func makeGenerator(configuration: SnapshotConfiguration<(String)>) -> SnapshotTestingMacros.SnapshotGenerator<(String)> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeAnotherView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
                 configuration: configuration,
                 makeValue: {
                   SnapshotTests().makeAnotherView(input: $0)
@@ -54,7 +54,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor

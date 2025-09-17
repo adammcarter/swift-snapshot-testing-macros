@@ -12,7 +12,8 @@ extension Constants.Trait {
         .timeLimit:
         nil
 
-      case .tags,
+      case .diffTool,
+        .tags,
         .record,
         .sizes,
         .strategy,
@@ -37,6 +38,7 @@ extension Constants.Trait {
         .timeLimit:
         nil
 
+      case .diffTool: ".default"
       case .record: "false"
       case .sizes: ".minimum"
       case .strategy: ".image"
@@ -55,6 +57,7 @@ extension Constants.Trait {
         true
 
       case .backgroundColor,
+        .diffTool,
         .padding,
         .record,
         .sizes,
