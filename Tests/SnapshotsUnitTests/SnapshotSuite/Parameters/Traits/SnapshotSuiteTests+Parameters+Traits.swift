@@ -36,7 +36,7 @@ extension SnapshotSuiteTests.Parameters {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeMyView",
-                traits: [.sizes(devices: .iPhoneX), .theme(.all), .strategy(.image), .record(false), .diffTool(.default)],
+                traits: [.sizes(devices: .iPhoneX), .theme(.all), .strategy(.image), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   MySuite().makeMyView()
@@ -94,7 +94,7 @@ extension SnapshotSuiteTests.Parameters {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeMyView",
-                traits: [.sizes(devices: .iPhoneX), .theme(.light), .strategy(.image), .record(false), .diffTool(.default)],
+                traits: [.sizes(devices: .iPhoneX), .theme(.light), .strategy(.image), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   MySuite().makeMyView()
@@ -152,7 +152,7 @@ extension SnapshotSuiteTests.Parameters {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
+                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   MySuite().makeView()
@@ -213,7 +213,7 @@ extension SnapshotSuiteTests.Parameters {
             static func makeGenerator(configuration: SnapshotConfiguration<(Int)>) -> SnapshotTestingMacros.SnapshotGenerator<(Int)> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.record(true), .theme(.all), .strategy(.image), .sizes(.minimum), .diffTool(.default)],
+                traits: [.record(true), .theme(.all), .strategy(.image), .sizes(.minimum)],
                 configuration: configuration,
                 makeValue: {
                   MySuite().makeView(value: $0)

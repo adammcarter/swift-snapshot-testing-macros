@@ -35,7 +35,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.disabled(), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
+                traits: [.disabled(), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   MySuite().makeView()
@@ -93,7 +93,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.disabled("Some comment"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
+                traits: [.disabled("Some comment"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   DisabledWithComment().makeView()
@@ -151,7 +151,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.disabled(if: true), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
+                traits: [.disabled(if: true), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   DisabledIf().makeView()
@@ -209,7 +209,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.disabled(if: !enableTests, "Some comment"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
+                traits: [.disabled(if: !enableTests, "Some comment"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   DisabledIfWithComment().makeView()
@@ -267,7 +267,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.disabled(if: true), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
+                traits: [.disabled(if: true), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   DisabledWithCondition().makeView()
@@ -327,7 +327,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
                 displayName: "makeView",
                 traits: [.disabled("Some comment", {
                       !enableTests
-                    }), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
+                    }), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   DisabledWithCommentAndCondition().makeView()

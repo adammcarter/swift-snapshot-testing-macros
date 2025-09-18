@@ -35,7 +35,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.enabled(if: false), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
+                traits: [.enabled(if: false), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   EnabledIf().makeView()
@@ -93,7 +93,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
             static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
               SnapshotTestingMacros.SnapshotGenerator(
                 displayName: "makeView",
-                traits: [.enabled(if: enableTests, "Some comment"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
+                traits: [.enabled(if: enableTests, "Some comment"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   EnabledIfWithComment().makeView()
@@ -153,7 +153,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
                 displayName: "makeView",
                 traits: [.enabled {
                     false
-                  }, .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
+                  }, .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   EnabledWithCondition().makeView()
@@ -215,7 +215,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
                 displayName: "makeView",
                 traits: [.enabled("Some comment", {
                       enableTests
-                    }), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false), .diffTool(.default)],
+                    }), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   EnabledWithCommentAndCondition().makeView()

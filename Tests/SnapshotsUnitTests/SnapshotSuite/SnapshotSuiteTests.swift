@@ -10,7 +10,7 @@ import Testing
       "SnapshotSuite": SnapshotSuiteMacro.self,
       "SnapshotTest": SnapshotTestMacro.self,
     ],
-    record: .failed
+    record: .missing
   )
 )
 struct SnapshotSuiteTests {}
