@@ -49,7 +49,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct EnabledIf_GeneratedSnapshotSuite {
 
             @MainActor
@@ -107,7 +107,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct EnabledIfWithComment_GeneratedSnapshotSuite {
 
             @MainActor
@@ -167,7 +167,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct EnabledWithCondition_GeneratedSnapshotSuite {
 
             @MainActor
@@ -229,7 +229,7 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct EnabledWithCommentAndCondition_GeneratedSnapshotSuite {
 
             @MainActor

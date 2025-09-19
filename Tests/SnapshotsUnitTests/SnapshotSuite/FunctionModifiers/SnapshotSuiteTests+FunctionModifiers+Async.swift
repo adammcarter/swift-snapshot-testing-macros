@@ -49,7 +49,7 @@ extension SnapshotSuiteTests.FunctionModifiers {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
@@ -107,7 +107,7 @@ extension SnapshotSuiteTests.FunctionModifiers {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
@@ -168,7 +168,7 @@ extension SnapshotSuiteTests.FunctionModifiers {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor

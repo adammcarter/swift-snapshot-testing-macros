@@ -51,7 +51,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct URL_GeneratedSnapshotSuite {
 
             @MainActor
@@ -111,7 +111,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct Title_GeneratedSnapshotSuite {
 
             @MainActor
@@ -171,7 +171,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct ID_GeneratedSnapshotSuite {
 
             @MainActor

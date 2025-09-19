@@ -83,7 +83,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct Tests_GeneratedSnapshotSuite {
 
             @MainActor
@@ -189,7 +189,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct Tests_GeneratedSnapshotSuite {
 
             @MainActor
@@ -312,7 +312,7 @@ extension SnapshotTestTests.Configurations {
         #endif
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
@@ -422,7 +422,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct Tests_GeneratedSnapshotSuite {
 
             @MainActor
@@ -496,7 +496,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct Tests_GeneratedSnapshotSuite {
 
             @MainActor

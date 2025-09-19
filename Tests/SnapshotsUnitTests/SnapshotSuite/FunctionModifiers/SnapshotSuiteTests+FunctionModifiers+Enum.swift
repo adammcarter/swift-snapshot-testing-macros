@@ -49,7 +49,7 @@ extension SnapshotSuiteTests.FunctionModifiers {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct MyEnum_GeneratedSnapshotSuite {
 
             @MainActor

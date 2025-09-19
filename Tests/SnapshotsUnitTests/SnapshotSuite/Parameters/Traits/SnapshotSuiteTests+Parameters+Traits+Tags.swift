@@ -49,7 +49,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct Tags_GeneratedSnapshotSuite {
 
             @MainActor
@@ -111,7 +111,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct Tags_GeneratedSnapshotSuite {
 
             @MainActor
@@ -169,7 +169,7 @@ extension SnapshotSuiteTests.Parameters.Traits {
           }
 
           @MainActor
-          @Suite(.snapshots)
+          @Suite(.snapshots(diffTool: .default))
           struct Tags_GeneratedSnapshotSuite {
 
             @MainActor

@@ -12,7 +12,8 @@ extension Constants.Trait {
         .timeLimit:
         nil
 
-      case .tags,
+      case .diffTool,
+        .tags,
         .record,
         .sizes,
         .strategy,
@@ -37,6 +38,7 @@ extension Constants.Trait {
         .timeLimit:
         nil
 
+      case .diffTool: ".default"
       case .record: "false"
       case .sizes: ".minimum"
       case .strategy: ".image"
@@ -44,7 +46,7 @@ extension Constants.Trait {
     }
   }
 
-  /// Mark as true to transfer this along to `@Test` traits.
+  /// Mark as true to transfer the trait along to `@Test` traits.
   var isSwiftTestingTrait: Bool {
     switch self {
       case .bug,
@@ -55,11 +57,33 @@ extension Constants.Trait {
         true
 
       case .backgroundColor,
+        .diffTool,
         .padding,
         .record,
         .sizes,
         .strategy,
         .theme:
+        false
+    }
+  }
+
+  /// Mark as true to transfer the trait along to the snapshot generator.
+  var isConsumedBySnapshotGenerator: Bool {
+    switch self {
+      case .backgroundColor,
+        .bug,
+        .disabled,
+        .enabled,
+        .padding,
+        .record,
+        .sizes,
+        .strategy,
+        .tags,
+        .theme,
+        .timeLimit:
+        true
+
+      case .diffTool:
         false
     }
   }

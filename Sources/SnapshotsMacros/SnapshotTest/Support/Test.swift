@@ -144,6 +144,10 @@ func makeTraitsArrayExpr(
 
   return ArrayExprSyntax {
     expressions
+      .filter {
+        Constants.Trait(expression: $0)?.isConsumedBySnapshotGenerator
+          ?? true
+      }
       .map { expression in
         if let mappedValue = Constants.Trait.mappingRawTraitToNewValue(expression.trimmedDescription) {
           ExprSyntax(stringLiteral: mappedValue)
