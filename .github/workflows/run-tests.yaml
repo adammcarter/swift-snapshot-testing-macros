@@ -10,7 +10,7 @@ on:
 jobs:
   format-and-lint:
     name: Format and Lint
-    runs-on: macos-15
+    runs-on: macos-26
     
     steps:
       - name: Checkout
@@ -45,13 +45,13 @@ jobs:
   ios-integration-tests:
     name: Integration Tests
     needs: [format-and-lint, build-legacy-swift-versions]
-    runs-on: macos-15
+    runs-on: macos-26
 
     steps:
-      - name: Select Xcode version (16.4)
+      - name: Select Xcode version (26.0)
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.4'
+          xcode-version: '26.0'
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -65,18 +65,18 @@ jobs:
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationTests \
-            -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6"
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0"
     
   ios-integration-repetition-tests:
     name: Integration Repetition Tests
     needs: [format-and-lint, build-legacy-swift-versions]
-    runs-on: macos-15
+    runs-on: macos-26
 
     steps:
-      - name: Select Xcode version (16.4)
+      - name: Select Xcode version (26.0)
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.4'
+          xcode-version: '26.0'
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -90,18 +90,18 @@ jobs:
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationRepetitionTests \
-            -destination "platform=iOS Simulator,name=iPhone 16,OS=18.6"
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0"
 
   macos-unit-tests:
     name: Unit Tests
     needs: [format-and-lint, build-legacy-swift-versions]
-    runs-on: macos-15
+    runs-on: macos-26
 
     steps:
-      - name: Select Xcode version (16.4)
+      - name: Select Xcode version (26.0)
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.4'
+          xcode-version: '26.0'
 
       - name: Checkout
         uses: actions/checkout@v4

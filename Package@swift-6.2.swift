@@ -1,4 +1,4 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import CompilerPluginSupport
@@ -18,9 +18,9 @@ let package = Package(
     .executable(name: "SnapshotsClient", targets: ["SnapshotsClient"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/swiftlang/swift-syntax", exact: "601.0.1"),
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.18.6"),
-    .package(url: "https://github.com/pointfreeco/swift-macro-testing", exact: "0.6.2"),
+    .package(url: "https://github.com/swiftlang/swift-syntax", exact: "602.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.18.7"),
+    .package(url: "https://github.com/pointfreeco/swift-macro-testing", exact: "0.6.4"),
   ],
   targets: [
     /*
