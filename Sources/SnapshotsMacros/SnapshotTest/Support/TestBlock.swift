@@ -2,7 +2,10 @@ import SwiftSyntax
 
 extension SnapshotSuite {
   struct TestBlock {
-    var expression: DeclSyntax? { ifConfig.flatMap { DeclSyntax($0.expression) } ?? test?.expression }
+    var expression: DeclSyntax? {
+      ifConfig.flatMap { DeclSyntax($0.expression) }
+        ?? test?.expression
+    }
 
     private let ifConfig: IfConfig?
     private let test: Test?
