@@ -5,20 +5,52 @@ import SwiftSyntaxMacros
 extension SnapshotSuite.TestBlock {
   struct Test {
     var expression: DeclSyntax {
-      """
-      @MainActor
-      @Test(\(testMacro.expr))
-      func \(testFunction.nameExpr)(\(testFunction.parametersExpr)) async throws {
-        try await \(raw: Constants.Namespace.snapshotTestingMacros).assertSnapshot(
-          generator: \(raw: generatorContainerName).makeGenerator(configuration: \(configurationExpr))
+      let baseExpression: DeclSyntax = """
+        func \(testFunction.nameExpr)(\(testFunction.parametersExpr)) async throws {
+          try await \(raw: Constants.Namespace.snapshotTestingMacros).assertSnapshot(
+            generator: \(generatorContainerName).makeGenerator(configuration: \(configurationExpr))
+          )
+        }
+        """
+
+      var functionDecl = FunctionDeclSyntax(baseExpression)!
+
+      let parsedAttributesListExpr = parsedAttributesListExpr?
+        .filter {
+          $0.isMainActor || $0.isAvailable
+        }
+
+      if parsedAttributesListExpr?.contains(where: \.isMainActor) == false {
+        functionDecl.attributes.append(
+          .attribute("@MainActor")
         )
       }
-      """
+
+      functionDecl.attributes.append(
+        .attribute("@Test(\(testMacro.expr))")
+      )
+
+      if let parsedAttributesListExpr {
+        functionDecl.attributes.append(
+          contentsOf: parsedAttributesListExpr
+        )
+      }
+
+      functionDecl.attributes = .init {
+        functionDecl.attributes.map {
+          with($0.trimmed) {
+            $0.trailingTrivia = .newline
+          }
+        }
+      }
+
+      return DeclSyntax(functionDecl)
     }
 
     private let testMacro: TestMacro
     private let testFunction: TestFunction
     private let generatorContainerName: TokenSyntax
+    private let parsedAttributesListExpr: AttributeListSyntax?
 
     private var configurationExpr: ExprSyntax? {
       ExprSyntax(stringLiteral: hasConfigurations ? "configuration" : ".none")
@@ -85,6 +117,8 @@ extension SnapshotSuite.TestBlock {
 
       self.configurationsExpr = testMacroArguments.configurationsExpression
       self.configurationValuesExpr = testMacroArguments.configurationValuesExpression
+
+      self.parsedAttributesListExpr = snapshotTestFunctionDecl.attributes
     }
   }
 }
@@ -188,9 +222,34 @@ func makeArguments(
 }
 
 func makeSwiftTestingTraits(traitsArrayExpr: ArrayExprSyntax) -> [ExprSyntax] {
-  let traitsPrefixesToTransfer = Constants.Trait.allCases.filter(\.isSwiftTestingTrait).map(\.prefix)
+  let traitsPrefixesToTransfer = Constants.Trait
+    .allCases
+    .filter(\.isSwiftTestingTrait)
+    .map(\.prefix)
 
-  return traitsArrayExpr.elements
-    .filter { traitsPrefixesToTransfer.contains(where: $0.trimmedDescription.hasPrefix) }
+  return traitsArrayExpr
+    .elements
+    .filter {
+      traitsPrefixesToTransfer.contains(where: $0.trimmedDescription.hasPrefix)
+    }
     .map(\.trimmed.expression)
+}
+
+extension AttributeListSyntax.Element {
+  fileprivate var isMainActor: Bool {
+    hasPrefix("MainActor")
+  }
+
+  fileprivate var isAvailable: Bool {
+    hasPrefix("available")
+  }
+
+  fileprivate func hasPrefix(_ name: String) -> Bool {
+    if case .attribute(let attribute) = self {
+      attribute.attributeName.trimmedDescription.hasPrefix(name)
+    }
+    else {
+      false
+    }
+  }
 }
