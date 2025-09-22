@@ -5,8 +5,8 @@ extension DiffToolSnapshotTrait.DiffTool {
     .init {
       """
       imagediff \\
-      \($0) \\
-      \($1)
+        "\($0)" \\
+        "\($1)"
       """
     }
   }
