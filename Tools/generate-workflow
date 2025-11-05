@@ -82,6 +82,11 @@ jobs:
         with:
           ruby-version: '\(RUBY_VERSION)'
 
+      - name: Disable prebuilts
+        run: |
+          defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
+          defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
+
       - name: Run SnapshotsIntegrationTests (iOS)
         run: |
           xcodebuild test \\
@@ -106,6 +111,11 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '\(RUBY_VERSION)'
+
+      - name: Disable prebuilts
+        run: |
+          defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
+          defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
 
       - name: Run SnapshotsIntegrationRepetitionTests (iOS)
         run: |
