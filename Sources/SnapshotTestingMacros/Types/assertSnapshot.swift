@@ -1,8 +1,11 @@
 import Foundation
 import SnapshotTesting
 import SwiftUI
-import Testing
 import XCTest
+
+#if canImport(Testing)
+import Testing
+#endif
 
 @available(*, message: "This is an implementation detail. Do not call this function directly.")
 @MainActor
@@ -322,38 +325,39 @@ private func recordIssue(
   line: UInt,
   column: UInt
 ) {
-  #if canImport(Testing)
+#if canImport(Testing)
+  let comment = Comment(rawValue: message())
+  let sourceLocation = SourceLocation(
+    fileID: fileID.description,
+    filePath: filePath.description,
+    line: Int(line),
+    column: Int(column)
+  )
+
   if Test.current != nil {
     if let error {
       Issue.record(
         error,
-        Comment(rawValue: message()),
-        sourceLocation: SourceLocation(
-          fileID: fileID.description,
-          filePath: filePath.description,
-          line: Int(line),
-          column: Int(column)
-        )
+        comment,
+        sourceLocation: sourceLocation
       )
     }
     else {
       Issue.record(
-        Comment(rawValue: message()),
-        sourceLocation: SourceLocation(
-          fileID: fileID.description,
-          filePath: filePath.description,
-          line: Int(line),
-          column: Int(column)
-        )
+        comment,
+        sourceLocation: sourceLocation
       )
     }
   }
   else {
-    XCTFail(message(), file: filePath, line: line)
+    Issue.record(
+      comment,
+      sourceLocation: sourceLocation
+    )
   }
-  #else
+#else
   XCTFail(message(), file: filePath, line: line)
-  #endif
+#endif
 }
 
 // MARK: - Debugging
