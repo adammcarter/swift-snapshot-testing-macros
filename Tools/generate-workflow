@@ -6,7 +6,7 @@ import Foundation
 let XCODE_VERSIONS = ["16.1", "16.2", "16.3", "16.4", "26.0"]
 let LATEST_XCODE = XCODE_VERSIONS.last!
 let IOS_SIMULATOR = "iPhone 17"
-let IOS_VERSION = "26.0"
+let IOS_VERSION = "26.0.1"
 let RUBY_VERSION = "3.1"
 
 let LEGACY_RUNNER = "macos-15"

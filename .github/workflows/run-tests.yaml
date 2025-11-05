@@ -65,7 +65,7 @@ jobs:
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationTests \
-            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0"
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0.1"
     
   ios-integration-repetition-tests:
     name: Integration Repetition Tests
@@ -90,7 +90,7 @@ jobs:
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationRepetitionTests \
-            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0"
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0.1"
 
   macos-unit-tests:
     name: Unit Tests
