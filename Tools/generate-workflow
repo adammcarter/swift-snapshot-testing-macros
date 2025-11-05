@@ -18,7 +18,7 @@ func yamlArray(_ items: [String]) -> String {
 }
 
 
-let yaml = """
+let yamlString = """
 name: Run Tests
 
 on:
@@ -140,21 +140,12 @@ jobs:
 
 """
 
+let outputURL = URL(fileURLWithPath: ".github/workflows/run-tests.yaml")
 
-func copyToClipboard(_ text: String) {
-    let process = Process()
-    process.launchPath = "/usr/bin/pbcopy"
-		
-    let pipe = Pipe()
-    process.standardInput = pipe
-    process.launch()
+do {
+    try yamlString.write(to: outputURL, atomically: true, encoding: .utf8)
     
-		pipe.fileHandleForWriting.write(text.data(using: .utf8)!)
-    pipe.fileHandleForWriting.closeFile()
-    
-		process.waitUntilExit()
+    print("Updated workflow at '\(outputURL.path)'")
+} catch {
+    print("Failed to write workflow: \(error)")
 }
-
-copyToClipboard(yaml)
-
-print("Copied to clipboard!")
