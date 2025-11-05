@@ -6,7 +6,7 @@ import Foundation
 let XCODE_VERSIONS = ["16.1", "16.2", "16.3", "16.4", "26.0"]
 let LATEST_XCODE = XCODE_VERSIONS.last!
 let IOS_SIMULATOR = "iPhone 17"
-let IOS_VERSION = "26.0"
+let IOS_VERSION = "26.0.1"
 let RUBY_VERSION = "3.1"
 
 let LEGACY_RUNNER = "macos-15"
@@ -18,7 +18,7 @@ func yamlArray(_ items: [String]) -> String {
 }
 
 
-let yaml = """
+let yamlString = """
 name: Run Tests
 
 on:
@@ -82,6 +82,11 @@ jobs:
         with:
           ruby-version: '\(RUBY_VERSION)'
 
+      - name: Disable prebuilts
+        run: |
+          defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
+          defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
+
       - name: Run SnapshotsIntegrationTests (iOS)
         run: |
           xcodebuild test \\
@@ -106,6 +111,11 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '\(RUBY_VERSION)'
+
+      - name: Disable prebuilts
+        run: |
+          defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
+          defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
 
       - name: Run SnapshotsIntegrationRepetitionTests (iOS)
         run: |
@@ -140,21 +150,12 @@ jobs:
 
 """
 
+let outputURL = URL(fileURLWithPath: ".github/workflows/run-tests.yaml")
 
-func copyToClipboard(_ text: String) {
-    let process = Process()
-    process.launchPath = "/usr/bin/pbcopy"
-		
-    let pipe = Pipe()
-    process.standardInput = pipe
-    process.launch()
+do {
+    try yamlString.write(to: outputURL, atomically: true, encoding: .utf8)
     
-		pipe.fileHandleForWriting.write(text.data(using: .utf8)!)
-    pipe.fileHandleForWriting.closeFile()
-    
-		process.waitUntilExit()
+    print("Updated workflow at '\(outputURL.path)'")
+} catch {
+    print("Failed to write workflow: \(error)")
 }
-
-copyToClipboard(yaml)
-
-print("Copied to clipboard!")

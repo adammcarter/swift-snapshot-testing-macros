@@ -61,11 +61,16 @@ jobs:
         with:
           ruby-version: '3.1'
 
+      - name: Disable prebuilts
+        run: |
+          defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
+          defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
+
       - name: Run SnapshotsIntegrationTests (iOS)
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationTests \
-            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0"
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0.1"
     
   ios-integration-repetition-tests:
     name: Integration Repetition Tests
@@ -86,11 +91,16 @@ jobs:
         with:
           ruby-version: '3.1'
 
+      - name: Disable prebuilts
+        run: |
+          defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
+          defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
+
       - name: Run SnapshotsIntegrationRepetitionTests (iOS)
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationRepetitionTests \
-            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0"
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0.1"
 
   macos-unit-tests:
     name: Unit Tests
