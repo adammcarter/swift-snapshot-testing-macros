@@ -325,7 +325,7 @@ private func recordIssue(
   line: UInt,
   column: UInt
 ) {
-#if canImport(Testing)
+  #if canImport(Testing)
   let comment = Comment(rawValue: message())
   let sourceLocation = SourceLocation(
     fileID: fileID.description,
@@ -355,9 +355,9 @@ private func recordIssue(
       sourceLocation: sourceLocation
     )
   }
-#else
+  #else
   XCTFail(message(), file: filePath, line: line)
-#endif
+  #endif
 }
 
 // MARK: - Debugging
