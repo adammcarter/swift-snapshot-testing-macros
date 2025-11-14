@@ -54,15 +54,15 @@ extension SnapshotSuiteTests.SanityChecks {
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots)
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
             func makeMyView_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeMyView.makeGenerator(configuration: .none)
-              )
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }

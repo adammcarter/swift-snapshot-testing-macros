@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "5DEC9645-03A4-431A-AF47-6C1F5EB25AFE",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "mainThreadCheckerDetectionPolicy" : {
+      "severity" : "failure"
+    },
+    "maximumTestRepetitions" : null,
+    "testExecutionOrdering" : "random",
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "SnapshotsIntegrationTests",
+        "name" : "SnapshotsIntegrationTests"
+      }
+    }
+  ],
+  "version" : 1
+}

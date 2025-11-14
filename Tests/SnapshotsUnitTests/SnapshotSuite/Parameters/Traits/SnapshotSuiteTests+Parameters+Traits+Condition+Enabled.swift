@@ -32,10 +32,9 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
 
           enum __generator_container_makeView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
                 displayName: "makeView",
-                traits: [.enabled(if: false), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   EnabledIf().makeView()
@@ -49,15 +48,15 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.enabled(if: false)).wrapped)
           struct EnabledIf_GeneratedSnapshotSuite {
 
             @MainActor
-            @Test(.enabled(if: false))
+            @Test()
             func makeView_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeView.makeGenerator(configuration: .none)
-              )
+              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }
@@ -90,10 +89,9 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
 
           enum __generator_container_makeView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
                 displayName: "makeView",
-                traits: [.enabled(if: enableTests, "Some comment"), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   EnabledIfWithComment().makeView()
@@ -107,15 +105,15 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.enabled(if: enableTests, "Some comment")).wrapped)
           struct EnabledIfWithComment_GeneratedSnapshotSuite {
 
             @MainActor
-            @Test(.enabled(if: enableTests, "Some comment"))
+            @Test()
             func makeView_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeView.makeGenerator(configuration: .none)
-              )
+              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }
@@ -148,12 +146,9 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
 
           enum __generator_container_makeView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
                 displayName: "makeView",
-                traits: [.enabled {
-                    false
-                  }, .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   EnabledWithCondition().makeView()
@@ -167,17 +162,17 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.enabled {
+              false
+            }).wrapped)
           struct EnabledWithCondition_GeneratedSnapshotSuite {
 
             @MainActor
-            @Test(.enabled {
-              false
-            })
+            @Test()
             func makeView_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeView.makeGenerator(configuration: .none)
-              )
+              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }
@@ -210,12 +205,9 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
 
           enum __generator_container_makeView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
                 displayName: "makeView",
-                traits: [.enabled("Some comment", {
-                      enableTests
-                    }), .theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   EnabledWithCommentAndCondition().makeView()
@@ -229,17 +221,17 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.enabled("Some comment", {
+                enableTests
+              })).wrapped)
           struct EnabledWithCommentAndCondition_GeneratedSnapshotSuite {
 
             @MainActor
-            @Test(.enabled("Some comment", {
-                enableTests
-              }))
+            @Test()
             func makeView_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeView.makeGenerator(configuration: .none)
-              )
+              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }

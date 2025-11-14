@@ -1,0 +1,7 @@
+#!/bin/zsh
+
+set -e
+
+root_dir="${0%/*}"/..
+
+find "$root_dir" -type d -name "__Snapshots__" -prune -exec rm -rf {} +

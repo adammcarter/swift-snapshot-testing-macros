@@ -3,6 +3,7 @@ import SwiftUI
 import Testing
 
 extension SnapshotSuite {
+
   @Suite
   @SnapshotSuite
   struct ManyTests {

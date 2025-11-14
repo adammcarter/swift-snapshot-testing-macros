@@ -45,10 +45,9 @@ extension SnapshotTestTests.Configurations {
 
           enum __generator_container_makeMyView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<(String)>) -> SnapshotTestingMacros.SnapshotGenerator<(String)> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(String)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(String)>(
                 displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   Tests().makeMyView(input: $0)
@@ -66,10 +65,9 @@ extension SnapshotTestTests.Configurations {
 
           enum __generator_container_makeAnotherView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<(String)>) -> SnapshotTestingMacros.SnapshotGenerator<(String)> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(String)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(String)>(
                 displayName: "makeAnotherView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   Tests().makeAnotherView(input: $0)
@@ -83,7 +81,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots)
           struct Tests_GeneratedSnapshotSuite {
 
             @MainActor
@@ -91,9 +89,9 @@ extension SnapshotTestTests.Configurations {
                   SnapshotConfiguration(name: "Config1", value: "1"),
                 ]))
             func makeMyView_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeMyView.makeGenerator(configuration: configuration)
-              )
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
 
             @MainActor
@@ -101,9 +99,9 @@ extension SnapshotTestTests.Configurations {
                   SnapshotConfiguration(name: "Config1", value: "1"),
                 ]))
             func makeAnotherView_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeAnotherView.makeGenerator(configuration: configuration)
-              )
+              let generator = __generator_container_makeAnotherView.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }
@@ -151,10 +149,9 @@ extension SnapshotTestTests.Configurations {
 
           enum __generator_container_makeMyView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<(String, Int)>) -> SnapshotTestingMacros.SnapshotGenerator<(String, Int)> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(String, Int)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(String, Int)>(
                 displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   Tests().makeMyView(string: $0, int: $1)
@@ -172,10 +169,9 @@ extension SnapshotTestTests.Configurations {
 
           enum __generator_container_makeAnotherView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<(String, Int)>) -> SnapshotTestingMacros.SnapshotGenerator<(String, Int)> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(String, Int)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(String, Int)>(
                 displayName: "makeAnotherView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   Tests().makeAnotherView(string: $0, int: $1)
@@ -189,7 +185,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots)
           struct Tests_GeneratedSnapshotSuite {
 
             @MainActor
@@ -198,9 +194,9 @@ extension SnapshotTestTests.Configurations {
                   SnapshotConfiguration(name: "Config2", value: ("2", 2)),
                 ]))
             func makeMyView_snapshotTest(configuration: SnapshotConfiguration<(String, Int)>) async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeMyView.makeGenerator(configuration: configuration)
-              )
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
 
             @MainActor
@@ -209,9 +205,9 @@ extension SnapshotTestTests.Configurations {
                   SnapshotConfiguration(name: "Config2", value: ("2", 2)),
                 ]))
             func makeAnotherView_snapshotTest(configuration: SnapshotConfiguration<(String, Int)>) async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeAnotherView.makeGenerator(configuration: configuration)
-              )
+              let generator = __generator_container_makeAnotherView.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }
@@ -236,17 +232,7 @@ extension SnapshotTestTests.Configurations {
             Text("my view")
           }
 
-        #if canImport(AppKit)
-          @SnapshotTest(
-            configurations: [
-              SnapshotConfiguration(name: "Config1", value: "1"),
-            ]
-          )
-          func makeViewController(input: String) -> NSViewController {
-            NSHostingController(rootView: Text("hosting controller"))
-          }
-
-        #elseif canImport(UIKit)
+        #if canImport(UIKit)
           @SnapshotTest(
             configurations: [
               SnapshotConfiguration(name: "Config1", value: "1"),
@@ -279,10 +265,9 @@ extension SnapshotTestTests.Configurations {
 
           enum __generator_container_makeMyView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<(String)>) -> SnapshotTestingMacros.SnapshotGenerator<(String)> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(String)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(String)>(
                 displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   SnapshotTests().makeMyView(input: $0)
@@ -295,12 +280,7 @@ extension SnapshotTestTests.Configurations {
             }
           }
 
-        #if canImport(AppKit)
-          func makeViewController(input: String) -> NSViewController {
-            NSHostingController(rootView: Text("hosting controller"))
-          }
-
-        #elseif canImport(UIKit)
+        #if canImport(UIKit)
           func makeViewController(input: String) -> UIViewController {
             UIHostingController(rootView: Text("hosting controller"))
           }
@@ -312,7 +292,7 @@ extension SnapshotTestTests.Configurations {
         #endif
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots)
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
@@ -320,31 +300,20 @@ extension SnapshotTestTests.Configurations {
                   SnapshotConfiguration(name: "Config1", value: "1"),
                 ]))
             func makeMyView_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeMyView.makeGenerator(configuration: configuration)
-              )
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
 
-            #if canImport(AppKit)
+            #if canImport(UIKit)
             @MainActor
             @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
                   SnapshotConfiguration(name: "Config1", value: "1"),
                 ]))
             func makeViewController_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeViewController.makeGenerator(configuration: configuration)
-              )
-            }
+              let generator = __generator_container_makeViewController.makeGenerator(configuration: configuration)
 
-            #elseif canImport(UIKit)
-            @MainActor
-            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
-                  SnapshotConfiguration(name: "Config1", value: "1"),
-                ]))
-            func makeViewController_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeViewController.makeGenerator(configuration: configuration)
-              )
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
 
             #else
@@ -353,9 +322,9 @@ extension SnapshotTestTests.Configurations {
                   SnapshotConfiguration(name: "Config1", value: "1"),
                 ]))
             func makeViewController_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeViewController.makeGenerator(configuration: configuration)
-              )
+              let generator = __generator_container_makeViewController.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
             #endif
           }
@@ -405,10 +374,9 @@ extension SnapshotTestTests.Configurations {
 
           enum __generator_container_makeMyView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<(Int)>) -> SnapshotTestingMacros.SnapshotGenerator<(Int)> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(Int)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(Int)>(
                 displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   Tests().makeMyView(value: $0)
@@ -422,15 +390,15 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots)
           struct Tests_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse(getArgs()))
             func makeMyView_snapshotTest(configuration: SnapshotConfiguration<(Int)>) async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeMyView.makeGenerator(configuration: configuration)
-              )
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }
@@ -479,10 +447,9 @@ extension SnapshotTestTests.Configurations {
 
           enum __generator_container_makeMyView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<(Int)>) -> SnapshotTestingMacros.SnapshotGenerator<(Int)> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(Int)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(Int)>(
                 displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   Tests().makeMyView(value: $0)
@@ -496,15 +463,15 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots)
           struct Tests_GeneratedSnapshotSuite {
 
             @MainActor
             @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse(getArgs))
             func makeMyView_snapshotTest(configuration: SnapshotConfiguration<(Int)>) async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeMyView.makeGenerator(configuration: configuration)
-              )
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }
