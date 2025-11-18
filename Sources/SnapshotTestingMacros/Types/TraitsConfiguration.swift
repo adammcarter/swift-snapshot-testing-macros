@@ -15,7 +15,7 @@ struct TraitsConfiguration {
   let strategy: StrategySnapshotTrait.Strategy?
   let themes: [SnapshotTheme]
 
-  init(traits: [SnapshotTrait]) throws(String) {
+  init(traits: [any SnapshotTrait]) throws(String) {
     self.record = makeRecord(traits: traits)
     self.sizes = makeSizes(traits: traits)
     self.strategy = makeStrategy(traits: traits)
@@ -28,7 +28,7 @@ struct TraitsConfiguration {
 // MARK: Record
 
 private func makeRecord(
-  traits: [SnapshotTrait]
+  traits: [any SnapshotTrait]
 ) -> Bool? {
   traits
     .first(as: RecordSnapshotTrait.self)?
@@ -38,7 +38,7 @@ private func makeRecord(
 // MARK: Sizes
 
 @MainActor
-private func makeSizes(traits: [SnapshotTrait]) -> [SizesSnapshotTrait.Size]? {
+private func makeSizes(traits: [any SnapshotTrait]) -> [SizesSnapshotTrait.Size]? {
   traits
     .first(as: SizesSnapshotTrait.self)?
     .sizes
@@ -47,7 +47,7 @@ private func makeSizes(traits: [SnapshotTrait]) -> [SizesSnapshotTrait.Size]? {
 // MARK: Strategy
 
 @MainActor
-private func makeStrategy(traits: [SnapshotTrait]) -> StrategySnapshotTrait.Strategy? {
+private func makeStrategy(traits: [any SnapshotTrait]) -> StrategySnapshotTrait.Strategy? {
   traits.first(as: StrategySnapshotTrait.self)?.strategy
 }
 
@@ -55,7 +55,7 @@ private func makeStrategy(traits: [SnapshotTrait]) -> StrategySnapshotTrait.Stra
 
 @MainActor
 private func makeThemes(
-  traits: [SnapshotTrait]
+  traits: [any SnapshotTrait]
 ) throws(String) -> [SnapshotTheme] {
   guard
     let themeTrait = traits.first(as: ThemeSnapshotTrait.self)

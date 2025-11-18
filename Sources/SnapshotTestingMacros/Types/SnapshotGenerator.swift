@@ -4,7 +4,7 @@ import SwiftUI
 @MainActor
 public struct SnapshotGenerator<T: Sendable> {
   let displayName: String
-  let traits: [SnapshotTrait]
+  let traits: [any SnapshotTrait]
   let configuration: SnapshotConfiguration<T>
   let makeValue: @MainActor (T) async throws -> SnapshotView
   let fileID: StaticString
@@ -14,7 +14,7 @@ public struct SnapshotGenerator<T: Sendable> {
 
   public init(
     displayName: String,
-    traits: [SnapshotTrait],
+    traits: [any SnapshotTrait],
     configuration: SnapshotConfiguration<T>,
     makeValue: @escaping @MainActor (T) async throws -> SnapshotView,
     fileID: StaticString,
@@ -52,7 +52,7 @@ public struct SnapshotGenerator<T: Sendable> {
 extension SnapshotGenerator {
   public init<V: SwiftUI.View>(
     displayName: String,
-    traits: [SnapshotTrait],
+    traits: [any SnapshotTrait],
     configuration: SnapshotConfiguration<T>,
     makeValue: @escaping @MainActor (T) async throws -> V,
     fileID: StaticString,
@@ -81,7 +81,7 @@ extension SnapshotGenerator {
 extension SnapshotGenerator {
   public init(
     displayName: String,
-    traits: [SnapshotTrait],
+    traits: [any SnapshotTrait],
     configuration: SnapshotConfiguration<T>,
     makeValue: @escaping @MainActor (T) async throws -> NSViewController,
     fileID: StaticString,
@@ -108,7 +108,7 @@ extension SnapshotGenerator {
 extension SnapshotGenerator {
   public init(
     displayName: String,
-    traits: [SnapshotTrait],
+    traits: [any SnapshotTrait],
     configuration: SnapshotConfiguration<T>,
     makeValue: @escaping @MainActor (T) async throws -> UIViewController,
     fileID: StaticString,

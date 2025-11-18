@@ -8,56 +8,56 @@
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 @attached(peer, names: prefixed(__generator_container_)) public macro SnapshotTest(
-  _ traits: SnapshotTrait...
+  _ traits: any SnapshotTrait...
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 @attached(peer, names: prefixed(__generator_container_)) public macro SnapshotTest(
   _ displayName: String,
-  _ traits: SnapshotTrait...
+  _ traits: any SnapshotTrait...
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 @attached(peer, names: prefixed(__generator_container_)) public macro SnapshotTest<T: Sendable>(
-  _ traits: SnapshotTrait...,
+  _ traits: any SnapshotTrait...,
   configurations: [SnapshotConfiguration<T>]
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 @attached(peer, names: prefixed(__generator_container_)) public macro SnapshotTest<T: Sendable>(
   _ displayName: String?,
-  _ traits: SnapshotTrait...,
+  _ traits: any SnapshotTrait...,
   configurations: [SnapshotConfiguration<T>]
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 @attached(peer, names: prefixed(__generator_container_)) public macro SnapshotTest<T: Sendable>(
-  _ traits: SnapshotTrait...,
+  _ traits: any SnapshotTrait...,
   configurations: () -> [SnapshotConfiguration<T>]
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 @attached(peer, names: prefixed(__generator_container_)) public macro SnapshotTest<T: Sendable>(
   _ displayName: String?,
-  _ traits: SnapshotTrait...,
+  _ traits: any SnapshotTrait...,
   configurations: () -> [SnapshotConfiguration<T>]
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 @attached(peer, names: prefixed(__generator_container_)) public macro SnapshotTest<C: Sendable>(
-  _ traits: SnapshotTrait...,
+  _ traits: any SnapshotTrait...,
   configurationValues: () -> [C]
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 @attached(peer, names: prefixed(__generator_container_)) public macro SnapshotTest<C: Sendable>(
   _ displayName: String?,
-  _ traits: SnapshotTrait...,
+  _ traits: any SnapshotTrait...,
   configurationValues: () -> [C]
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 @attached(peer, names: prefixed(__generator_container_)) public macro SnapshotTest<C>(
-  _ traits: SnapshotTrait...,
+  _ traits: any SnapshotTrait...,
   configurationValues: C
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 where C: Collection & Sendable, C.Element: Sendable
 
 @attached(peer, names: prefixed(__generator_container_)) public macro SnapshotTest<C>(
   _ displayName: String?,
-  _ traits: SnapshotTrait...,
+  _ traits: any SnapshotTrait...,
   configurationValues: C
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 where C: Collection & Sendable, C.Element: Sendable

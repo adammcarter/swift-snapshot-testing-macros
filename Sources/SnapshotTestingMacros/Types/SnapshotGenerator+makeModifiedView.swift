@@ -11,7 +11,7 @@ import AppKit
 extension SnapshotGenerator {
 
   @MainActor
-  static func makeModifiedView<V: SwiftUI.View>(from rootView: V, traits: [SnapshotTrait]) -> SnapshotView {
+  static func makeModifiedView<V: SwiftUI.View>(from rootView: V, traits: [any SnapshotTrait]) -> SnapshotView {
     modifyingSnapshotView(
       rootView,
       paddingTrait: traits.paddingTrait,
@@ -57,7 +57,7 @@ extension SnapshotGenerator {
 extension SnapshotGenerator {
 
   @MainActor
-  static func makeModifiedView(from snapshotView: SnapshotView, traits: [SnapshotTrait]) -> SnapshotView {
+  static func makeModifiedView(from snapshotView: SnapshotView, traits: [any SnapshotTrait]) -> SnapshotView {
     modifyingSnapshotView(
       snapshotView,
       paddingTrait: traits.paddingTrait,
