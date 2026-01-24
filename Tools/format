@@ -7,6 +7,9 @@ root_dir="${0%/*}"/..
 
 # Swiftformat
 
+echo ""
+echo "swift-format"
+
 Tools/bin/swift-format \
   format $root_dir \
   -r \
@@ -16,8 +19,21 @@ Tools/bin/swift-format \
 
 # Swiftlint
 
+echo ""
+echo "swiftlint [autocorrecting if possible]"
+
 Tools/bin/swiftlint \
   --config "${root_dir}/.swiftlint.yml" \
   --strict \
   --progress \
+  --fix \
+  $root_dir
+
+echo ""
+echo "swiftlint [check remaining errors]"
+
+Tools/bin/swiftlint \
+  --config "${root_dir}/.swiftlint.yml" \
+  --progress \
+  --strict \
   $root_dir
