@@ -523,6 +523,33 @@ struct StrategySnapshots {
 
 ---
 
+## Testing Scopes
+
+You can use existing [Swift Testing test scopes](https://developer.apple.com/documentation/testing/testscoping) within your `@SnapshotSuite`s and `@SnapshotTest`s (version 1.1.0 onwards).
+
+You can create your own or use existing scopes by conforming to `SnapshotTest` and/or `SnapshotSuite`.
+
+You can see an example of this in action [here](https://github.com/adammcarter/swift-snapshot-testing-macros/blob/main/Tests/SnapshotsIntegrationTests/Support/MyExampleTrait.swift).
+
+This can be used on a `@SnapshotSuite`, a `@SnapshotTest` or both...
+
+```swift
+@Suite
+@SnapshotSuite
+struct Example {
+
+  @SnapshotTest(
+    /// Use an existing `TestScoping` trait with `@SnapshotTest`
+    .testScopingTrait(value: "TestScoping")
+  )
+  func testScoping() -> some View {
+    Text(MyExampleTrait.current)
+  }
+}
+```
+
+---
+
 ## Swift Testing traits
 
 Snapshot testing supports most of the SwiftTesting traits too so they can also be passed along:
