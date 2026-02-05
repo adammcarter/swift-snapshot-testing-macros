@@ -37,10 +37,9 @@ extension SnapshotTestTests.Configurations {
 
           enum __generator_container_makeAnotherView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<(String)>) -> SnapshotTestingMacros.SnapshotGenerator<(String)> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(String)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(String)>(
                 displayName: "makeAnotherView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   SnapshotTests().makeAnotherView(input: $0)
@@ -54,7 +53,7 @@ extension SnapshotTestTests.Configurations {
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots)
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
@@ -63,9 +62,9 @@ extension SnapshotTestTests.Configurations {
                   SnapshotConfiguration(name: "Config2", value: "2"),
                 ]))
             func makeAnotherView_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeAnotherView.makeGenerator(configuration: configuration)
-              )
+              let generator = __generator_container_makeAnotherView.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }

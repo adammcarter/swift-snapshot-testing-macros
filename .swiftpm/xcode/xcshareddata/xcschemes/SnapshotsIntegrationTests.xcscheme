@@ -14,7 +14,7 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:Tests/IntegrationTests.xctestplan"
+            reference = "container:Tests/SnapshotsIntegrationTests.xctestplan"
             default = "YES">
          </TestPlanReference>
       </TestPlans>

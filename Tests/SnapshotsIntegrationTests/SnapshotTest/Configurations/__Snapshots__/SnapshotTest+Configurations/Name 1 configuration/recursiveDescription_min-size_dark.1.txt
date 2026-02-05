@@ -1,2 +1,2 @@
-<_TtGC7SwiftUI14_UIHostingViewGVS_19_ConditionalContentGS1_GVS_15ModifiedContentVS_4TextVS_14_PaddingLayout_GS2_S3_S4___S3___; frame = (0 0; 177.667 20.3333); gestureRecognizers = <NSArray>; layer = <CALayer>>
+<_TtGC7SwiftUI14_UIHostingViewVS_4Text_; frame = (0 0; 402 874); gestureRecognizers = <NSArray>; layer = <CALayer>>
    | <_TtC7SwiftUIP33_863CCF9D49B535DAEB1C7D61BEE53B5914CGDrawingLayer> (layer)

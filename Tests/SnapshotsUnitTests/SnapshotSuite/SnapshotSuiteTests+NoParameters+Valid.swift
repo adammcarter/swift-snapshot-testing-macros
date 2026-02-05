@@ -37,10 +37,9 @@ extension SnapshotSuiteTests.NoParameters {
 
           enum __generator_container_makeMyView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
                 displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   SnapshotTests().makeMyView()
@@ -58,10 +57,9 @@ extension SnapshotSuiteTests.NoParameters {
 
           enum __generator_container_makeAnotherView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
                 displayName: "makeAnotherView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   SnapshotTests().makeAnotherView()
@@ -75,115 +73,23 @@ extension SnapshotSuiteTests.NoParameters {
           }
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots)
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
             func makeMyView_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeMyView.makeGenerator(configuration: .none)
-              )
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
 
             @MainActor
             @Test()
             func makeAnotherView_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeAnotherView.makeGenerator(configuration: .none)
-              )
-            }
-          }
-        }
-        """
-      }
-    }
+              let generator = __generator_container_makeAnotherView.makeGenerator(configuration: .none)
 
-    @Test
-    func testAppKit() {
-      assertMacro {
-        """
-        @MainActor
-        @Suite
-        @SnapshotSuite
-        struct SnapshotTests {
-          @SnapshotTest
-          func makeHostingController() -> NSViewController {
-            NSHostingController(rootView: Text("hosting controller"))
-          }
-
-          @SnapshotTest
-          func makeViewController() -> NSViewController {
-            NSViewController()
-          }
-        }
-        """
-      } expansion: {
-        """
-        @MainActor
-        @Suite
-        struct SnapshotTests {
-          func makeHostingController() -> NSViewController {
-            NSHostingController(rootView: Text("hosting controller"))
-          }
-
-          enum __generator_container_makeHostingController {
-            @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
-              SnapshotTestingMacros.SnapshotGenerator(
-                displayName: "makeHostingController",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: configuration,
-                makeValue: {
-                  SnapshotTests().makeHostingController()
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 5,
-                column: 3
-              )
-            }
-          }
-          func makeViewController() -> NSViewController {
-            NSViewController()
-          }
-
-          enum __generator_container_makeViewController {
-            @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
-              SnapshotTestingMacros.SnapshotGenerator(
-                displayName: "makeViewController",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
-                configuration: configuration,
-                makeValue: {
-                  SnapshotTests().makeViewController()
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 10,
-                column: 3
-              )
-            }
-          }
-
-          @MainActor
-          @Suite(.snapshots(diffTool: .default))
-          struct SnapshotTests_GeneratedSnapshotSuite {
-
-            @MainActor
-            @Test()
-            func makeHostingController_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeHostingController.makeGenerator(configuration: .none)
-              )
-            }
-
-            @MainActor
-            @Test()
-            func makeViewController_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeViewController.makeGenerator(configuration: .none)
-              )
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }
@@ -203,18 +109,6 @@ extension SnapshotSuiteTests.NoParameters {
           func makeMyView() -> some View {
             Text("my view")
           }
-
-        #if canImport(AppKit)
-          @SnapshotTest
-          func makeHostingController(input: String) -> NSViewController {
-            NSHostingController(rootView: Text("hosting controller"))
-          }
-
-          @SnapshotTest
-          func makeViewController(input: String) -> NSViewController {
-            SampleViewController()
-          }
-        #endif
 
         #if canImport(UIKit)
           @SnapshotTest
@@ -240,10 +134,9 @@ extension SnapshotSuiteTests.NoParameters {
 
           enum __generator_container_makeMyView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
                 displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   SnapshotTests().makeMyView()
@@ -256,15 +149,6 @@ extension SnapshotSuiteTests.NoParameters {
             }
           }
 
-        #if canImport(AppKit)
-          func makeHostingController(input: String) -> NSViewController {
-            NSHostingController(rootView: Text("hosting controller"))
-          }
-          func makeViewController(input: String) -> NSViewController {
-            SampleViewController()
-          }
-        #endif
-
         #if canImport(UIKit)
           func makeHostingController(input: String) -> UIViewController {
             UIHostingController(rootView: Text("hosting controller"))
@@ -275,48 +159,31 @@ extension SnapshotSuiteTests.NoParameters {
         #endif
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots)
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
             func makeMyView_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeMyView.makeGenerator(configuration: .none)
-              )
-            }
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: .none)
 
-            #if canImport(AppKit)
-            @MainActor
-            @Test()
-            func makeHostingController_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeHostingController.makeGenerator(configuration: .none)
-              )
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
-            @MainActor
-            @Test()
-            func makeViewController_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeViewController.makeGenerator(configuration: .none)
-              )
-            }
-            #endif
 
             #if canImport(UIKit)
             @MainActor
             @Test()
             func makeHostingController_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeHostingController.makeGenerator(configuration: .none)
-              )
+              let generator = __generator_container_makeHostingController.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
             @MainActor
             @Test()
             func makeViewController_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeViewController.makeGenerator(configuration: .none)
-              )
+              let generator = __generator_container_makeViewController.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
             #endif
           }
@@ -338,12 +205,7 @@ extension SnapshotSuiteTests.NoParameters {
             Text("my view")
           }
 
-        #if canImport(AppKit)
-          @SnapshotTest
-          func makeViewController() -> NSViewController {
-            NSHostingController(rootView: Text("hosting controller"))
-          }
-        #elseif canImport(UIKit)
+        #if canImport(UIKit)
           @SnapshotTest
           func makeViewController() -> UIViewController {
             UIHostingController(rootView: Text("hosting controller"))
@@ -367,10 +229,9 @@ extension SnapshotSuiteTests.NoParameters {
 
           enum __generator_container_makeMyView {
             @MainActor
-            static func makeGenerator(configuration: SnapshotConfiguration<Void>) -> SnapshotTestingMacros.SnapshotGenerator<Void> {
-              SnapshotTestingMacros.SnapshotGenerator(
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
                 displayName: "makeMyView",
-                traits: [.theme(.all), .strategy(.image), .sizes(.minimum), .record(false)],
                 configuration: configuration,
                 makeValue: {
                   SnapshotTests().makeMyView()
@@ -383,11 +244,7 @@ extension SnapshotSuiteTests.NoParameters {
             }
           }
 
-        #if canImport(AppKit)
-          func makeViewController() -> NSViewController {
-            NSHostingController(rootView: Text("hosting controller"))
-          }
-        #elseif canImport(UIKit)
+        #if canImport(UIKit)
           func makeViewController() -> UIViewController {
             UIHostingController(rootView: Text("hosting controller"))
           }
@@ -398,40 +255,32 @@ extension SnapshotSuiteTests.NoParameters {
         #endif
 
           @MainActor
-          @Suite(.snapshots(diffTool: .default))
+          @Suite(.pointfreeSnapshots)
           struct SnapshotTests_GeneratedSnapshotSuite {
 
             @MainActor
             @Test()
             func makeMyView_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeMyView.makeGenerator(configuration: .none)
-              )
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
 
-            #if canImport(AppKit)
+            #if canImport(UIKit)
             @MainActor
             @Test()
             func makeViewController_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeViewController.makeGenerator(configuration: .none)
-              )
-            }
-            #elseif canImport(UIKit)
-            @MainActor
-            @Test()
-            func makeViewController_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeViewController.makeGenerator(configuration: .none)
-              )
+              let generator = __generator_container_makeViewController.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
             #else
             @MainActor
             @Test()
             func makeViewController_snapshotTest() async throws {
-              try await SnapshotTestingMacros.assertSnapshot(
-                generator: __generator_container_makeViewController.makeGenerator(configuration: .none)
-              )
+              let generator = __generator_container_makeViewController.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
             #endif
           }

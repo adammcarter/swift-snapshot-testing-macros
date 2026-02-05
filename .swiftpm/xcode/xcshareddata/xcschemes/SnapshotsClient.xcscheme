@@ -34,7 +34,7 @@
             default = "YES">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:Tests/IntegrationTests.xctestplan">
+            reference = "container:Tests/SnapshotsIntegrationTests.xctestplan">
          </TestPlanReference>
       </TestPlans>
    </TestAction>

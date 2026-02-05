@@ -801,9 +801,6 @@ TODO: Add more docs about supported views
 - UIKit:
   - UIView
   - UIViewController
-- AppKit:
-  - NSView
-  - NSViewController
 
 
 # Running tests

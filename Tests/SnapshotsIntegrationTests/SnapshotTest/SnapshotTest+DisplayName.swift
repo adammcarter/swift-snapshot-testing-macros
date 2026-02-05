@@ -3,6 +3,7 @@ import SwiftUI
 import Testing
 
 extension SnapshotTest {
+
   @Suite
   struct DisplayName {
 
@@ -10,18 +11,19 @@ extension SnapshotTest {
     @SnapshotSuite
     struct TestDisplayNameTests {
 
-      @SnapshotTest(
-        "Named Suite"
-      )
+      @SnapshotTest("Named Test")
       func named() -> some View {
-        Text("Named Test")
+        Text(#function)
       }
 
-      @SnapshotTest(
-        ""
-      )
+      @SnapshotTest("Some.name/with\\slashes")
+      func fileSystemNameClashing() -> some View {
+        Text(#function)
+      }
+
+      @SnapshotTest("")
       func emptyName() -> some View {
-        Text("[empty display name]")
+        Text(#function)
       }
     }
   }

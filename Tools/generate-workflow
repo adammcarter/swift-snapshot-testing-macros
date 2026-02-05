@@ -3,10 +3,10 @@
 import Foundation
 
 // Constants
-let XCODE_VERSIONS = ["16.1", "16.2", "16.3", "16.4", "26.0", "26.1"]
+let XCODE_VERSIONS = ["16.3", "16.4", "26.0", "26.1", "26.2"]
 let LATEST_XCODE = XCODE_VERSIONS.last!
 let IOS_SIMULATOR = "iPhone 17"
-let IOS_VERSION = "26.1"
+let IOS_VERSION = "26.2"
 let RUBY_VERSION = "3.1"
 
 let LEGACY_RUNNER = "macos-15"
@@ -40,8 +40,8 @@ jobs:
       - name: Make bundled tools executable
         run: chmod +x Tools/bin/*
 
-      - name: Run Tools/format
-        run: ./Tools/format
+      - name: Run Tools/format-check
+        run: ./Tools/format-check
     
   build-legacy-swift-versions:
     name: Build Legacy Swift Versions
@@ -91,7 +91,7 @@ jobs:
         run: |
           xcodebuild test \\
             -scheme SnapshotsIntegrationTests \\
-            -destination "platform=iOS Simulator,name=\(IOS_SIMULATOR),OS=\(IOS_VERSION)"
+            -destination "platform=iOS Simulator,name=\(IOS_SIMULATOR),OS=\(IOS_VERSION),arch=arm64"
     
   ios-integration-repetition-tests:
     name: Integration Repetition Tests
@@ -121,7 +121,7 @@ jobs:
         run: |
           xcodebuild test \\
             -scheme SnapshotsIntegrationRepetitionTests \\
-            -destination "platform=iOS Simulator,name=\(IOS_SIMULATOR),OS=\(IOS_VERSION)"
+            -destination "platform=iOS Simulator,name=\(IOS_SIMULATOR),OS=\(IOS_VERSION),arch=arm64"
 
   macos-unit-tests:
     name: Unit Tests
