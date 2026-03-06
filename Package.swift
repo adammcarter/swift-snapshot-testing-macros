@@ -125,6 +125,21 @@ let package = Package(
     ),
 
     /*
+     A playground target for testing the macro during development.
+     */
+    .testTarget(
+      name: "SnapshotsPlayground",
+      dependencies: [
+        "SnapshotTestSupport",
+        "SnapshotTestingMacros",
+        "SnapshotsMacros",
+      ],
+      exclude: [
+        "__Snapshots__"
+      ]
+    ),
+
+    /*
      A test target with the specific purpose of testing what happens on repetitions.
 
      Previously there was a bug where repetitions of tests would create new snapshot references on subsequent retries, this test target explicitly checks this behaviour to avoid this regression in future.
