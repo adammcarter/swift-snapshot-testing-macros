@@ -23,13 +23,7 @@ extension SnapshotSuiteMacro: MemberMacro {
       return []
     }
 
-    guard
-      let snapshotSuite = SnapshotSuite(macroContext: macroContext)
-    else {
-      return []
-    }
-
-    return [snapshotSuite.expression]
+    return []
   }
 }
 

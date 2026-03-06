@@ -10,7 +10,6 @@ extension SnapshotTest {
     let columnExpr: ExprSyntax
 
     init(
-      suiteName: TokenSyntax,
       testName: String,
       displayName: String,
       declaration: Declaration,
@@ -20,7 +19,6 @@ extension SnapshotTest {
       displayNameExpr = .init(literal: displayName)
 
       makeValueExpr = makeMakeValue(
-        suiteName: suiteName,
         testName: testName,
         declaration: declaration,
         snapshotTestFunctionDecl: snapshotTestFunctionDecl
@@ -42,7 +40,6 @@ extension SnapshotTest {
 /// MySuite().makeView()
 /// ```
 private func makeMakeValue(
-  suiteName: TokenSyntax,
   testName: String,
   declaration: Declaration,
   snapshotTestFunctionDecl: FunctionDeclSyntax
@@ -59,30 +56,24 @@ private func makeMakeValue(
     .map { "\($1.name): $\($0)" }.map(ExprSyntax.init(stringLiteral:))
     .map { LabeledExprSyntax(expression: $0) }
 
-  let baseFunction = FunctionCallExprSyntax(
-    calledExpression: DeclReferenceExprSyntax(baseName: suiteName).trimmed,
-    leftParen: isStatic ? .none : .leftParenToken(),
-    rightParen: isStatic ? .none : .rightParenToken(),
-    argumentsBuilder: {
-      if let initConfigurationToken = declaration.initConfigurationToken {
-        LabeledExprSyntax(
-          label: initConfigurationToken,
-          colon: .colonToken(trailingTrivia: .space),
-          expression: ExprSyntax(stringLiteral: Constants.Parameters.configuration)
-        )
-      }
-    }
-  )
+  let baseFunction = DeclReferenceExprSyntax(baseName: .identifier(testName))
 
   var expression: ExprSyntaxProtocol = FunctionCallExprSyntax(
-    calledExpression: MemberAccessExprSyntax(
-      base: baseFunction,
-      period: .periodToken(),
-      declName: DeclReferenceExprSyntax(baseName: .identifier(testName))
-    ),
+    calledExpression: baseFunction,
     leftParen: .leftParenToken(),
     rightParen: .rightParenToken(),
-    argumentsBuilder: { arguments }
+    argumentsBuilder: {
+        if let initConfigurationToken = declaration.initConfigurationToken {
+            LabeledExprSyntax(
+              label: initConfigurationToken,
+              colon: .colonToken(trailingTrivia: .space),
+              expression: ExprSyntax(stringLiteral: Constants.Parameters.configuration)
+            )
+        }
+        for argument in arguments {
+            argument
+        }
+    }
   )
 
   if isAsync { expression = ExprSyntax(stringLiteral: "await \(expression)") }
