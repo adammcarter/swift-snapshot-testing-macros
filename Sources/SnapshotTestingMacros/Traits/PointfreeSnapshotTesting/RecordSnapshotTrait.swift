@@ -2,7 +2,6 @@ import Foundation
 import SnapshotTesting
 import Testing
 
-#warning("TODO: We can add unit tests to these snapshot traits now")
 public struct RecordSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let record: RecordKind
 

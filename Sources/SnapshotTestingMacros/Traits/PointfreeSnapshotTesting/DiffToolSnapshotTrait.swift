@@ -7,7 +7,6 @@ public struct DiffToolSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, Snap
 
   @TaskLocal static var current = DiffTool.default
 
-  #warning("TODO: Is this output useful? Or just an abstract closure signature?")
   public var debugDescription: String {
     "diffTool: \(diffTool)"
   }

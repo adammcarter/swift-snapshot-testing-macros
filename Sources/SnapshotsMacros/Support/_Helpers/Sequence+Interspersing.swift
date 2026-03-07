@@ -2,8 +2,6 @@ import Foundation
 import SnapshotSupport
 import SwiftSyntax
 
-#warning("TODO: Add tests ??")
-
 extension Sequence {
   func interspersing<T: SyntaxProtocol>(leadingTrivia: Trivia) -> [T] where Element == T {
     enumerated()
