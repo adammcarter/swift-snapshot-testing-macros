@@ -50,7 +50,7 @@ struct AssertionRequestGenerator {
 
     let snapshotDirectory = with(snapshotsBaseUrl) {
       if let folderName {
-        $0.appendPathComponent("\(folderName) configuration", isDirectory: true)
+        $0.appendPathComponent(folderName, isDirectory: true)
       }
     }
 
