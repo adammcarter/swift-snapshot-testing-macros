@@ -1,7 +1,5 @@
 import SwiftSyntax
 
-#warning("TODO: Add tests ??")
-
 extension FunctionSignatureSyntax {
   var isAsync: Bool {
     effectSpecifiers?.asyncSpecifier != nil

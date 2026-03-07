@@ -1,7 +1,5 @@
 import SwiftSyntax
 
-#warning("TODO: Add tests ??")
-
 extension FunctionDeclSyntax {
   var isAsync: Bool {
     signature.isAsync

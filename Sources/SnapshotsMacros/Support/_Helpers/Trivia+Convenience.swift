@@ -1,7 +1,5 @@
 import SwiftSyntax
 
-#warning("TODO: Add tests ??")
-
 extension Trivia {
   static var none: Self { [] }
 }
