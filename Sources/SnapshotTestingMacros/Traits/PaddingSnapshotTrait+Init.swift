@@ -5,13 +5,21 @@ import SwiftUI
 @MainActor
 extension SnapshotTrait where Self == PaddingSnapshotTrait {
   /// Apply a padding to the views when the snapshot is taken.
+  ///
+  /// - Parameter insets: The specific edge insets to apply.
+  /// - Returns: A trait that applies the padding.
   public static func padding(
     _ insets: EdgeInsets
   ) -> Self {
     Self(insets: insets)
   }
 
-  /// Apply a padding to the views when the snapshot is taken, if length is nil a default padding is added.
+  /// Apply a padding to the views when the snapshot is taken.
+  ///
+  /// - Parameters:
+  ///   - edges: The set of edges to apply padding to. Defaults to `.all`.
+  ///   - length: The amount of padding to apply. If `nil`, a default amount is used.
+  /// - Returns: A trait that applies the padding.
   public static func padding(
     _ edges: PaddingSnapshotTrait.Edge.Set = .all,
     _ length: CGFloat? = nil
@@ -20,6 +28,9 @@ extension SnapshotTrait where Self == PaddingSnapshotTrait {
   }
 
   /// Apply a padding to the views when the snapshot is taken around all edges.
+  ///
+  /// - Parameter length: The amount of padding to apply to all edges.
+  /// - Returns: A trait that applies the padding.
   public static func padding(
     _ length: CGFloat
   ) -> Self {
@@ -27,6 +38,8 @@ extension SnapshotTrait where Self == PaddingSnapshotTrait {
   }
 
   /// Apply a padding to the views when the snapshot is taken with a default value.
+  ///
+  /// - Returns: A trait that applies default padding.
   public static var padding: Self {
     .padding()
   }

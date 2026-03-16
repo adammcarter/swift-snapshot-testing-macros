@@ -3,6 +3,7 @@ import SnapshotSupport
 import SwiftUI
 import Testing
 
+/// A trait that adds padding to the view before snapshotting.
 public struct PaddingSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, __SnapshotTestScopingViewDecorator {
   public var debugDescription: String {
     insetKind.debugDescription
