@@ -17,12 +17,20 @@ struct AssertionRequestGenerator {
   private func makeContext(
     with viewGenerator: some SnapshotViewGenerating
   ) async throws -> AssertionRequestContext {
-    .init(
+    let folderName: String?
+    if let name = viewGenerator.configuration.name {
+      folderName = sanitizePathComponent(name)
+    }
+    else {
+      folderName = nil
+    }
+
+    return .init(
       name: viewGenerator.displayName,
       makeSnapshotView: { try await viewGenerator.makeDecoratedView() },
       snapshotDirectory: makeSnapshotDirectory(
         file: viewGenerator.filePath,
-        folderName: viewGenerator.configuration.name
+        folderName: folderName
       ),
       fileID: viewGenerator.fileID,
       filePath: viewGenerator.filePath,
@@ -55,5 +63,12 @@ struct AssertionRequestGenerator {
     }
 
     return snapshotDirectory.path
+  }
+
+  private func sanitizePathComponent(_ string: String) -> String {
+    return
+      string
+      .replacingOccurrences(of: "\\W+", with: "-", options: .regularExpression)
+      .replacingOccurrences(of: "^-|-$", with: "", options: .regularExpression)
   }
 }
