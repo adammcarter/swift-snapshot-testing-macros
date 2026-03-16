@@ -1,5 +1,3 @@
-import SnapshotSupport
-
 #if canImport(UIKit)
 import UIKit
 #elseif canImport(AppKit)
@@ -15,7 +13,7 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
 
   var values: any Collection<SizePair> {
     get async throws {
-      return try await makeSizes()
+      try await makeSizes()
     }
   }
 
@@ -44,7 +42,21 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
     return try await base.generateRequests()
   }
 
-  #warning("TODO: Add 'SizeError' instead of using strings above")
+  enum SizeError: LocalizedError {
+    case zeroSize
+    case zeroWidth
+    case zeroHeight
+    case noSizesAvailable
+
+    var errorDescription: String? {
+      switch self {
+        case .zeroSize: "Size is zero for snapshot"
+        case .zeroWidth: "Zero width for snapshot"
+        case .zeroHeight: "Zero height for snapshot"
+        case .noSizesAvailable: "No sizes available for snapshot"
+      }
+    }
+  }
 
   private func makeSizes() async throws -> [SizePair] {
     let viewController = try await context.makeSnapshotView()
@@ -57,15 +69,15 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
           let absoluteSize = traitSize.absoluteSize(for: viewController)
 
           guard absoluteSize != .zero else {
-            throw "size is zero for snapshot"
+            throw SizeError.zeroSize
           }
 
           guard absoluteSize.width > 0 else {
-            throw "zero width for snapshot"
+            throw SizeError.zeroWidth
           }
 
           guard absoluteSize.height > 0 else {
-            throw "zero height for snapshot"
+            throw SizeError.zeroHeight
           }
 
           return .init(
@@ -76,12 +88,12 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
         }
 
       guard sizes.isEmpty == false else {
-        throw "no sizes available for snapshot"
+        throw SizeError.noSizesAvailable
       }
 
       return sizes
     }
-    catch let error as String {
+    catch let error as SizeError {
       throw error
     }
     catch {
@@ -99,7 +111,7 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
 @MainActor
 extension SizesSnapshotTrait.Size {
   fileprivate func absoluteSize(for viewController: SnapshotViewController) -> CGSize {
-    return switch (width, height) {
+    switch (width, height) {
       case (.fixed(let width), .fixed(let height)):
         .init(width: width, height: height)
 

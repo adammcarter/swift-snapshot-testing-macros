@@ -13,19 +13,19 @@ extension SnapshotTest {
     @MainActor
     @SnapshotTest()
     func asyncOnly() async -> some View {
-      return Text("async")
+      Text("async")
     }
 
     @MainActor
     @SnapshotTest()
     func throwsOnly() throws -> some View {
-      return Text("throws")
+      Text("throws")
     }
 
     @MainActor
     @SnapshotTest()
     func asyncThrows() async throws -> some View {
-      return Text("async throws")
+      Text("async throws")
     }
   }
 }

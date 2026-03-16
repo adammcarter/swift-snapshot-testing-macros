@@ -17,6 +17,10 @@ This project uses [mise](https://mise.jdx.dev) to manage development tools and e
 ### Unit Tests
 Run the unit tests using Swift Package Manager or Xcode:
 ```bash
+mise run test
+```
+or
+```bash
 swift test
 ```
 
@@ -24,6 +28,10 @@ swift test
 Integration tests require a specific simulator (iPhone 17, iOS 26.2) to match reference snapshots.
 
 Run via command line:
+```bash
+mise run test-integration
+```
+or
 ```bash
 xcodebuild test \
   -scheme SnapshotsIntegrationTests \
@@ -34,7 +42,7 @@ xcodebuild test \
 
 We use `swift-format` and `swiftlint` to enforce code style.
 
--   **Check Format**: `./Tools/format-check`
--   **Apply Format**: `./Tools/format`
+-   **Check Format**: `mise run lint` (or `./Tools/format-check`)
+-   **Apply Format**: `mise run format` (or `./Tools/format`)
 
 Please ensure `format-check` passes before submitting a Pull Request.

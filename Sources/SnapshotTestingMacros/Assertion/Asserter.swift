@@ -122,7 +122,12 @@ private struct PointfreeAsserter: SnapshotAsserting {
     )
 
     if let message {
-      throw message
+      throw SnapshotError(message: message)
     }
+  }
+
+  private struct SnapshotError: LocalizedError {
+    let message: String
+    var errorDescription: String? { message }
   }
 }
