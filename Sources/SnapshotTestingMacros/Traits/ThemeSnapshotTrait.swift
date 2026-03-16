@@ -1,6 +1,7 @@
 import Foundation
 import Testing
 
+/// A trait that configures the theme (light/dark mode) for snapshot tests.
 public struct ThemeSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let theme: Theme
 
@@ -19,11 +20,14 @@ public struct ThemeSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, Snapsho
     }
   }
 
+  /// Represents the theme mode for the snapshot.
   public enum Theme: CaseIterable, Sendable, CustomDebugStringConvertible {
+    /// Light mode.
     case light
+    /// Dark mode.
     case dark
 
-    /// Combination mask for both light and dark mode
+    /// Both light and dark mode.
     case all
 
     public var debugDescription: String {
