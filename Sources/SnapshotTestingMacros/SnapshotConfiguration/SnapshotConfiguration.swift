@@ -44,9 +44,16 @@ import Foundation
 /// }
 /// ```
 public struct SnapshotConfiguration<T: Sendable>: Sendable {
+  /// The name of the configuration.
   public let name: String?
+  /// The value associated with the configuration.
   public let value: T
 
+  /// Creates a new snapshot configuration.
+  ///
+  /// - Parameters:
+  ///   - name: The name of the configuration.
+  ///   - value: The value associated with the configuration.
   public init(name: String?, value: T) {
     self.name = name
     self.value = value
