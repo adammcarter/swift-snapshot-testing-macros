@@ -50,105 +50,59 @@ extension DiagnosticProtocol where Self == DiagnosticFactory {
   ) -> Diagnostic {
     let oldNode = declaration
 
-    #warning("TODO: Refactor this entire block to something nicer?")
-
-    func makeNewNodeForFunction(
-      returnType: String,
-      typeDescription: String? = nil
-    ) -> some DeclGroupSyntax {
-      with(oldNode) {
-        let contents = """
-          @\(Constants.AttributeName.snapshotTest)
-          func <#name#>() -> \(returnType) {
-              <#return a \(typeDescription ?? returnType) here#>
-          }
-          """
-
-        return $0
-          .memberBlock
-          .members
-          .append(
-            MemberBlockItemSyntax(
-              leadingTrivia: .newline,
-              decl: DeclSyntax(stringLiteral: contents)
-            )
-          )
-      }
-    }
-
-    func makeNewNodeWithSnapshotTestAnnotationsOnViableFunctions() -> (some DeclGroupSyntax)? {
-      var didChange = false
-      let newNode = with(oldNode) { node in
-        let newMembers = node.memberBlock.members.map { member in
-          if var functionDecl = member.decl.as(FunctionDeclSyntax.self), functionDecl.hasSupportedReturnType {
-            with(member) { member in
-              functionDecl.attributes.insert(
-                .attribute(.init(stringLiteral: "@\(Constants.AttributeName.snapshotTest)")),
-                at: functionDecl.attributes.startIndex
-              )
-
-              didChange = true
-
-              member.decl = DeclSyntax(functionDecl)
-            }
-          }
-          else {
-            member
-          }
-        }
-
-        node.memberBlock.members = MemberBlockItemListSyntax {
-          newMembers
-        }
-      }
-
-      return didChange ? newNode : nil
+    // Helper to generate fix-its for adding functions
+    func fixIt(
+      message: String,
+      newNode: some DeclGroupSyntax
+    ) -> FixIt {
+      .replace(
+        message: .generalMessage(message),
+        oldNode: oldNode,
+        newNode: newNode
+      )
     }
 
     var functionReplacements: [FixIt] = []
 
-    functionReplacements += [
-      .replace(
-        message: .generalMessage("Add a function to make a SwiftUI view."),
-        oldNode: oldNode,
-        newNode: makeNewNodeForFunction(returnType: "some View", typeDescription: "SwiftUI view")
+    functionReplacements.append(
+      fixIt(
+        message: "Add a function to make a SwiftUI view.",
+        newNode: oldNode.appendingSnapshotTestFunction(
+          returnType: "some View",
+          typeDescription: "SwiftUI view"
+        )
       )
-    ]
+    )
 
-    functionReplacements += [
-      .replace(
-        message: .generalMessage("Add a function to make a UIView."),
-        oldNode: oldNode,
-        newNode: makeNewNodeForFunction(returnType: "UIView")
+    functionReplacements.append(contentsOf: [
+      fixIt(
+        message: "Add a function to make a UIView.",
+        newNode: oldNode.appendingSnapshotTestFunction(returnType: "UIView")
       ),
-      .replace(
-        message: .generalMessage("Add a function to make a UIViewController."),
-        oldNode: oldNode,
-        newNode: makeNewNodeForFunction(returnType: "UIViewController")
+      fixIt(
+        message: "Add a function to make a UIViewController.",
+        newNode: oldNode.appendingSnapshotTestFunction(returnType: "UIViewController")
       ),
-    ]
+    ])
 
-    functionReplacements += [
-      .replace(
-        message: .generalMessage("Add a function to make a NSView."),
-        oldNode: oldNode,
-        newNode: makeNewNodeForFunction(returnType: "NSView")
+    functionReplacements.append(contentsOf: [
+      fixIt(
+        message: "Add a function to make a NSView.",
+        newNode: oldNode.appendingSnapshotTestFunction(returnType: "NSView")
       ),
-      .replace(
-        message: .generalMessage("Add a function to make a NSViewController."),
-        oldNode: oldNode,
-        newNode: makeNewNodeForFunction(returnType: "NSViewController")
+      fixIt(
+        message: "Add a function to make a NSViewController.",
+        newNode: oldNode.appendingSnapshotTestFunction(returnType: "NSViewController")
       ),
-    ]
+    ])
 
-    if let newFunctionsWithAnnotationsNode = makeNewNodeWithSnapshotTestAnnotationsOnViableFunctions() {
-      functionReplacements += [
-        .replace(
-          message: .generalMessage("Add @\(Constants.AttributeName.snapshotTest) annotations to viable functions."),
-          oldNode: oldNode,
+    if let newFunctionsWithAnnotationsNode = oldNode.applyingSnapshotTestAnnotationsToViableFunctions() {
+      functionReplacements.append(
+        fixIt(
+          message: "Add @\(Constants.AttributeName.snapshotTest) annotations to viable functions.",
           newNode: newFunctionsWithAnnotationsNode
         )
-      ]
+      )
     }
 
     return .init(
@@ -162,6 +116,59 @@ extension DiagnosticProtocol where Self == DiagnosticFactory {
         )
       ] + functionReplacements
     )
+  }
+}
+
+private extension DeclGroupSyntax {
+  func appendingSnapshotTestFunction(
+    returnType: String,
+    typeDescription: String? = nil
+  ) -> some DeclGroupSyntax {
+    var newNode = self
+    let contents = """
+        @\(Constants.AttributeName.snapshotTest)
+        func <#name#>() -> \(returnType) {
+            <#return a \(typeDescription ?? returnType) here#>
+        }
+        """
+
+    newNode.memberBlock.members.append(
+      MemberBlockItemSyntax(
+        leadingTrivia: .newline,
+        decl: DeclSyntax(stringLiteral: contents)
+      )
+    )
+
+    return newNode
+  }
+
+  func applyingSnapshotTestAnnotationsToViableFunctions() -> (some DeclGroupSyntax)? {
+    var didChange = false
+    var newNode = self
+
+    let newMembers = newNode.memberBlock.members.map { member in
+      if var functionDecl = member.decl.as(FunctionDeclSyntax.self), functionDecl.hasSupportedReturnType {
+        functionDecl.attributes.insert(
+          .attribute(.init(stringLiteral: "@\(Constants.AttributeName.snapshotTest)")),
+          at: functionDecl.attributes.startIndex
+        )
+
+        didChange = true
+
+        var newMember = member
+        newMember.decl = DeclSyntax(functionDecl)
+        return newMember
+      }
+      else {
+        return member
+      }
+    }
+
+    newNode.memberBlock.members = MemberBlockItemListSyntax {
+      newMembers
+    }
+
+    return didChange ? newNode : nil
   }
 }
 
