@@ -3,7 +3,7 @@
 import Foundation
 
 // Constants
-let XCODE_VERSIONS = ["16.3", "16.4", "26.0", "26.1", "26.2"]
+let XCODE_VERSIONS = ["16.3", "16.4", "26.0", "26.1", "26.2", "26.3"]
 let LATEST_XCODE = XCODE_VERSIONS.last!
 let IOS_SIMULATOR = "iPhone 17"
 let IOS_VERSION = "26.2"
