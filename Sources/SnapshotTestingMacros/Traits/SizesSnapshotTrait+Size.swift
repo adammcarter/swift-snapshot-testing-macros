@@ -1,6 +1,7 @@
 import Foundation
 
 extension SizesSnapshotTrait {
+  /// Represents the size (width and height) of a snapshot.
   public struct Size: Sendable, CustomDebugStringConvertible {
     let width: SizesSnapshotTrait.Length
     let height: SizesSnapshotTrait.Length
@@ -16,6 +17,12 @@ extension SizesSnapshotTrait {
     public let debugDescription: String
     public let testNameDescription: String
 
+    /// Creates a new size configuration.
+    ///
+    /// - Parameters:
+    ///   - width: The width of the snapshot.
+    ///   - height: The height of the snapshot.
+    ///   - scale: The scale factor (e.g., 2.0 or 3.0). If `nil`, inherits from the device.
     public init(
       width: SizesSnapshotTrait.Length,
       height: SizesSnapshotTrait.Length,
