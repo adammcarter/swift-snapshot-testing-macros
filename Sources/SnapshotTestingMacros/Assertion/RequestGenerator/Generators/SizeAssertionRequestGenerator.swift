@@ -1,5 +1,3 @@
-import SnapshotSupport
-
 #if canImport(UIKit)
 import UIKit
 #elseif canImport(AppKit)

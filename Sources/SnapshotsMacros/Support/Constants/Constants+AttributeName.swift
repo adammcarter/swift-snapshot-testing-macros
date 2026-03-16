@@ -1,5 +1,3 @@
-import Foundation
-
 extension Constants {
   enum AttributeName {
     static let available = "available"
