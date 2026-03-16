@@ -822,17 +822,17 @@ struct MySnapshots {
 
 # Supported views
 
-TODO: Add more docs about supported views
-
-- SwiftUI views
-- UIKit:
-  - UIView
-  - UIViewController
+- **SwiftUI**: Any view conforming to `View`
+- **UIKit** (iOS, tvOS, visionOS): `UIView`, `UIViewController`
+- **AppKit** (macOS): `NSView`, `NSViewController`
 
 
 # Running tests
 
-TODO: Add more docs about running tests
+For detailed instructions on running tests, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-- SnapshotsIntegrationTests runs on iPhone 16 - 18.4
-- SnapshotsUnitTests runs on macOS
+# Contributing
+
+This project uses [mise](https://mise.jdx.dev) to manage development tools.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed setup and guidelines.
