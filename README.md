@@ -8,6 +8,26 @@ Just as Swift Testing has `@Suite` and `@Test`, `SnapshotTestingMacros` uses `@S
 
 This allows for snapshots to quickly be created by simply marking up functions that return views.
 
+# Example code
+
+In the simplest case this is all that's needed for a snapshot test:
+
+```swift
+// ✅ Create a simple snapshot test for some SwiftUI text.
+
+@Suite
+@SnapshotSuite
+struct MySnapshots {
+
+  @SnapshotTest
+  func myView() -> some View {
+    Text("Some text")
+  }
+}
+```
+
+> Note that while `@Suite` isn't explicitly needed to run the snapshots, it's currently recommneded so Xcode can pickup the generated Suite inside the macro. Due to macro limitations it seems that Xcode cannot see Suites when they're embedded inside macro expansion code.
+
 # Documentation
 
 - [Usage](Documentation/Usage.md) - Basic usage, example code, and async support.
