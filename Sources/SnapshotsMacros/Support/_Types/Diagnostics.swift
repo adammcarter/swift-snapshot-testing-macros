@@ -126,11 +126,11 @@ private extension DeclGroupSyntax {
   ) -> some DeclGroupSyntax {
     var newNode = self
     let contents = """
-        @\(Constants.AttributeName.snapshotTest)
-        func <#name#>() -> \(returnType) {
-            <#return a \(typeDescription ?? returnType) here#>
-        }
-        """
+      @\(Constants.AttributeName.snapshotTest)
+      func <#name#>() -> \(returnType) {
+          <#return a \(typeDescription ?? returnType) here#>
+      }
+      """
 
     newNode.memberBlock.members.append(
       MemberBlockItemSyntax(
