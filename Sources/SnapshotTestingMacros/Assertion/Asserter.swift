@@ -17,7 +17,7 @@ struct Asserter {
 // MARK: - Asserters
 
 @MainActor
-private protocol SnapshotAsserting {
+protocol SnapshotAsserting {
 
   func assertSnapshot(_ request: any AssertionRequesting) throws
 }
@@ -29,21 +29,41 @@ import Testing
 #endif
 
 /// Record issues on throw
-private struct IssueRecordingAsserter: SnapshotAsserting {
+struct IssueRecordingAsserter: SnapshotAsserting {
   let base: any SnapshotAsserting
+  var recordIssue: ((_ message: String?, _ error: Error?, _ fileID: StaticString, _ filePath: StaticString, _ line: UInt, _ column: UInt) -> Void)?
 
   func assertSnapshot(_ request: any AssertionRequesting) {
     do {
       try base.assertSnapshot(request)
     }
+    catch let error as SnapshotError {
+      if let recordIssue {
+        recordIssue(error.message, nil, request.fileID, request.filePath, request.line, request.column)
+      }
+      else {
+        recordIssue(
+          message: error.message,
+          fileID: request.fileID,
+          filePath: request.filePath,
+          line: request.line,
+          column: request.column
+        )
+      }
+    }
     catch {
-      recordIssue(
-        error: error,
-        fileID: request.fileID,
-        filePath: request.filePath,
-        line: request.line,
-        column: request.column
-      )
+      if let recordIssue {
+        recordIssue(nil, error, request.fileID, request.filePath, request.line, request.column)
+      }
+      else {
+        recordIssue(
+          error: error,
+          fileID: request.fileID,
+          filePath: request.filePath,
+          line: request.line,
+          column: request.column
+        )
+      }
     }
   }
 
@@ -125,9 +145,9 @@ private struct PointfreeAsserter: SnapshotAsserting {
       throw SnapshotError(message: message)
     }
   }
+}
 
-  private struct SnapshotError: LocalizedError {
-    let message: String
-    var errorDescription: String? { message }
-  }
+struct SnapshotError: LocalizedError {
+  let message: String
+  var errorDescription: String? { message }
 }
