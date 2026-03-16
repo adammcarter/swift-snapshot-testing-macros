@@ -15,8 +15,6 @@ import SnapshotsMacros
 )
 struct SnapshotTestTests {}
 #else
-#warning("TODO: these tests and others in this module only seem to build for mac, needs looking in to...")
-
 @Suite(.disabled("Unit tests only run on macOS"))
-enum Skip {}
+struct SnapshotTestTests {}
 #endif
