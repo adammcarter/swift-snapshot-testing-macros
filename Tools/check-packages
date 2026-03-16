@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+root_dir="${0%/*}/.."
+
+# Compare Package.swift and Package@swift-6.2.swift, ignoring the first line (tools-version)
+diff <(tail -n +2 "$root_dir/Package.swift") <(tail -n +2 "$root_dir/Package@swift-6.2.swift")
+
+if [ $? -eq 0 ]; then
+  echo "Package manifests are in sync."
+else
+  echo "Error: Package.swift and Package@swift-6.2.swift differ beyond the tools-version line."
+  echo "Please ensure both files are identical except for the first line."
+  exit 1
+fi

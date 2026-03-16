@@ -21,16 +21,11 @@ extension DiagnosticProtocol where Self == DiagnosticFactory {
     node: AttributeSyntax,
     declaration: some DeclGroupSyntax
   ) -> Diagnostic {
-    #warning("TODO: Whitespace fixes")
-
-    // Trimming all the things doesn't fix this so it must be a non-trivia issue...
-    // Debug in tests.
-
     let oldAttributes = declaration.attributes
 
     var newAttributes = oldAttributes
     newAttributes.insert(
-      .attributeNamed(attribute),
+      .attributeNamed(attribute).with(\.leadingTrivia, .newline),
       at: oldAttributes.startIndex
     )
 
@@ -81,7 +76,7 @@ extension DiagnosticProtocol where Self == DiagnosticFactory {
       }
     }
 
-    func makeNewNodeWithSnapshotTestAnnotationsOnViableFunctions() -> (Bool, some DeclGroupSyntax) {
+    func makeNewNodeWithSnapshotTestAnnotationsOnViableFunctions() -> (some DeclGroupSyntax)? {
       var didChange = false
       let newNode = with(oldNode) { node in
         let newMembers = node.memberBlock.members.map { member in
@@ -107,7 +102,7 @@ extension DiagnosticProtocol where Self == DiagnosticFactory {
         }
       }
 
-      return (didChange, newNode)
+      return didChange ? newNode : nil
     }
 
     var functionReplacements: [FixIt] = []
@@ -146,10 +141,7 @@ extension DiagnosticProtocol where Self == DiagnosticFactory {
       ),
     ]
 
-    #warning("TODO: Use optional instead")
-    let (didChange, newFunctionsWithAnnotationsNode) = makeNewNodeWithSnapshotTestAnnotationsOnViableFunctions()
-
-    if didChange {
+    if let newFunctionsWithAnnotationsNode = makeNewNodeWithSnapshotTestAnnotationsOnViableFunctions() {
       functionReplacements += [
         .replace(
           message: .generalMessage("Add @\(Constants.AttributeName.snapshotTest) annotations to viable functions."),
