@@ -5,12 +5,20 @@ import SwiftUI
 @MainActor
 extension SnapshotTrait where Self == BackgroundColorSnapshotTrait {
   #if canImport(UIKit)
+  /// Sets the background color for the snapshot using a `UIColor`.
+  ///
+  /// - Parameter uiColor: The background color.
+  /// - Returns: A trait that applies the background color.
   public static func backgroundColor(
     uiColor: UIColor
   ) -> Self {
     Self(backgroundColor: uiColor)
   }
   #elseif canImport(AppKit)
+  /// Sets the background color for the snapshot using an `NSColor`.
+  ///
+  /// - Parameter nsColor: The background color.
+  /// - Returns: A trait that applies the background color.
   public static func backgroundColor(
     nsColor: NSColor
   ) -> Self {
@@ -19,6 +27,10 @@ extension SnapshotTrait where Self == BackgroundColorSnapshotTrait {
   #endif
 
   #if canImport(SwiftUI)
+  /// Sets the background color for the snapshot using a SwiftUI `Color`.
+  ///
+  /// - Parameter color: The background color.
+  /// - Returns: A trait that applies the background color.
   public static func backgroundColor(
     _ color: Color
   ) -> Self {
