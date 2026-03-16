@@ -15,7 +15,7 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
 
   var values: any Collection<SizePair> {
     get async throws {
-      return try await makeSizes()
+      try await makeSizes()
     }
   }
 
@@ -52,14 +52,10 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
 
     var errorDescription: String? {
       switch self {
-        case .zeroSize:
-          return "Size is zero for snapshot"
-        case .zeroWidth:
-          return "Zero width for snapshot"
-        case .zeroHeight:
-          return "Zero height for snapshot"
-        case .noSizesAvailable:
-          return "No sizes available for snapshot"
+        case .zeroSize: "Size is zero for snapshot"
+        case .zeroWidth: "Zero width for snapshot"
+        case .zeroHeight: "Zero height for snapshot"
+        case .noSizesAvailable: "No sizes available for snapshot"
       }
     }
   }
@@ -117,7 +113,7 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
 @MainActor
 extension SizesSnapshotTrait.Size {
   fileprivate func absoluteSize(for viewController: SnapshotViewController) -> CGSize {
-    return switch (width, height) {
+    switch (width, height) {
       case (.fixed(let width), .fixed(let height)):
         .init(width: width, height: height)
 
