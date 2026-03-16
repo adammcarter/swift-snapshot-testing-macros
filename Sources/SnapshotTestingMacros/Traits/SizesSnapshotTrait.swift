@@ -1,6 +1,16 @@
 import Foundation
 import Testing
 
+/// A trait that configures the sizes for snapshot tests.
+///
+/// Use this trait to specify the dimensions for your snapshots. You can provide explicit sizes,
+/// use predefined device sizes, or rely on minimum sizing.
+///
+/// Example:
+/// ```swift
+/// @SnapshotTest(.sizes(.iPhoneX))
+/// func myView() -> some View { ... }
+/// ```
 public struct SizesSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let sizes: [Size]
 
