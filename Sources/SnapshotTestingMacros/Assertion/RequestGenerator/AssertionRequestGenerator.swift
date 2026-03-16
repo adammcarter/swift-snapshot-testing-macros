@@ -20,7 +20,8 @@ struct AssertionRequestGenerator {
     let folderName: String?
     if let name = viewGenerator.configuration.name {
       folderName = sanitizePathComponent(name)
-    } else {
+    }
+    else {
       folderName = nil
     }
 
@@ -65,7 +66,8 @@ struct AssertionRequestGenerator {
   }
 
   private func sanitizePathComponent(_ string: String) -> String {
-    return string
+    return
+      string
       .replacingOccurrences(of: "\\W+", with: "-", options: .regularExpression)
       .replacingOccurrences(of: "^-|-$", with: "", options: .regularExpression)
   }
