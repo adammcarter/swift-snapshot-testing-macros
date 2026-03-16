@@ -1,17 +1,27 @@
 import Foundation
 
 extension SnapshotTrait where Self == RecordSnapshotTrait {
-  /// Force the snapshot to re-record when `true`.
+  /// Sets whether to record snapshots.
+  ///
+  /// - Parameter record: When `true`, all snapshots will be re-recorded. When `false`, they are verified.
+  /// - Returns: A `RecordSnapshotTrait` configured with the specified recording mode.
   public static func record(_ record: Bool) -> Self {
     Self(record: record ? .all : .never)
   }
 
-  /// Control snapshot recording.
+  /// Sets the recording mode for snapshots.
+  ///
+  /// - Parameter record: The recording mode to use.
+  /// - Returns: A `RecordSnapshotTrait` configured with the specified recording mode.
   public static func record(_ record: RecordSnapshotTrait.RecordKind) -> Self {
     Self(record: record)
   }
 
-  /// Force the snapshot to re-record.
+  /// Enables recording for snapshots.
+  ///
+  /// This is equivalent to `.record(true)`.
+  ///
+  /// - Returns: A `RecordSnapshotTrait` configured to record all snapshots.
   public static var record: Self {
     record(true)
   }

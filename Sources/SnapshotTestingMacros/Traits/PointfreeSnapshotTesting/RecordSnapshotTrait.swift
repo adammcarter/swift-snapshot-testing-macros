@@ -2,6 +2,7 @@ import Foundation
 import SnapshotTesting
 import Testing
 
+/// A trait that configures the recording mode for snapshots.
 public struct RecordSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let record: RecordKind
 
