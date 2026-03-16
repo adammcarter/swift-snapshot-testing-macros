@@ -9,6 +9,9 @@
   "multiElementCollectionTrailingCommas": true,
   "prioritizeKeepingFunctionOutputTogether": true,
   "respectsExistingLineBreaks": true,
+  "rules": {
+    "NoBlockComments": false
+  },
   "spacesAroundRangeFormationOperators": true,
   "version" : 1
 }

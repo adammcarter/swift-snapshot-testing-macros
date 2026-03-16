@@ -4,7 +4,8 @@ import Testing
 public struct ThemeSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let theme: Theme
 
-  @TaskLocal static var current = Theme.all
+  @TaskLocal
+  static var current = Theme.all
 
   public var debugDescription: String {
     "theme: \(theme.debugDescription)"

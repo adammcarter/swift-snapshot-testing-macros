@@ -11,7 +11,7 @@ struct NameAssertionRequestGenerator: AssertionRequestGenerating {
   /**
    The following, in order, joined by an underscore.
    Any subcomponent should replace spaces with a hyphen.
-
+  
    test display name, configuration name, size trait, theme trait
    */
   private var testName: String {

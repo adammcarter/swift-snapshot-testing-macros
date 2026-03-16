@@ -5,7 +5,8 @@ import Testing
 public struct RecordSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let record: RecordKind
 
-  @TaskLocal static var current = RecordKind.missing
+  @TaskLocal
+  static var current = RecordKind.missing
 
   public var debugDescription: String {
     "record: \(record)"

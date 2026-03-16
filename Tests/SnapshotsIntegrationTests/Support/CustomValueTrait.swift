@@ -22,7 +22,8 @@ extension SnapshotTestTrait where Self == CustomValueTrait {
 struct CustomValueTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let value: String
 
-  @TaskLocal static var current = "default"
+  @TaskLocal
+  static var current = "default"
 
   func provideScope(
     performing function: () async throws -> Void

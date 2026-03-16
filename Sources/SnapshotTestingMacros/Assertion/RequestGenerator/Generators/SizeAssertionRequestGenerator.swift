@@ -22,7 +22,7 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
   func accumulateRequests(for value: SizePair) async throws -> [any AssertionRequesting] {
     /*
      Return the view controller that's just gone through the layout process in this generator.
-
+    
      Using the base view would result in a zero size frame as it has not been laid out until this generator.
      */
     let contextWithLaidOutView = AssertionRequestContext(
@@ -100,16 +100,16 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
 extension SizesSnapshotTrait.Size {
   fileprivate func absoluteSize(for viewController: SnapshotViewController) -> CGSize {
     return switch (width, height) {
-      case let (.fixed(width), .fixed(height)):
+      case (.fixed(let width), .fixed(let height)):
         .init(width: width, height: height)
 
       case (.minimum, .minimum):
         viewController.compressedSizeWhenConstrained()
 
-      case let (.fixed(width), .minimum):
+      case (.fixed(let width), .minimum):
         viewController.compressedSizeWhenConstrained(toWidth: width)
 
-      case let (.minimum, .fixed(height)):
+      case (.minimum, .fixed(let height)):
         viewController.compressedSizeWhenConstrained(toHeight: height)
     }
   }
