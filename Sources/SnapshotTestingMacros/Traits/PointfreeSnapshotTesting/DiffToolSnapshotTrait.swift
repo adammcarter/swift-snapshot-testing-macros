@@ -2,6 +2,7 @@ import Foundation
 import SnapshotTesting
 import Testing
 
+/// A trait that configures the diff tool used for snapshot failures.
 public struct DiffToolSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let diffTool: DiffTool
 
