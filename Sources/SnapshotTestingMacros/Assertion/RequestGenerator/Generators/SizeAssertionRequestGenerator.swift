@@ -44,7 +44,25 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
     return try await base.generateRequests()
   }
 
-  #warning("TODO: Add 'SizeError' instead of using strings above")
+  enum SizeError: LocalizedError {
+    case zeroSize
+    case zeroWidth
+    case zeroHeight
+    case noSizesAvailable
+
+    var errorDescription: String? {
+      switch self {
+        case .zeroSize:
+          return "Size is zero for snapshot"
+        case .zeroWidth:
+          return "Zero width for snapshot"
+        case .zeroHeight:
+          return "Zero height for snapshot"
+        case .noSizesAvailable:
+          return "No sizes available for snapshot"
+      }
+    }
+  }
 
   private func makeSizes() async throws -> [SizePair] {
     let viewController = try await context.makeSnapshotView()
@@ -57,15 +75,15 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
           let absoluteSize = traitSize.absoluteSize(for: viewController)
 
           guard absoluteSize != .zero else {
-            throw "size is zero for snapshot"
+            throw SizeError.zeroSize
           }
 
           guard absoluteSize.width > 0 else {
-            throw "zero width for snapshot"
+            throw SizeError.zeroWidth
           }
 
           guard absoluteSize.height > 0 else {
-            throw "zero height for snapshot"
+            throw SizeError.zeroHeight
           }
 
           return .init(
@@ -76,12 +94,12 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
         }
 
       guard sizes.isEmpty == false else {
-        throw "no sizes available for snapshot"
+        throw SizeError.noSizesAvailable
       }
 
       return sizes
     }
-    catch let error as String {
+    catch let error as SizeError {
       throw error
     }
     catch {
