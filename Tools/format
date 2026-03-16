@@ -10,7 +10,7 @@ root_dir="${0%/*}"/..
 echo ""
 echo "swift-format"
 
-Tools/bin/swift-format \
+xcrun swift-format \
   format $root_dir \
   -r \
   -i \
@@ -22,7 +22,7 @@ Tools/bin/swift-format \
 echo ""
 echo "swiftlint [autocorrecting if possible]"
 
-Tools/bin/swiftlint \
+swiftlint \
   --config "${root_dir}/.swiftlint.yml" \
   --strict \
   --progress \
@@ -32,7 +32,7 @@ Tools/bin/swiftlint \
 echo ""
 echo "swiftlint [check remaining errors]"
 
-Tools/bin/swiftlint \
+swiftlint \
   --config "${root_dir}/.swiftlint.yml" \
   --progress \
   --strict \

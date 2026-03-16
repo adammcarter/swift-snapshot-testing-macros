@@ -4,7 +4,8 @@ import Testing
 public struct StrategySnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let strategy: Strategy
 
-  @TaskLocal static var current = Strategy.image
+  @TaskLocal
+  static var current = Strategy.image
 
   public var debugDescription: String {
     "strategy: \(strategy)"

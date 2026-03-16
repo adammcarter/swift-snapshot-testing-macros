@@ -2,7 +2,8 @@
 /.build
 /Packages
 xcuserdata/
-Derived/InfoPlists/SnapshotSupport-Info.plist
+Derived/
+
 DerivedData/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata

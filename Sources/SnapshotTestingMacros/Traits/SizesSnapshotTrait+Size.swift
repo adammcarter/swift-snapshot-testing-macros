@@ -7,7 +7,7 @@ extension SizesSnapshotTrait {
 
     /**
      When `nil`, inherit the scale from the device on which the tests are being run.
-
+    
      This allows for backwards compatability to avoid breaking changes while allowing for a custom override when wanting to use a specific setup.
      */
     let scale: Double?

@@ -7,16 +7,15 @@ root_dir="${0%/*}"/..
 
 # Swiftformat
 
-Tools/bin/swift-format \
-  format $root_dir \
+xcrun swift-format \
+  lint $root_dir \
   -r \
-  -i \
   -p
 
 
 # Swiftlint
 
-Tools/bin/swiftlint \
+swiftlint \
   --config "${root_dir}/.swiftlint.yml" \
   --progress \
   --strict \

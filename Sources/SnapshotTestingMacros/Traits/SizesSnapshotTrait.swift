@@ -4,7 +4,8 @@ import Testing
 public struct SizesSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let sizes: [Size]
 
-  @TaskLocal static var current: [Size] = [
+  @TaskLocal
+  static var current: [Size] = [
     .init(width: .minimum, height: .minimum)
   ]
 

@@ -16,8 +16,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
   
-      - name: Make bundled tools executable
-        run: chmod +x Tools/bin/*
+      - name: Install mise
+        uses: jdx/mise-action@v2
 
       - name: Run Tools/format-check
         run: ./Tools/format-check

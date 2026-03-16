@@ -10,7 +10,8 @@ import UIKit
 @available(*, message: "This is an implementation detail. Do not use this type directly.")
 // swiftlint:disable:next type_name
 public struct __SnapshotViewDecoratorConfiguration: Sendable {
-  @TaskLocal static var value: __SnapshotViewDecoratorConfiguration?
+  @TaskLocal
+  static var value: __SnapshotViewDecoratorConfiguration?
 
   var backgroundColor: SnapshotColor?
   var padding: NSDirectionalEdgeInsets?

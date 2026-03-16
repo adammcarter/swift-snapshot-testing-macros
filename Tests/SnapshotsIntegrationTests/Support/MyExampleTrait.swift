@@ -10,7 +10,8 @@ import Testing
 struct MyExampleTrait: Testing.TestScoping, Testing.SuiteTrait, Testing.TestTrait {
   var value: String
 
-  @TaskLocal static var current = "default"
+  @TaskLocal
+  static var current = "default"
 
   func provideScope(
     for _: Test,

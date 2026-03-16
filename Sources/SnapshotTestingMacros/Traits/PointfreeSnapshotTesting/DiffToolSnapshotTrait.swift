@@ -5,7 +5,8 @@ import Testing
 public struct DiffToolSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let diffTool: DiffTool
 
-  @TaskLocal static var current = DiffTool.default
+  @TaskLocal
+  static var current = DiffTool.default
 
   public var debugDescription: String {
     "diffTool: \(diffTool)"
