@@ -7,4 +7,5 @@ extension ConditionTrait: @retroactive CustomDebugStringConvertible {
   }
 }
 
+/// Enable `.enabled` and `.disabled` to be used with `@SnapshotTest` and `@SnapshotSuite`.
 extension ConditionTrait: SnapshotSuiteTrait, SnapshotTestTrait {}

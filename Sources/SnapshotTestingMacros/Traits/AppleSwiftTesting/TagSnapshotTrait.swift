@@ -7,4 +7,5 @@ extension Tag.List: @retroactive CustomDebugStringConvertible {
   }
 }
 
+/// Enable `.tags` to be used with `@SnapshotTest` and `@SnapshotSuite`.
 extension Tag.List: SnapshotSuiteTrait, SnapshotTestTrait {}

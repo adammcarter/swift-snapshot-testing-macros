@@ -9,6 +9,7 @@ extension Testing.TimeLimitTrait: @retroactive CustomDebugStringConvertible {
   }
 }
 
+/// Enable `.timeLimit` to be used with `@SnapshotTest` and `@SnapshotSuite`.
 @available(iOS 16.0, *)
 @available(macOS 13.0, *)
 extension Testing.TimeLimitTrait: SnapshotSuiteTrait, SnapshotTestTrait {}
