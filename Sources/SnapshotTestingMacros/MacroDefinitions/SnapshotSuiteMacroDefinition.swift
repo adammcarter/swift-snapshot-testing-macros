@@ -19,6 +19,14 @@ public macro SnapshotSuite() = #externalMacro(module: "SnapshotsMacros", type: "
 /// Marks a type as a suite of snapshot tests with a display name.
 ///
 /// - Parameter displayName: The display name of the suite.
+///
+/// Example:
+/// ```swift
+/// @SnapshotSuite("My Display Name")
+/// struct MySnapshotSuite {
+///     // ...
+/// }
+/// ```
 @attached(member, names: arbitrary)
 public macro SnapshotSuite(
   _ displayName: String
@@ -27,6 +35,14 @@ public macro SnapshotSuite(
 /// Marks a type as a suite of snapshot tests with traits.
 ///
 /// - Parameter traits: The traits to apply to the suite.
+///
+/// Example:
+/// ```swift
+/// @SnapshotSuite(.theme(.light), .sizes(devices: .iPhoneX))
+/// struct MySnapshotSuite {
+///     // ...
+/// }
+/// ```
 @attached(member, names: arbitrary)
 public macro SnapshotSuite(
   _ traits: any SnapshotSuiteTrait...
@@ -37,6 +53,14 @@ public macro SnapshotSuite(
 /// - Parameters:
 ///   - displayName: The display name of the suite.
 ///   - traits: The traits to apply to the suite.
+///
+/// Example:
+/// ```swift
+/// @SnapshotSuite("My Display Name", .theme(.light), .sizes(devices: .iPhoneX))
+/// struct MySnapshotSuite {
+///     // ...
+/// }
+/// ```
 @attached(member, names: arbitrary)
 public macro SnapshotSuite(
   _ displayName: String?,
