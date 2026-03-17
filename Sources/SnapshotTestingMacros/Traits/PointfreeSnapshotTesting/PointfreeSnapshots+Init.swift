@@ -3,14 +3,8 @@ import SnapshotTesting
 import Testing
 
 extension Trait where Self == SnapshotTesting._SnapshotsTestTrait {
-  /// A trait to use Point-Free style snapshot testing.
-  ///
-  /// This trait configures the test to look for snapshots in a `__Snapshots__` directory relative to the test file.
-  ///
-  /// Example:
-  /// ```swift
-  /// @SnapshotTest(.pointfreeSnapshots)
-  /// func myView() -> some View { ... }
-  /// ```
+  // Internal implementation detail:
+  // `@SnapshotSuite` applies this trait automatically for generated suites,
+  // so it does not need to be used directly.
   public static var pointfreeSnapshots: Self { .snapshots }
 }
