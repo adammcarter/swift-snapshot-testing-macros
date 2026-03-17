@@ -49,9 +49,10 @@ extension TokenSyntax {
       hash &*= 1_099_511_628_211
     }
 
-    let hex = String(hash, radix: 16)
+    let hex = String(hash, radix: 16, uppercase: false)
+    let paddedHex = String(repeating: "0", count: max(0, 16 - hex.count)) + hex
 
-    return String(hex.suffix(8))
+    return String(paddedHex.suffix(8))
   }
 
   private var unescapedIdentifierText: String {
