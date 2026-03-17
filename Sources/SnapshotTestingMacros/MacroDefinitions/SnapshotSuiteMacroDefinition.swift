@@ -5,6 +5,13 @@
 ///
 /// Use this macro to define a collection of snapshot tests. This is analogous to `@Suite` in Swift Testing.
 ///
+/// The following default traits are applied unless overridden:
+/// - Theme: `.theme(.all)` (Light and Dark mode)
+/// - Size: `.sizes(.minimum)` (Intrinsic content size)
+/// - Strategy: `.strategy(.image)` (Image comparison)
+/// - Record: `.record(.missing)` (Record if missing)
+/// - DiffTool: `.diffTool(.default)` (Default diff tool)
+///
 /// Example:
 /// ```swift
 /// @SnapshotSuite
@@ -17,6 +24,13 @@
 public macro SnapshotSuite() = #externalMacro(module: "SnapshotsMacros", type: "SnapshotSuiteMacro")
 
 /// Marks a type as a suite of snapshot tests with a display name.
+///
+/// The following default traits are applied unless overridden:
+/// - Theme: `.theme(.all)` (Light and Dark mode)
+/// - Size: `.sizes(.minimum)` (Intrinsic content size)
+/// - Strategy: `.strategy(.image)` (Image comparison)
+/// - Record: `.record(.missing)` (Record if missing)
+/// - DiffTool: `.diffTool(.default)` (Default diff tool)
 ///
 /// - Parameter displayName: The display name of the suite.
 ///
@@ -34,6 +48,13 @@ public macro SnapshotSuite(
 
 /// Marks a type as a suite of snapshot tests with traits.
 ///
+/// The following default traits are applied unless overridden:
+/// - Theme: `.theme(.all)` (Light and Dark mode)
+/// - Size: `.sizes(.minimum)` (Intrinsic content size)
+/// - Strategy: `.strategy(.image)` (Image comparison)
+/// - Record: `.record(.missing)` (Record if missing)
+/// - DiffTool: `.diffTool(.default)` (Default diff tool)
+///
 /// - Parameter traits: The traits to apply to the suite.
 ///
 /// Example:
@@ -49,6 +70,13 @@ public macro SnapshotSuite(
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotSuiteMacro")
 
 /// Marks a type as a suite of snapshot tests with a display name and traits.
+///
+/// The following default traits are applied unless overridden:
+/// - Theme: `.theme(.all)` (Light and Dark mode)
+/// - Size: `.sizes(.minimum)` (Intrinsic content size)
+/// - Strategy: `.strategy(.image)` (Image comparison)
+/// - Record: `.record(.missing)` (Record if missing)
+/// - DiffTool: `.diffTool(.default)` (Default diff tool)
 ///
 /// - Parameters:
 ///   - displayName: The display name of the suite.
