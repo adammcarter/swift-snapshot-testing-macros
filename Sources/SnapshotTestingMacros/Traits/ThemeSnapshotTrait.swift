@@ -2,6 +2,19 @@ import Foundation
 import Testing
 
 /// A trait that configures the theme (light/dark mode) for snapshot tests.
+///
+/// Use this trait to specify the theme for your snapshots. You can choose between light mode,
+/// dark mode, or both.
+///
+/// Example:
+/// ```swift
+/// @SnapshotSuite
+/// struct MySnapshotSuite {
+///
+///   @SnapshotTest(.theme(.dark))
+///   func myView() -> some View { ... }
+/// }
+/// ```
 public struct ThemeSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let theme: Theme
 

@@ -20,6 +20,16 @@ extension SnapshotTrait where Self == PaddingSnapshotTrait {
   ///   - edges: The set of edges to apply padding to. Defaults to `.all`.
   ///   - length: The amount of padding to apply. If `nil`, a default amount is used.
   /// - Returns: A trait that applies the padding.
+  ///
+  /// Example:
+  /// ```swift
+  /// @SnapshotSuite
+  /// struct MySnapshotSuite {
+  ///
+  ///   @SnapshotTest(.padding(.all, 16))
+  ///   func myView() -> some View { ... }
+  /// }
+  /// ```
   public static func padding(
     _ edges: PaddingSnapshotTrait.Edge.Set = .all,
     _ length: CGFloat? = nil
@@ -31,6 +41,16 @@ extension SnapshotTrait where Self == PaddingSnapshotTrait {
   ///
   /// - Parameter length: The amount of padding to apply to all edges.
   /// - Returns: A trait that applies the padding.
+  ///
+  /// Example:
+  /// ```swift
+  /// @SnapshotSuite
+  /// struct MySnapshotSuite {
+  ///
+  ///   @SnapshotTest(.padding(20))
+  ///   func myView() -> some View { ... }
+  /// }
+  /// ```
   public static func padding(
     _ length: CGFloat
   ) -> Self {
