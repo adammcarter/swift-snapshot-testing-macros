@@ -23,7 +23,7 @@
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest() = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 /// Marks a function as a snapshot test with a display name.
@@ -48,7 +48,7 @@ public macro SnapshotTest() = #externalMacro(module: "SnapshotsMacros", type: "S
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest(
   _ displayName: String
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
@@ -75,7 +75,7 @@ public macro SnapshotTest(
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest(
   _ traits: any SnapshotTestTrait...
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
@@ -104,7 +104,7 @@ public macro SnapshotTest(
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest(
   _ displayName: String,
   _ traits: any SnapshotTestTrait...
@@ -137,7 +137,7 @@ public macro SnapshotTest(
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest<T: Sendable>(
   _ traits: any SnapshotTestTrait...,
   configurations: [SnapshotConfiguration<T>]
@@ -175,7 +175,7 @@ public macro SnapshotTest<T: Sendable>(
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest<T: Sendable>(
   _ displayName: String?,
   _ traits: any SnapshotTestTrait...,
@@ -211,7 +211,7 @@ public macro SnapshotTest<T: Sendable>(
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest<T: Sendable>(
   _ traits: any SnapshotTestTrait...,
   configurations: () -> [SnapshotConfiguration<T>]
@@ -251,7 +251,7 @@ public macro SnapshotTest<T: Sendable>(
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest<T: Sendable>(
   _ displayName: String?,
   _ traits: any SnapshotTestTrait...,
@@ -282,7 +282,7 @@ public macro SnapshotTest<T: Sendable>(
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest<C: Sendable>(
   _ traits: any SnapshotTestTrait...,
   configurationValues: () -> [C]
@@ -317,7 +317,7 @@ public macro SnapshotTest<C: Sendable>(
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest<C: Sendable>(
   _ displayName: String?,
   _ traits: any SnapshotTestTrait...,
@@ -348,7 +348,7 @@ public macro SnapshotTest<C: Sendable>(
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest<C>(
   _ traits: any SnapshotTestTrait...,
   configurationValues: C
@@ -384,7 +384,7 @@ where C: Collection & Sendable, C.Element: Sendable
 ///   }
 /// }
 /// ```
-@attached(peer, names: prefixed(__generator_container_))
+@attached(peer, names: arbitrary)
 public macro SnapshotTest<C>(
   _ displayName: String?,
   _ traits: any SnapshotTestTrait...,
