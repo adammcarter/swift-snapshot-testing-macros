@@ -107,7 +107,7 @@ extension SnapshotSuite.TestBlock {
       )
 
       self.testFunction = .init(
-        testName: snapshotTestFunctionDecl.name.text,
+        testName: snapshotTestFunctionDecl.name,
         configurationExpression: configurationExpression,
         snapshotTestFunctionDecl: snapshotTestFunctionDecl
       )

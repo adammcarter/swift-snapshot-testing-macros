@@ -56,7 +56,10 @@ struct SnapshotTest {
     let suiteDisplayName = makeSuiteDisplayName(from: macroContext.context.lexicalContext)
     let testName = snapshotTestFunctionDecl.name.text
 
-    let displayName = testDisplayName ?? suiteDisplayName ?? testName
+    let displayName =
+      testDisplayName
+      ?? suiteDisplayName
+      ?? snapshotTestFunctionDecl.name.identifierDisplayName
 
     self.containerName = makeContainerName(from: snapshotTestFunctionDecl)
 

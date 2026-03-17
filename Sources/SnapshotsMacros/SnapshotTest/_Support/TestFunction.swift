@@ -6,12 +6,12 @@ extension SnapshotSuite.TestBlock.Test {
     let parametersExpr: FunctionParameterListSyntax?
 
     init(
-      testName: String,
+      testName: TokenSyntax,
       configurationExpression: ExprSyntax?,
       snapshotTestFunctionDecl: FunctionDeclSyntax
     ) {
       nameExpr = IdentifierTypeSyntax(
-        name: "\(raw: testName)_snapshotTest"
+        name: "\(raw: testName.generatedIdentifierComponent)_snapshotTest"
       )
 
       let configurationGenericType = snapshotTestFunctionDecl.signature.parameterClauseAsTuple
