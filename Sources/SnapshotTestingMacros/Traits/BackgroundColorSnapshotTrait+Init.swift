@@ -9,6 +9,16 @@ extension SnapshotTrait where Self == BackgroundColorSnapshotTrait {
   ///
   /// - Parameter uiColor: The background color.
   /// - Returns: A trait that applies the background color.
+  ///
+  /// Example:
+  /// ```swift
+  /// @SnapshotSuite
+  /// struct MySnapshotSuite {
+  ///
+  ///   @SnapshotTest(.backgroundColor(uiColor: .red))
+  ///   func myView() -> some View { ... }
+  /// }
+  /// ```
   public static func backgroundColor(
     uiColor: UIColor
   ) -> Self {
@@ -19,6 +29,16 @@ extension SnapshotTrait where Self == BackgroundColorSnapshotTrait {
   ///
   /// - Parameter nsColor: The background color.
   /// - Returns: A trait that applies the background color.
+  ///
+  /// Example:
+  /// ```swift
+  /// @SnapshotSuite
+  /// struct MySnapshotSuite {
+  ///
+  ///   @SnapshotTest(.backgroundColor(nsColor: .red))
+  ///   func myView() -> some View { ... }
+  /// }
+  /// ```
   public static func backgroundColor(
     nsColor: NSColor
   ) -> Self {
@@ -31,6 +51,16 @@ extension SnapshotTrait where Self == BackgroundColorSnapshotTrait {
   ///
   /// - Parameter color: The background color.
   /// - Returns: A trait that applies the background color.
+  ///
+  /// Example:
+  /// ```swift
+  /// @SnapshotSuite
+  /// struct MySnapshotSuite {
+  ///
+  ///   @SnapshotTest(.backgroundColor(.blue))
+  ///   func myView() -> some View { ... }
+  /// }
+  /// ```
   public static func backgroundColor(
     _ color: Color
   ) -> Self {

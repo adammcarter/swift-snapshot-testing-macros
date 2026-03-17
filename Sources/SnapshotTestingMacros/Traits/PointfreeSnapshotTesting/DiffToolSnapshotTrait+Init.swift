@@ -5,6 +5,16 @@ extension SnapshotTrait where Self == DiffToolSnapshotTrait {
   ///
   /// - Parameter diffTool: The diff tool configuration to use.
   /// - Returns: A trait that sets the diff tool.
+  ///
+  /// Example:
+  /// ```swift
+  /// @SnapshotSuite
+  /// struct MySnapshotSuite {
+  ///
+  ///   @SnapshotTest(.diffTool(.ksdiff))
+  ///   func myView() -> some View { ... }
+  /// }
+  /// ```
   public static func diffTool(_ diffTool: DiffToolSnapshotTrait.DiffTool) -> Self {
     Self(diffTool: diffTool)
   }

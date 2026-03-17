@@ -8,8 +8,12 @@ import Testing
 ///
 /// Example:
 /// ```swift
-/// @SnapshotTest(.sizes(.iPhoneX))
-/// func myView() -> some View { ... }
+/// @SnapshotSuite
+/// struct MySnapshotSuite {
+///
+///   @SnapshotTest(.sizes(devices: .iPhoneX))
+///   func myView() -> some View { ... }
+/// }
 /// ```
 public struct SizesSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let sizes: [Size]

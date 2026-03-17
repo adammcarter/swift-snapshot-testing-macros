@@ -7,6 +7,19 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
   ///   - devices: The devices to simulate.
   ///   - sizingOption: How to fit the content within the device dimensions. Defaults to `.widthAndHeight`.
   /// - Returns: A trait that applies the device sizes.
+  ///
+  /// Example:
+  /// ```swift
+  /// @SnapshotSuite
+  /// struct MySnapshotSuite {
+  ///
+  ///   @SnapshotTest(.sizes(devices:
+  ///     .iPhoneX,
+  ///     .iPhone12
+  ///   ))
+  ///   func myView() -> some View { ... }
+  /// }
+  /// ```
   public static func sizes(
     devices: SizesSnapshotTrait.Device...,
     fitting sizingOption: SizesSnapshotTrait.DeviceSizingOption = .widthAndHeight
