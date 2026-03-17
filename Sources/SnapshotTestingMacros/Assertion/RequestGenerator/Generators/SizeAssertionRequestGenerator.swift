@@ -47,6 +47,7 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
     case zeroWidth
     case zeroHeight
     case noSizesAvailable
+    case unexpected(underlying: Error)
 
     var errorDescription: String? {
       switch self {
@@ -54,7 +55,16 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
         case .zeroWidth: "Zero width for snapshot"
         case .zeroHeight: "Zero height for snapshot"
         case .noSizesAvailable: "No sizes available for snapshot"
+        case .unexpected(let underlying): "Unexpected sizing error: \(underlying.localizedDescription)"
       }
+    }
+
+    var underlyingError: Error? {
+      guard case .unexpected(let underlying) = self else {
+        return nil
+      }
+
+      return underlying
     }
   }
 
@@ -65,7 +75,7 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
       let sizes =
         try SizesSnapshotTrait
         .current
-        .compactMap { traitSize -> SizePair in
+        .map { traitSize -> SizePair in
           let absoluteSize = traitSize.absoluteSize(for: viewController)
 
           guard absoluteSize != .zero else {
@@ -97,7 +107,7 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
       throw error
     }
     catch {
-      fatalError("Caught unexpected error: \(error.localizedDescription)")
+      throw SizeError.unexpected(underlying: error)
     }
   }
 
