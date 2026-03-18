@@ -21,7 +21,7 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/swiftlang/swift-syntax", exact: "602.0.0"),
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.19.0"),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.19.1"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", exact: "0.6.4"),
   ],
   targets: [
