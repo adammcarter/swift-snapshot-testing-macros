@@ -335,7 +335,7 @@ public macro SnapshotTest<C: Sendable>(
 ///
 /// - Parameters:
 ///   - traits: The traits to apply to the test.
-///   - configurationValues: A collection of values to be used as configurations.
+///   - configurationValues: A sequence of values to be used as configurations.
 ///
 /// Example:
 /// ```swift
@@ -353,7 +353,7 @@ public macro SnapshotTest<C>(
   _ traits: any SnapshotTestTrait...,
   configurationValues: C
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
-where C: Collection & Sendable, C.Element: Sendable
+where C: Sequence & Sendable, C.Element: Sendable
 
 /// Marks a function as a parameterized snapshot test with a display name, traits, and configuration values collection.
 ///
@@ -367,7 +367,7 @@ where C: Collection & Sendable, C.Element: Sendable
 /// - Parameters:
 ///   - displayName: The display name of the test.
 ///   - traits: The traits to apply to the test.
-///   - configurationValues: A collection of values to be used as configurations.
+///   - configurationValues: A sequence of values to be used as configurations.
 ///
 /// Example:
 /// ```swift
@@ -390,4 +390,4 @@ public macro SnapshotTest<C>(
   _ traits: any SnapshotTestTrait...,
   configurationValues: C
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
-where C: Collection & Sendable, C.Element: Sendable
+where C: Sequence & Sendable, C.Element: Sendable
