@@ -270,6 +270,7 @@ public macro SnapshotTest<T: Sendable>(
 /// - Parameters:
 ///   - traits: The traits to apply to the test.
 ///   - configurationValues: A closure returning an array of values to be used as configurations.
+///   - configurationNameTransform: A closure used to convert each configuration value into its display name.
 ///
 /// Example:
 /// ```swift
@@ -285,7 +286,8 @@ public macro SnapshotTest<T: Sendable>(
 @attached(peer, names: arbitrary)
 public macro SnapshotTest<C: Sendable>(
   _ traits: any SnapshotTestTrait...,
-  configurationValues: () -> [C]
+  configurationValues: () -> [C],
+  configurationNameTransform: @escaping (C) -> String = { "\($0)" }
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 /// Marks a function as a parameterized snapshot test with a display name, traits, and configuration values closure.
@@ -301,6 +303,7 @@ public macro SnapshotTest<C: Sendable>(
 ///   - displayName: The display name of the test.
 ///   - traits: The traits to apply to the test.
 ///   - configurationValues: A closure returning an array of values to be used as configurations.
+///   - configurationNameTransform: A closure used to convert each configuration value into its display name.
 ///
 /// Example:
 /// ```swift
@@ -321,7 +324,8 @@ public macro SnapshotTest<C: Sendable>(
 public macro SnapshotTest<C: Sendable>(
   _ displayName: String?,
   _ traits: any SnapshotTestTrait...,
-  configurationValues: () -> [C]
+  configurationValues: () -> [C],
+  configurationNameTransform: @escaping (C) -> String = { "\($0)" }
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
 /// Marks a function as a parameterized snapshot test with traits and configuration values sequence.
@@ -336,6 +340,7 @@ public macro SnapshotTest<C: Sendable>(
 /// - Parameters:
 ///   - traits: The traits to apply to the test.
 ///   - configurationValues: A sequence of values to be used as configurations.
+///   - configurationNameTransform: A closure used to convert each configuration value into its display name.
 ///
 /// Example:
 /// ```swift
@@ -351,7 +356,8 @@ public macro SnapshotTest<C: Sendable>(
 @attached(peer, names: arbitrary)
 public macro SnapshotTest<C>(
   _ traits: any SnapshotTestTrait...,
-  configurationValues: C
+  configurationValues: C,
+  configurationNameTransform: @escaping (C.Element) -> String = { "\($0)" }
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 where C: Sequence & Sendable, C.Element: Sendable
 
@@ -368,6 +374,7 @@ where C: Sequence & Sendable, C.Element: Sendable
 ///   - displayName: The display name of the test.
 ///   - traits: The traits to apply to the test.
 ///   - configurationValues: A sequence of values to be used as configurations.
+///   - configurationNameTransform: A closure used to convert each configuration value into its display name.
 ///
 /// Example:
 /// ```swift
@@ -388,6 +395,7 @@ where C: Sequence & Sendable, C.Element: Sendable
 public macro SnapshotTest<C>(
   _ displayName: String?,
   _ traits: any SnapshotTestTrait...,
-  configurationValues: C
+  configurationValues: C,
+  configurationNameTransform: @escaping (C.Element) -> String = { "\($0)" }
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 where C: Sequence & Sendable, C.Element: Sendable

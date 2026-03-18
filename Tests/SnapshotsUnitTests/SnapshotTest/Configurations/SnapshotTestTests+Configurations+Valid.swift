@@ -480,6 +480,68 @@ extension SnapshotTestTests.Configurations {
     }
 
     @Test
+    func testConfigurationValuesWithNameTransform() {
+      assertMacro {
+        #"""
+        @MainActor
+        @Suite
+        @SnapshotSuite
+        struct Tests {
+          @SnapshotTest(
+            configurationValues: [1, 2],
+            configurationNameTransform: { "value-\($0)" }
+          )
+          func makeMyView(value: Int) -> some View {
+            Text("\(value)")
+          }
+        }
+        """#
+      } expansion: {
+        #"""
+        @MainActor
+        @Suite
+        struct Tests {
+          func makeMyView(value: Int) -> some View {
+            Text("\(value)")
+          }
+
+          enum __generator_container_makeMyView {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(Int)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(Int)>(
+                displayName: "makeMyView",
+                configuration: configuration,
+                makeValue: {
+                  Tests().makeMyView(value: $0)
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 5,
+                column: 3
+              )
+            }
+          }
+
+          @MainActor
+          @Suite(.pointfreeSnapshots)
+          struct Tests_GeneratedSnapshotSuite {
+
+            @MainActor
+            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([1, 2], configurationNameTransform: {
+                "value-\($0)"
+              }))
+            func makeMyView_snapshotTest(configuration: SnapshotConfiguration<(Int)>) async throws {
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
+          }
+        }
+        """#
+      }
+    }
+
+    @Test
     func testConfigurationValuesStrideSequence() {
       assertMacro {
         #"""
