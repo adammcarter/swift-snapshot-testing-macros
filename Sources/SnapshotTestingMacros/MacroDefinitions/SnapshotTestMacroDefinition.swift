@@ -342,6 +342,8 @@ public macro SnapshotTest<C: Sendable>(
 ///   - configurationValues: A sequence of values to be used as configurations.
 ///   - configurationNameTransform: A closure used to convert each configuration value into its display name.
 ///
+/// - Important: `configurationValues` is consumed eagerly to build test arguments, so it must be finite.
+///
 /// Example:
 /// ```swift
 /// @SnapshotSuite
@@ -375,6 +377,8 @@ where C: Sequence & Sendable, C.Element: Sendable
 ///   - traits: The traits to apply to the test.
 ///   - configurationValues: A sequence of values to be used as configurations.
 ///   - configurationNameTransform: A closure used to convert each configuration value into its display name.
+///
+/// - Important: `configurationValues` is consumed eagerly to build test arguments, so it must be finite.
 ///
 /// Example:
 /// ```swift
