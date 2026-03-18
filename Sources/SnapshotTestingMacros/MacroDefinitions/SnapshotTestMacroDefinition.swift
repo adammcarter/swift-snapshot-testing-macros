@@ -324,7 +324,7 @@ public macro SnapshotTest<C: Sendable>(
   configurationValues: () -> [C]
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
-/// Marks a function as a parameterized snapshot test with traits and configuration values collection.
+/// Marks a function as a parameterized snapshot test with traits and configuration values sequence.
 ///
 /// The following default traits are applied unless overridden:
 /// - Theme: `.theme(.all)` (Light and Dark mode)
@@ -355,7 +355,7 @@ public macro SnapshotTest<C>(
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 where C: Sequence & Sendable, C.Element: Sendable
 
-/// Marks a function as a parameterized snapshot test with a display name, traits, and configuration values collection.
+/// Marks a function as a parameterized snapshot test with a display name, traits, and configuration values sequence.
 ///
 /// The following default traits are applied unless overridden:
 /// - Theme: `.theme(.all)` (Light and Dark mode)
