@@ -19,7 +19,7 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
   func generateRequests() async throws -> [any AssertionRequesting] {
     let request: any AssertionRequesting
 
-    switch StrategySnapshotTrait.current {
+    switch context.traitConfiguration.strategy {
       case .recursiveDescription:
         request = AssertionRequest(
           view: try await context.makeSnapshotView(),

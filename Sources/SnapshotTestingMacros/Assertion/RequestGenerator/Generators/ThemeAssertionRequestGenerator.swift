@@ -13,7 +13,7 @@ struct ThemeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
   let size: CGSize
 
   var values: any Collection<SnapshotTheme> {
-    switch ThemeSnapshotTrait.current {
+    switch context.traitConfiguration.theme {
       case .all: [.light, .dark]
       case .dark: [.dark]
       case .light: [.light]
