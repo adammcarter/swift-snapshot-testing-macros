@@ -23,23 +23,105 @@ extension SnapshotConfigurationParser {
 }
 
 extension SnapshotConfigurationParser {
-  public static func parse<T: Sendable>(_ arguments: [T]) -> [SnapshotConfiguration<T>] {
+  public static func parse<T: BinaryFloatingPoint & Sendable>(
+    _ arguments: [T],
+    configurationNameTransform: (T) -> String
+  ) -> [SnapshotConfiguration<T>] {
     arguments.map {
-      SnapshotConfiguration(name: "\($0)", value: $0)
+      SnapshotConfiguration(name: configurationNameTransform($0), value: $0)
     }
   }
 
+  public static func parse<T: BinaryFloatingPoint & Sendable>(
+    _ arguments: () -> [T],
+    configurationNameTransform: (T) -> String
+  ) -> [SnapshotConfiguration<T>] {
+    parse(arguments(), configurationNameTransform: configurationNameTransform)
+  }
+
+  public static func parse<S: Sequence>(
+    _ arguments: S,
+    configurationNameTransform: (S.Element) -> String
+  ) -> [SnapshotConfiguration<S.Element>]
+  where S.Element: BinaryFloatingPoint & Sendable {
+    arguments.map {
+      SnapshotConfiguration(name: configurationNameTransform($0), value: $0)
+    }
+  }
+
+  public static func parse<S: Sequence>(
+    _ arguments: () -> S,
+    configurationNameTransform: (S.Element) -> String
+  ) -> [SnapshotConfiguration<S.Element>]
+  where S.Element: BinaryFloatingPoint & Sendable {
+    parse(arguments(), configurationNameTransform: configurationNameTransform)
+  }
+
+  public static func parse<T: BinaryFloatingPoint & Sendable>(_ arguments: [T]) -> [SnapshotConfiguration<T>] {
+    parse(arguments, configurationNameTransform: { $0.formatted() })
+  }
+
+  public static func parse<T: BinaryFloatingPoint & Sendable>(_ arguments: () -> [T]) -> [SnapshotConfiguration<T>] {
+    parse(arguments, configurationNameTransform: { $0.formatted() })
+  }
+
+  public static func parse<S: Sequence>(_ arguments: S) -> [SnapshotConfiguration<S.Element>]
+  where S.Element: BinaryFloatingPoint & Sendable {
+    parse(arguments, configurationNameTransform: { $0.formatted() })
+  }
+
+  public static func parse<S: Sequence>(_ arguments: () -> S) -> [SnapshotConfiguration<S.Element>]
+  where S.Element: BinaryFloatingPoint & Sendable {
+    parse(arguments, configurationNameTransform: { $0.formatted() })
+  }
+
+  public static func parse<T: Sendable>(
+    _ arguments: [T],
+    configurationNameTransform: (T) -> String
+  ) -> [SnapshotConfiguration<T>] {
+    arguments.map {
+      SnapshotConfiguration(name: configurationNameTransform($0), value: $0)
+    }
+  }
+
+  public static func parse<T: Sendable>(
+    _ arguments: () -> [T],
+    configurationNameTransform: (T) -> String
+  ) -> [SnapshotConfiguration<T>] {
+    parse(arguments(), configurationNameTransform: configurationNameTransform)
+  }
+
+  public static func parse<S: Sequence>(
+    _ arguments: S,
+    configurationNameTransform: (S.Element) -> String
+  ) -> [SnapshotConfiguration<S.Element>]
+  where S.Element: Sendable {
+    arguments.map { SnapshotConfiguration(name: configurationNameTransform($0), value: $0) }
+  }
+
+  public static func parse<S: Sequence>(
+    _ arguments: () -> S,
+    configurationNameTransform: (S.Element) -> String
+  ) -> [SnapshotConfiguration<S.Element>]
+  where S.Element: Sendable {
+    parse(arguments(), configurationNameTransform: configurationNameTransform)
+  }
+
+  public static func parse<T: Sendable>(_ arguments: [T]) -> [SnapshotConfiguration<T>] {
+    parse(arguments, configurationNameTransform: { "\($0)" })
+  }
+
   public static func parse<T: Sendable>(_ arguments: () -> [T]) -> [SnapshotConfiguration<T>] {
-    parse(arguments())
+    parse(arguments, configurationNameTransform: { "\($0)" })
   }
 
   public static func parse<S: Sequence>(_ arguments: S) -> [SnapshotConfiguration<S.Element>]
   where S.Element: Sendable {
-    arguments.map { SnapshotConfiguration(name: "\($0)", value: $0) }
+    parse(arguments, configurationNameTransform: { "\($0)" })
   }
 
   public static func parse<S: Sequence>(_ arguments: () -> S) -> [SnapshotConfiguration<S.Element>]
   where S.Element: Sendable {
-    parse(arguments())
+    parse(arguments, configurationNameTransform: { "\($0)" })
   }
 }

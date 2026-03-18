@@ -4,11 +4,13 @@ struct SnapshotMacroArguments {
   let traitExpressions: [ExprSyntax]?
   let configurationsExpression: ExprSyntax?
   let configurationValuesExpression: ExprSyntax?
+  let configurationNameTransformExpression: ExprSyntax?
 
   init(node: AttributeSyntax?) {
     traitExpressions = makeTraitExpressions(node: node)
     configurationsExpression = valueForParameterNamed(Constants.Parameters.configurations, in: node)
     configurationValuesExpression = valueForParameterNamed(Constants.Parameters.configurationValues, in: node)
+    configurationNameTransformExpression = valueForParameterNamed(Constants.Parameters.configurationNameTransform, in: node)
   }
 }
 

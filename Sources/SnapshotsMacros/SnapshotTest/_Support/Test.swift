@@ -103,7 +103,9 @@ extension SnapshotSuite.TestBlock {
 
       self.testMacro = .init(
         traits: makeTestTraitBoxExprs(traitExprs: testMacroArguments.traitExpressions),
-        configurationExpression: configurationExpression
+        configurationExpression: configurationExpression,
+        configurationValuesExpression: testMacroArguments.configurationValuesExpression,
+        configurationNameTransformExpression: testMacroArguments.configurationNameTransformExpression
       )
 
       self.testFunction = .init(

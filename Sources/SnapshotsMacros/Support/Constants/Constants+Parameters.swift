@@ -5,6 +5,7 @@ extension Constants {
     static let configuration = "configuration"
     static let configurations = "configurations"
     static let configurationValues = "configurationValues"
+    static let configurationNameTransform = "configurationNameTransform"
   }
 }
 
@@ -19,6 +20,10 @@ extension MacroToken.ParametersType {
 
   var configurationValues: MacroToken {
     .init(Constants.Parameters.configurationValues)
+  }
+
+  var configurationNameTransform: MacroToken {
+    .init(Constants.Parameters.configurationNameTransform)
   }
 }
 
