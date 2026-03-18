@@ -17,6 +17,12 @@ struct AssertionRequestGenerator {
   private func makeContext(
     with viewGenerator: some SnapshotViewGenerating
   ) async throws -> AssertionRequestContext {
+    let traitConfiguration = AssertionRequestContext.TraitConfiguration(
+      sizes: SizesSnapshotTrait.current,
+      theme: ThemeSnapshotTrait.current,
+      strategy: StrategySnapshotTrait.current
+    )
+
     let folderName: String?
     if let name = viewGenerator.configuration.name {
       folderName = SnapshotNameNormalizer.folderComponent(from: name)
@@ -27,6 +33,7 @@ struct AssertionRequestGenerator {
 
     return .init(
       name: viewGenerator.displayName,
+      traitConfiguration: traitConfiguration,
       makeSnapshotView: { try await viewGenerator.makeDecoratedView() },
       snapshotDirectory: makeSnapshotDirectory(
         file: viewGenerator.filePath,

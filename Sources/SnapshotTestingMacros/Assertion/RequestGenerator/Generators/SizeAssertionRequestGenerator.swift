@@ -25,6 +25,7 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
      */
     let contextWithLaidOutView = AssertionRequestContext(
       name: context.name,
+      traitConfiguration: context.traitConfiguration,
       makeSnapshotView: { value.modifiedViewController },
       snapshotDirectory: context.snapshotDirectory,
       fileID: context.fileID,
@@ -73,8 +74,9 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
 
     do {
       let sizes =
-        try SizesSnapshotTrait
-        .current
+        try context
+        .traitConfiguration
+        .sizes
         .map { traitSize -> SizePair in
           let absoluteSize = traitSize.absoluteSize(for: viewController)
 
