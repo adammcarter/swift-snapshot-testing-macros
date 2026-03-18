@@ -33,8 +33,6 @@ extension SnapshotConfigurationParser {
     parse(arguments())
   }
 
-  /// - Important: Sequence inputs are traversed eagerly to build concrete configurations.
-  ///   Pass a finite sequence.
   public static func parse<S: Sequence>(_ arguments: S) -> [SnapshotConfiguration<S.Element>]
   where S.Element: Sendable {
     arguments.map { SnapshotConfiguration(name: "\($0)", value: $0) }
