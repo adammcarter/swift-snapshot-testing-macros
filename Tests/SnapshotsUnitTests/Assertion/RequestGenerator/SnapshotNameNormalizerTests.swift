@@ -1,5 +1,6 @@
-@testable import SnapshotTestingMacros
 import Testing
+
+@testable import SnapshotTestingMacros
 
 @Suite
 struct SnapshotNameNormalizerTests {
