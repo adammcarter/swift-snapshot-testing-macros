@@ -49,7 +49,7 @@ struct ThemeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
 
 #if canImport(AppKit)
 extension NSAppearance {
-  fileprivate static var light: SnapshotTheme { NSAppearance(named: .aqua)! }
-  fileprivate static var dark: SnapshotTheme { NSAppearance(named: .darkAqua)! }
+  static var light: SnapshotTheme { NSAppearance(named: .aqua)! }
+  static var dark: SnapshotTheme { NSAppearance(named: .darkAqua)! }
 }
 #endif
