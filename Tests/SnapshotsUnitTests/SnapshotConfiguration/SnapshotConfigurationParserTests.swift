@@ -6,20 +6,20 @@ import Testing
 struct SnapshotConfigurationParserTests {
 
   @Test
-  func parseFloatingPointSequenceUsesFormattedNamesByDefault() {
+  func parseFloatingPointSequenceKeepsStringInterpolationNames() {
     let values = stride(from: 0.0, to: 0.31, by: 0.1)
     let configurations = SnapshotConfigurationParser.parse(values)
 
-    #expect(configurations.map(\.name) == ["0", "0.1", "0.2", "0.3"])
+    #expect(configurations.map(\.name) == ["0.0", "0.1", "0.2", "0.30000000000000004"])
     #expect(configurations.map(\.value) == Array(values))
   }
 
   @Test
-  func parseFloatingPointClosureUsesFormattedNamesByDefault() {
+  func parseFloatingPointClosureKeepsStringInterpolationNames() {
     let values = [0.1 + 0.2]
     let configurations = SnapshotConfigurationParser.parse { values }
 
-    #expect(configurations.map(\.name) == ["0.3"])
+    #expect(configurations.map(\.name) == ["0.30000000000000004"])
     #expect(configurations.map(\.value) == values)
   }
 
@@ -28,10 +28,10 @@ struct SnapshotConfigurationParserTests {
     let values = [0.1 + 0.2]
     let configurations = SnapshotConfigurationParser.parse(
       values,
-      configurationNameTransform: { "\($0)" }
+      configurationNameTransform: { $0.formatted() }
     )
 
-    #expect(configurations.map(\.name) == ["0.30000000000000004"])
+    #expect(configurations.map(\.name) == ["0.3"])
     #expect(configurations.map(\.value) == values)
   }
 
