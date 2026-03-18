@@ -24,18 +24,6 @@ struct SnapshotConfigurationParserTests {
   }
 
   @Test
-  func parseFloatingPointCanUseCustomNameTransform() {
-    let values = [0.1 + 0.2]
-    let configurations = SnapshotConfigurationParser.parse(
-      values,
-      configurationNameTransform: { $0.formatted() }
-    )
-
-    #expect(configurations.map(\.name) == ["0.3"])
-    #expect(configurations.map(\.value) == values)
-  }
-
-  @Test
   func parseNonFloatingPointKeepsStringInterpolationNames() {
     let values = [1_000]
     let configurations = SnapshotConfigurationParser.parse(values)

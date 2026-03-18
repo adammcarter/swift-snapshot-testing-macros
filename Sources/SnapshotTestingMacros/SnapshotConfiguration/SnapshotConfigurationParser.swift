@@ -23,55 +23,25 @@ extension SnapshotConfigurationParser {
 }
 
 extension SnapshotConfigurationParser {
-  public static func parse<T: Sendable>(
-    _ arguments: [T],
-    configurationNameTransform: (T) -> String
-  ) -> [SnapshotConfiguration<T>] {
+  public static func parse<T: Sendable>(_ arguments: [T]) -> [SnapshotConfiguration<T>] {
     arguments.map {
-      SnapshotConfiguration(name: configurationNameTransform($0), value: $0)
+      SnapshotConfiguration(name: "\($0)", value: $0)
     }
   }
 
-  public static func parse<T: Sendable>(
-    _ arguments: () -> [T],
-    configurationNameTransform: (T) -> String
-  ) -> [SnapshotConfiguration<T>] {
-    parse(arguments(), configurationNameTransform: configurationNameTransform)
+  public static func parse<T: Sendable>(_ arguments: () -> [T]) -> [SnapshotConfiguration<T>] {
+    parse(arguments())
   }
 
   /// - Important: Sequence inputs are traversed eagerly to build concrete configurations.
   ///   Pass a finite sequence.
-  public static func parse<S: Sequence>(
-    _ arguments: S,
-    configurationNameTransform: (S.Element) -> String
-  ) -> [SnapshotConfiguration<S.Element>]
-  where S.Element: Sendable {
-    arguments.map { SnapshotConfiguration(name: configurationNameTransform($0), value: $0) }
-  }
-
-  public static func parse<S: Sequence>(
-    _ arguments: () -> S,
-    configurationNameTransform: (S.Element) -> String
-  ) -> [SnapshotConfiguration<S.Element>]
-  where S.Element: Sendable {
-    parse(arguments(), configurationNameTransform: configurationNameTransform)
-  }
-
-  public static func parse<T: Sendable>(_ arguments: [T]) -> [SnapshotConfiguration<T>] {
-    parse(arguments, configurationNameTransform: { "\($0)" })
-  }
-
-  public static func parse<T: Sendable>(_ arguments: () -> [T]) -> [SnapshotConfiguration<T>] {
-    parse(arguments, configurationNameTransform: { "\($0)" })
-  }
-
   public static func parse<S: Sequence>(_ arguments: S) -> [SnapshotConfiguration<S.Element>]
   where S.Element: Sendable {
-    parse(arguments, configurationNameTransform: { "\($0)" })
+    arguments.map { SnapshotConfiguration(name: "\($0)", value: $0) }
   }
 
   public static func parse<S: Sequence>(_ arguments: () -> S) -> [SnapshotConfiguration<S.Element>]
   where S.Element: Sendable {
-    parse(arguments, configurationNameTransform: { "\($0)" })
+    parse(arguments())
   }
 }
