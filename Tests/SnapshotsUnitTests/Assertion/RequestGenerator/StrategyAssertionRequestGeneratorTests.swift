@@ -71,6 +71,13 @@ struct StrategyAssertionRequestGeneratorTests {
     #expect(imageRequest.snapshotting.pathExtension == "png")
   }
 
+  @Test
+  func `appkit image strategy still produces png snapshotting`() async throws {
+    let imageRequest = try await makeImageRequest(displayScale: 3.0)
+
+    #expect(imageRequest.snapshotting.pathExtension == "png")
+  }
+
   struct ConfiguredStrategyCase: Sendable {
     let contextStrategy: StrategySnapshotTrait.Strategy
   }
@@ -79,6 +86,29 @@ struct StrategyAssertionRequestGeneratorTests {
     .init(contextStrategy: .image),
     .init(contextStrategy: .recursiveDescription),
   ]
+
+  private func makeImageRequest(
+    displayScale: Double
+  ) async throws -> AssertionRequest<NSImage> {
+    let context = AssertionRequestGeneratorTestSupport.makeContext(
+      traitConfiguration: .init(
+        sizes: [],
+        theme: .light,
+        strategy: .image
+      )
+    )
+
+    let maybeRequest = try await StrategyAssertionRequestGenerator(
+      context: context,
+      size: .init(width: 100, height: 100),
+      theme: .dark,
+      displayScale: displayScale,
+      testName: "name"
+    )
+    .generateRequests().first
+
+    return try #require(maybeRequest as? AssertionRequest<NSImage>)
+  }
 
 }
 #endif

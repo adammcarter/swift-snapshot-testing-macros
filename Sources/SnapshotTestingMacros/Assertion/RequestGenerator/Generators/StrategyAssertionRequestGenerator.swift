@@ -50,7 +50,11 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
         #elseif canImport(AppKit)
         request = AssertionRequest(
           view: try await context.makeSnapshotView(),
-          snapshotting: .image(size: size),
+          snapshotting: .image(
+            size: size,
+            appearance: theme,
+            scale: displayScale
+          ),
           snapshotDirectory: context.snapshotDirectory,
           testName: testName,
           fileID: context.fileID,
