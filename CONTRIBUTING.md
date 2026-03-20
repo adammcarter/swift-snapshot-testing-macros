@@ -25,17 +25,31 @@ swift test
 ```
 
 ### Integration Tests
-Integration tests require a specific simulator (iPhone 17, iOS 26.2) to match reference snapshots.
+Integration tests are split by platform:
+
+- `SnapshotsIntegrationTestsiOS` for iOS
+- `SnapshotsIntegrationTestsMacOS` for macOS
 
 Run via command line:
 ```bash
-mise run test-integration
+mise run test-integration-ios
 ```
 or
 ```bash
 xcodebuild test \
-  -scheme SnapshotsIntegrationTests \
+  -scheme SnapshotsIntegrationTestsiOS \
   -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64"
+```
+
+For macOS integration tests:
+```bash
+mise run test-integration-macos
+```
+or
+```bash
+xcodebuild test \
+  -scheme SnapshotsIntegrationTestsMacOS \
+  -destination "platform=macOS"
 ```
 
 ## Code Style

@@ -1,0 +1,1 @@
+../../../../SnapshotsIntegrationTestsiOS/SnapshotSuite/Traits/Single/SnapshotSuite+Traits+Strategy.swift

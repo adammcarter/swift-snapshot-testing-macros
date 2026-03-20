@@ -40,8 +40,7 @@ struct ThemeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
     #if canImport(UIKit)
     UIWindow().traitCollection.displayScale
     #elseif canImport(AppKit)
-    // Keep macOS image snapshots stable regardless of the host display.
-    2.0
+    NSScreen.main.flatMap { Double($0.backingScaleFactor) } ?? 1.0
     #endif
   }()
 }

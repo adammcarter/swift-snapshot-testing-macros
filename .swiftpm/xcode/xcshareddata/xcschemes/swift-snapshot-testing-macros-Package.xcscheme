@@ -48,36 +48,6 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "SnapshotsIntegrationTests"
-               BuildableName = "SnapshotsIntegrationTests"
-               BlueprintName = "SnapshotsIntegrationTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "SnapshotsUnitTests"
-               BuildableName = "SnapshotsUnitTests"
-               BlueprintName = "SnapshotsUnitTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "SnapshotsIntegrationTests"
-               BuildableName = "SnapshotsIntegrationTests"
-               BlueprintName = "SnapshotsIntegrationTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "SnapshotsUnitTests"
                BuildableName = "SnapshotsUnitTests"
                BlueprintName = "SnapshotsUnitTests"
@@ -101,6 +71,26 @@
                BlueprintIdentifier = "SnapshotsPlayground"
                BuildableName = "SnapshotsPlayground"
                BlueprintName = "SnapshotsPlayground"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "SnapshotsIntegrationTestsMacOS"
+               BuildableName = "SnapshotsIntegrationTestsMacOS"
+               BlueprintName = "SnapshotsIntegrationTestsMacOS"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "SnapshotsIntegrationTestsiOS"
+               BuildableName = "SnapshotsIntegrationTestsiOS"
+               BlueprintName = "SnapshotsIntegrationTestsiOS"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>

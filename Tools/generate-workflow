@@ -64,7 +64,7 @@ jobs:
         run: swift build
     
   ios-integration-tests:
-    name: Integration Tests
+    name: Integration Tests (iOS)
     needs: [format-and-lint, build-legacy-swift-versions]
     runs-on: \(RUNNER)
 
@@ -87,11 +87,51 @@ jobs:
           defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
           defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
 
-      - name: Run SnapshotsIntegrationTests (iOS)
+      - name: Run SnapshotsIntegrationTestsiOS (iOS)
         run: |
           xcodebuild test \\
-            -scheme SnapshotsIntegrationTests \\
+            -scheme SnapshotsIntegrationTestsiOS \\
             -destination "platform=iOS Simulator,name=\(IOS_SIMULATOR),OS=\(IOS_VERSION),arch=arm64"
+
+  macos-integration-tests:
+    name: Integration Tests (macOS)
+    needs: [format-and-lint, build-legacy-swift-versions]
+    runs-on: \(RUNNER)
+
+    steps:
+      - name: Select Xcode version (\(LATEST_XCODE))
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '\(LATEST_XCODE)'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '\(RUBY_VERSION)'
+
+      - name: Disable prebuilts
+        run: |
+          defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
+          defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
+
+      - name: Run SnapshotsIntegrationTestsMacOS (macOS)
+        run: |
+          mkdir -p TestResults
+          xcodebuild test \\
+            -parallel-testing-enabled NO \\
+            -scheme SnapshotsIntegrationTestsMacOS \\
+            -destination 'platform=macOS' \\
+            -resultBundlePath TestResults/SnapshotsIntegrationTestsMacOS.xcresult
+
+      - name: Upload SnapshotsIntegrationTestsMacOS xcresult
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SnapshotsIntegrationTestsMacOS-xcresult
+          path: TestResults/SnapshotsIntegrationTestsMacOS.xcresult
     
   ios-integration-repetition-tests:
     name: Integration Repetition Tests

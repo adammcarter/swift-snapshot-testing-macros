@@ -1,0 +1,1 @@
+../../SnapshotsIntegrationTestsiOS/SnapshotSuite/SnapshotSuite+DisplayName.swift

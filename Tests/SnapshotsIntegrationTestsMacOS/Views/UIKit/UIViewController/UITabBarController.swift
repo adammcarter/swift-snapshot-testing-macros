@@ -1,0 +1,1 @@
+../../../../SnapshotsIntegrationTestsiOS/Views/UIKit/UIViewController/UITabBarController.swift

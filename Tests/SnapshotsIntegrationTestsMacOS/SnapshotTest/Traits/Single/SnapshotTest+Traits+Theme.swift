@@ -1,0 +1,1 @@
+../../../../SnapshotsIntegrationTestsiOS/SnapshotTest/Traits/Single/SnapshotTest+Traits+Theme.swift

@@ -16,30 +16,49 @@ extension Snapshotting where Value == SnapshotViewController, Format == NSImage 
       diffing: base.diffing
     ) { viewController in
       Async { callback in
-        let view = viewController.view
-        let originalAppearance = view.appearance
-        let originalFrame = view.frame
-
-        let window = ScaledSnapshotWindow(size: size, scale: scale)
-        window.appearance = appearance
-        window.contentView?.appearance = appearance
-
-        view.appearance = appearance
-        view.frame = .init(origin: .zero, size: size)
-        window.contentView?.addSubview(view)
-        window.makeKey()
-
-        base.snapshot(viewController)
-          .run { image in
-            view.appearance = originalAppearance
-            view.removeFromSuperview()
-            view.frame = originalFrame
-
-            window.orderOut(nil)
-            window.contentView = nil
-
-            callback(image)
+        let runOnMain: (@escaping () -> Void) -> Void = { work in
+          if Thread.isMainThread {
+            work()
+          } else {
+            DispatchQueue.main.async(execute: work)
           }
+        }
+
+        runOnMain {
+          let view = viewController.view
+          let originalAppearance = view.appearance
+          let originalFrame = view.frame
+          let originalSuperview = view.superview
+          let originalIndex = view.superview?.subviews.firstIndex(of: view)
+
+          let window = ScaledSnapshotWindow(size: size, scale: scale)
+          window.appearance = appearance
+          window.contentView?.appearance = appearance
+
+          view.appearance = appearance
+          view.frame = .init(origin: .zero, size: size)
+          window.contentView?.addSubview(view)
+          view.layoutSubtreeIfNeeded()
+          window.makeKeyAndOrderFront(nil)
+
+          base.snapshot(viewController)
+            .run { image in
+              runOnMain {
+                view.appearance = originalAppearance
+                view.removeFromSuperview()
+                if let originalSuperview, let originalIndex {
+                  originalSuperview.subviews.insert(view, at: originalIndex)
+                } else {
+                  originalSuperview?.addSubview(view)
+                }
+                view.frame = originalFrame
+
+                window.close()
+
+                callback(image)
+              }
+            }
+        }
       }
     }
   }
@@ -49,7 +68,7 @@ private final class ScaledSnapshotWindow: NSWindow {
   private let scale: CGFloat
 
   init(size: CGSize, scale: Double) {
-    self.scale = scale
+    self.scale = CGFloat(scale)
 
     super
       .init(
@@ -63,10 +82,15 @@ private final class ScaledSnapshotWindow: NSWindow {
     isOpaque = false
     hasShadow = false
     backgroundColor = .clear
+    isReleasedWhenClosed = false
   }
 
   override var backingScaleFactor: CGFloat {
     scale
+  }
+
+  override var canBecomeKey: Bool {
+    true
   }
 }
 #endif
