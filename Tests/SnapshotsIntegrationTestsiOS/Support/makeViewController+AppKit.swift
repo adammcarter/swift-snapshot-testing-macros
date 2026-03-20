@@ -12,6 +12,8 @@ func makeController(labeled string: String? = nil) -> NSViewController {
     if let string {
       $0.view.addLabel(string: string)
     }
+
+    $0.view.normalizeFrameForSnapshotting()
   }
 }
 #endif

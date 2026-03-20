@@ -15,6 +15,12 @@ func makeLabel(_ text: String) -> NSView {
     label.trailingAnchor.constraint(equalTo: container.trailingAnchor),
     label.bottomAnchor.constraint(equalTo: container.bottomAnchor),
   ])
+
+  container.layoutSubtreeIfNeeded()
+  let fittedSize = container.fittingSize.normalizedForSnapshotting
+  label.frame = CGRect(origin: .zero, size: fittedSize)
+  container.frame = CGRect(origin: .zero, size: fittedSize)
+
   return container
 }
 
@@ -33,12 +39,28 @@ extension NSView {
       label.trailingAnchor.constraint(equalTo: trailingAnchor),
       label.bottomAnchor.constraint(equalTo: bottomAnchor),
     ])
+
+    layoutSubtreeIfNeeded()
+    frame.size = fittingSize.normalizedForSnapshotting
+  }
+
+  @MainActor
+  func normalizeFrameForSnapshotting() {
+    layoutSubtreeIfNeeded()
+    frame = CGRect(origin: .zero, size: fittingSize.normalizedForSnapshotting)
+  }
+}
+
+private extension CGSize {
+  var normalizedForSnapshotting: CGSize {
+    CGSize(width: ceil(width), height: ceil(height))
   }
 }
 
 @MainActor
 private func makeTextFieldLabel(_ text: String) -> NSTextField {
-  let label = NSTextField(labelWithString: text)
+  let label = NSTextField()
+  label.stringValue = text
   label.font = .systemFont(ofSize: 17)
   label.alignment = .center
   label.backgroundColor = .clear
@@ -53,6 +75,7 @@ private func makeTextFieldLabel(_ text: String) -> NSTextField {
   label.maximumNumberOfLines = 0
   label.preferredMaxLayoutWidth = 300
   label.cell?.wraps = true
+  label.cell?.isScrollable = false
   return label
 }
 #endif

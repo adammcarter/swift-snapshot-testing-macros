@@ -31,7 +31,7 @@ let package = Package(
      For example, converting `@SnapshotSuite` in to the code you see when expanding the macro in place.
 
      It's important to remember the expanded macro code is not run in this target, this target acts more as a developer writing the code.
-
+    
      Another way to think about this target is like a protocol definition, there's no real implementation here but we set out the contract.
      */
     .macro(
@@ -46,11 +46,11 @@ let package = Package(
 
     /*
      This is the implementation for the expanded macro code.
-
+    
      This target will read the expanded macro and 'convert' it from plain text in to fully functioning Swift essentially acting as a compiler.
-
+    
      It's important that any code expanded from 'SnapshotsMacros' is understood by 'SnapshotTestingMacros'
-
+    
      Where the above target is like a protocol, 'SnapshotTestingMacros' acts as our implementation of the protocol.
      */
     .target(
@@ -80,7 +80,7 @@ let package = Package(
 
     /*
      This test target tests the *implementation* of the macro, making sure the expanded code is correct for a given macro.
-
+    
      This must be run on macOS.
      */
     .testTarget(
@@ -97,13 +97,13 @@ let package = Package(
 
     /*
      iOS integration target.
-
+    
      Because our macro create tests in the form of snapshot tests, we can create integration tests using the snapshot images as our references.
-
+    
      Usually in a macro we'd just use 'main.swift' to test and debug the macro while developing, but we need to attach our macro to a test target to be able run the tests the macro creates, this is that test target.
-
+    
      This test target simply wraps the SnapshotTestingMacros library so we can run those generated tests.
-
+    
      This must be run on an iPhone simulator to guarantee matching the reference images with those generated during testing.
      */
     .testTarget(
@@ -163,7 +163,7 @@ let package = Package(
 
     /*
      A test target with the specific purpose of testing what happens on repetitions.
-
+    
      Previously there was a bug where repetitions of tests would create new snapshot references on subsequent retries, this test target explicitly checks this behaviour to avoid this regression in future.
      */
     .testTarget(

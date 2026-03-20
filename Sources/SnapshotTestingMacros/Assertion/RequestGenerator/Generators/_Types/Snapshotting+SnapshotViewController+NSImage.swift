@@ -19,7 +19,8 @@ extension Snapshotting where Value == SnapshotViewController, Format == NSImage 
         let runOnMain: (@escaping () -> Void) -> Void = { work in
           if Thread.isMainThread {
             work()
-          } else {
+          }
+          else {
             DispatchQueue.main.async(execute: work)
           }
         }
@@ -48,7 +49,8 @@ extension Snapshotting where Value == SnapshotViewController, Format == NSImage 
                 view.removeFromSuperview()
                 if let originalSuperview, let originalIndex {
                   originalSuperview.subviews.insert(view, at: originalIndex)
-                } else {
+                }
+                else {
                   originalSuperview?.addSubview(view)
                 }
                 view.frame = originalFrame
