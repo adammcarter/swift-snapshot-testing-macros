@@ -12,7 +12,7 @@ extension SnapshotSuite.Traits.BackgroundColor.AppKit {
 
   @MainActor
   @Suite
-  @SnapshotSuite
+  @SnapshotSuite(.sizes(.minimum, scale: 2.0))
   struct DefaultWithoutOverride {
 
     @SnapshotTest
@@ -33,6 +33,8 @@ extension SnapshotSuite.Traits.BackgroundColor.AppKit {
   @MainActor
   @Suite
   @SnapshotSuite(
+    .sizes(.minimum, scale: 2.0),
+    .precision(0.98),
     .backgroundColor(nsColor: .systemPink)
   )
   struct DefaultWithOverride {
@@ -58,6 +60,7 @@ extension SnapshotSuite.Traits.BackgroundColor.AppKit {
   @MainActor
   @Suite
   @SnapshotSuite(
+    .sizes(.minimum, scale: 2.0),
     .backgroundColor(nsColor: .blue)
   )
   struct Blue {
@@ -74,6 +77,7 @@ extension SnapshotSuite.Traits.BackgroundColor.AppKit {
   @MainActor
   @Suite
   @SnapshotSuite(
+    .sizes(.minimum, scale: 2.0),
     .backgroundColor(nsColor: .clear)
   )
   struct Clear {
@@ -89,7 +93,10 @@ extension SnapshotSuite.Traits.BackgroundColor.AppKit {
 
   @MainActor
   @Suite
-  @SnapshotSuite
+  @SnapshotSuite(
+    .sizes(.minimum, scale: 2.0),
+    .precision(0.98)
+  )
   struct ViewBackgroundColor {
 
     @SnapshotTest
@@ -119,6 +126,7 @@ extension SnapshotSuite.Traits.BackgroundColor.AppKit {
   @MainActor
   @Suite
   @SnapshotSuite(
+    .sizes(.minimum, scale: 2.0),
     .backgroundColor(nsColor: .gray)
   )
   struct Inheritance {
@@ -142,6 +150,7 @@ extension SnapshotSuite.Traits.BackgroundColor.AppKit {
   @MainActor
   @Suite
   @SnapshotSuite(
+    .sizes(.minimum, scale: 2.0),
     .backgroundColor(nsColor: .gray),
     .backgroundColor(nsColor: .green)
   )

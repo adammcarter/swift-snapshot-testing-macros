@@ -14,7 +14,8 @@ extension SnapshotSuite.Traits.Sizes {
     @MainActor
     @Suite
     @SnapshotSuite(
-      .sizes(width: 320, height: 480)
+      .sizes(width: 320, height: 480, scale: 2.0),
+      .precision(0.98)
     )
     struct Size320x480 {
 
@@ -29,7 +30,8 @@ extension SnapshotSuite.Traits.Sizes {
     @MainActor
     @Suite
     @SnapshotSuite(
-      .sizes(width: 320)
+      .sizes(width: 320, scale: 2.0),
+      .precision(0.98)
     )
     struct Width320 {
 
@@ -44,7 +46,8 @@ extension SnapshotSuite.Traits.Sizes {
     @MainActor
     @Suite
     @SnapshotSuite(
-      .sizes(height: 480)
+      .sizes(height: 480, scale: 2.0),
+      .precision(0.98)
     )
     struct Height480 {
 
@@ -59,7 +62,8 @@ extension SnapshotSuite.Traits.Sizes {
     @MainActor
     @Suite
     @SnapshotSuite(
-      .sizes(.minimum)
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
     )
     struct Minimum {
 
@@ -74,7 +78,8 @@ extension SnapshotSuite.Traits.Sizes {
     @MainActor
     @Suite
     @SnapshotSuite(
-      .sizes(SizesSnapshotTrait.Size(width: 320, height: 480))
+      .sizes(SizesSnapshotTrait.Size(width: 320, height: 480, scale: 2.0)),
+      .precision(0.98)
     )
     struct WidthHeight320x480 {
 
@@ -90,9 +95,10 @@ extension SnapshotSuite.Traits.Sizes {
     @Suite
     @SnapshotSuite(
       .sizes(
-        SizesSnapshotTrait.Size(width: 320, height: 480),
-        SizesSnapshotTrait.Size(width: 375, height: 667)
-      )
+        SizesSnapshotTrait.Size(width: 320, height: 480, scale: 2.0),
+        SizesSnapshotTrait.Size(width: 375, height: 667, scale: 2.0)
+      ),
+      .precision(0.98)
     )
     struct Variadic {
 
@@ -106,9 +112,10 @@ extension SnapshotSuite.Traits.Sizes {
     @Suite
     @SnapshotSuite(
       .sizes([
-        SizesSnapshotTrait.Size(width: 320, height: 480),
-        SizesSnapshotTrait.Size(width: 375, height: 667),
-      ])
+        SizesSnapshotTrait.Size(width: 320, height: 480, scale: 2.0),
+        SizesSnapshotTrait.Size(width: 375, height: 667, scale: 2.0),
+      ]),
+      .precision(0.98)
     )
     struct Array {
 

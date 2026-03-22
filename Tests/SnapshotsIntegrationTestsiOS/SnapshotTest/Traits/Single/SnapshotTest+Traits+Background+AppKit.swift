@@ -7,7 +7,10 @@ extension SnapshotTest.Traits.BackgroundColor {
 
   @MainActor
   @Suite
-  @SnapshotSuite
+  @SnapshotSuite(
+    .sizes(.minimum, scale: 2.0),
+    .precision(0.98)
+  )
   struct AppKit {
 
     @SnapshotTest

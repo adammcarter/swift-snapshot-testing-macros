@@ -8,12 +8,12 @@ extension SnapshotSuite.Traits.Sizes.Inheritance {
   @MainActor
   @Suite
   @SnapshotSuite(
-    .sizes(.minimum)
+    .sizes(.minimum, scale: 2.0)
   )
   struct AppKit {
 
     @SnapshotTest(
-      .sizes(width: 320, height: 480)
+      .sizes(width: 320, height: 480, scale: 2.0)
     )
     func overridden() -> NSView {
       makeLabel("\(#function) (.fixed size)")
