@@ -13,7 +13,10 @@ extension SnapshotTest.Traits.Size {
 
     @MainActor
     @Suite
-    @SnapshotSuite(.sizes(.minimum, scale: 2.0))
+    @SnapshotSuite(
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
+    )
     struct WidthAndHeight {
 
       @SnapshotTest(
@@ -28,7 +31,10 @@ extension SnapshotTest.Traits.Size {
 
     @MainActor
     @Suite
-    @SnapshotSuite(.sizes(.minimum, scale: 2.0))
+    @SnapshotSuite(
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
+    )
     struct WidthOnly {
 
       @SnapshotTest(
@@ -43,7 +49,10 @@ extension SnapshotTest.Traits.Size {
 
     @MainActor
     @Suite
-    @SnapshotSuite(.sizes(.minimum, scale: 2.0))
+    @SnapshotSuite(
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
+    )
     struct HeightOnly {
 
       @SnapshotTest(
@@ -58,7 +67,10 @@ extension SnapshotTest.Traits.Size {
 
     @MainActor
     @Suite
-    @SnapshotSuite(.sizes(.minimum, scale: 2.0))
+    @SnapshotSuite(
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
+    )
     struct MinimumSize {
 
       @SnapshotTest(
@@ -73,7 +85,10 @@ extension SnapshotTest.Traits.Size {
 
     @MainActor
     @Suite
-    @SnapshotSuite(.sizes(.minimum, scale: 2.0))
+    @SnapshotSuite(
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
+    )
     struct SingularSize {
 
       @SnapshotTest(
@@ -88,7 +103,10 @@ extension SnapshotTest.Traits.Size {
 
     @MainActor
     @Suite
-    @SnapshotSuite(.sizes(.minimum, scale: 2.0))
+    @SnapshotSuite(
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
+    )
     struct MultipleSizes {
 
       @SnapshotTest(

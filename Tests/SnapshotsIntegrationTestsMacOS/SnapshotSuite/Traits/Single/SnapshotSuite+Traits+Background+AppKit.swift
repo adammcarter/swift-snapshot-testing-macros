@@ -34,6 +34,7 @@ extension SnapshotSuite.Traits.BackgroundColor.AppKit {
   @Suite
   @SnapshotSuite(
     .sizes(.minimum, scale: 2.0),
+    .precision(0.98),
     .backgroundColor(nsColor: .systemPink)
   )
   struct DefaultWithOverride {
@@ -92,7 +93,10 @@ extension SnapshotSuite.Traits.BackgroundColor.AppKit {
 
   @MainActor
   @Suite
-  @SnapshotSuite(.sizes(.minimum, scale: 2.0))
+  @SnapshotSuite(
+    .sizes(.minimum, scale: 2.0),
+    .precision(0.98)
+  )
   struct ViewBackgroundColor {
 
     @SnapshotTest

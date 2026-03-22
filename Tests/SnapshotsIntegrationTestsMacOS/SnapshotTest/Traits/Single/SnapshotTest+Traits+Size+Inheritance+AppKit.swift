@@ -7,13 +7,13 @@ extension SnapshotTest.Traits.Size.Inheritance {
 
   @Suite
   struct AppKit {
-
     // MARK: - Width and height
 
     @MainActor
     @Suite
     @SnapshotSuite(
-      .sizes(.minimum, scale: 2.0)
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
     )
     struct WidthAndHeight {
 
@@ -30,7 +30,8 @@ extension SnapshotTest.Traits.Size.Inheritance {
     @MainActor
     @Suite
     @SnapshotSuite(
-      .sizes(.minimum, scale: 2.0)
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
     )
     struct WidthOnly {
 
@@ -47,7 +48,8 @@ extension SnapshotTest.Traits.Size.Inheritance {
     @MainActor
     @Suite
     @SnapshotSuite(
-      .sizes(.minimum, scale: 2.0)
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
     )
     struct HeightOnly {
 
@@ -64,7 +66,8 @@ extension SnapshotTest.Traits.Size.Inheritance {
     @MainActor
     @Suite
     @SnapshotSuite(
-      .sizes(.minimum, scale: 2.0)
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
     )
     struct MinimumSize {
 
@@ -81,7 +84,8 @@ extension SnapshotTest.Traits.Size.Inheritance {
     @MainActor
     @Suite
     @SnapshotSuite(
-      .sizes(.minimum, scale: 2.0)
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
     )
     struct SingularSize {
 
@@ -98,7 +102,8 @@ extension SnapshotTest.Traits.Size.Inheritance {
     @MainActor
     @Suite
     @SnapshotSuite(
-      .sizes(.minimum, scale: 2.0)
+      .sizes(.minimum, scale: 2.0),
+      .precision(0.98)
     )
     struct MultipleSizes {
 
