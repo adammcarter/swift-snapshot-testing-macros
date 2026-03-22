@@ -33,11 +33,12 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
         )
 
       case .image:
-        #if canImport(UIKit)
+      #if canImport(UIKit)
         request = AssertionRequest(
           view: try await context.makeSnapshotView(),
           snapshotting: .image(
             size: size,
+            precision: context.traitConfiguration.precision,
             traits: makeTraits()
           ),
           snapshotDirectory: context.snapshotDirectory,
@@ -52,6 +53,7 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
           view: try await context.makeSnapshotView(),
           snapshotting: .image(
             size: size,
+            precision: context.traitConfiguration.precision,
             appearance: theme,
             scale: displayScale
           ),

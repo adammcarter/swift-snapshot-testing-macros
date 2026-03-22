@@ -6,10 +6,14 @@ extension Snapshotting where Value == SnapshotViewController, Format == NSImage 
   @MainActor
   static func image(
     size: CGSize,
+    precision: Float = 1,
     appearance: NSAppearance,
     scale: Double
   ) -> Snapshotting {
-    let base = Snapshotting<SnapshotViewController, NSImage>.image(size: size)
+    let base = Snapshotting<SnapshotViewController, NSImage>.image(
+      precision: precision,
+      size: size
+    )
 
     return Snapshotting(
       pathExtension: base.pathExtension,

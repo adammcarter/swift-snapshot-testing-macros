@@ -20,7 +20,8 @@ struct AssertionRequestGenerator {
     let traitConfiguration = AssertionRequestContext.TraitConfiguration(
       sizes: SizesSnapshotTrait.current,
       theme: ThemeSnapshotTrait.current,
-      strategy: StrategySnapshotTrait.current
+      strategy: StrategySnapshotTrait.current,
+      precision: PrecisionSnapshotTrait.current
     )
 
     let folderName: String?

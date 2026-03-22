@@ -14,5 +14,18 @@ struct AssertionRequestContext {
     let sizes: [SizesSnapshotTrait.Size]
     let theme: ThemeSnapshotTrait.Theme
     let strategy: StrategySnapshotTrait.Strategy
+    let precision: Float
+
+    init(
+      sizes: [SizesSnapshotTrait.Size],
+      theme: ThemeSnapshotTrait.Theme,
+      strategy: StrategySnapshotTrait.Strategy,
+      precision: Float = 1
+    ) {
+      self.sizes = sizes
+      self.theme = theme
+      self.strategy = strategy
+      self.precision = min(max(precision, 0), 1)
+    }
   }
 }
