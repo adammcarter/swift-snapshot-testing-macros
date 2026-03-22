@@ -37,8 +37,8 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
         request = AssertionRequest(
           view: try await context.makeSnapshotView(),
           snapshotting: .image(
-            size: size,
             precision: context.traitConfiguration.precision,
+            size: size,
             traits: makeTraits()
           ),
           snapshotDirectory: context.snapshotDirectory,
