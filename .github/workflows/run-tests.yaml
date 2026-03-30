@@ -10,7 +10,7 @@ on:
 jobs:
   format-and-lint:
     name: Format and Lint
-    runs-on: macos-26.2
+    runs-on: macos-26
     
     steps:
       - name: Checkout
@@ -45,7 +45,7 @@ jobs:
   ios-integration-tests:
     name: Integration Tests (iOS)
     needs: [format-and-lint, build-legacy-swift-versions]
-    runs-on: macos-26.2
+    runs-on: macos-26
 
     steps:
       - name: Select Xcode version (26.2)
@@ -75,7 +75,7 @@ jobs:
   macos-integration-tests:
     name: Integration Tests (macOS)
     needs: [format-and-lint, build-legacy-swift-versions]
-    runs-on: macos-26.2
+    runs-on: macos-26
 
     steps:
       - name: Select Xcode version (26.2)
@@ -115,7 +115,7 @@ jobs:
   ios-integration-repetition-tests:
     name: Integration Repetition Tests
     needs: [format-and-lint, build-legacy-swift-versions]
-    runs-on: macos-26.2
+    runs-on: macos-26
 
     steps:
       - name: Select Xcode version (26.2)
@@ -145,7 +145,7 @@ jobs:
   macos-unit-tests:
     name: Unit Tests
     needs: [format-and-lint, build-legacy-swift-versions]
-    runs-on: macos-26.2
+    runs-on: macos-26
 
     steps:
       - name: Select Xcode version (26.2)
