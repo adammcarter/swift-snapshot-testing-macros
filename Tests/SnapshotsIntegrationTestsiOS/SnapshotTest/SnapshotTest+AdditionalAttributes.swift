@@ -17,13 +17,13 @@ extension SnapshotTest {
         .record(.never)
       )
       func unavailable() -> some View {
-        Text("This test should be skipped")
+        snapshotText("This test should be skipped")
       }
 
       @MainActor
       @SnapshotTest
       func explicitMainActor() -> some View {
-        Text("Explicit main actor")
+        snapshotText("Explicit main actor")
       }
     }
   }

@@ -10,33 +10,33 @@ extension SnapshotTest.Traits.BackgroundColor {
 
     @SnapshotTest
     func defaultBackground() -> some View {
-      Text("\(#function) (clear)")
+      snapshotText("\(#function) (clear)")
     }
 
     @SnapshotTest(
       .backgroundColor(.pink)
     )
     func defaultBackgroundOverridden() -> some View {
-      Text("\(#function) (pink)")
+      snapshotText("\(#function) (pink)")
     }
 
     @SnapshotTest(
       .backgroundColor(.blue)
     )
     func blue() -> some View {
-      Text(#function)
+      snapshotText(#function)
     }
 
     @SnapshotTest(
       .backgroundColor(.clear)
     )
     func clear() -> some View {
-      Text(#function)
+      snapshotText(#function)
     }
 
     @SnapshotTest
     func viewBackgroundColor() -> some View {
-      Text("\(#function) (green)")
+      snapshotText("\(#function) (green)")
         .background(.green)
     }
 
@@ -47,7 +47,7 @@ extension SnapshotTest.Traits.BackgroundColor {
       .backgroundColor(.red)
     )
     func doubleBackground() -> some View {
-      Text("\(#function) (red)")
+      snapshotText("\(#function) (red)")
     }
   }
 }

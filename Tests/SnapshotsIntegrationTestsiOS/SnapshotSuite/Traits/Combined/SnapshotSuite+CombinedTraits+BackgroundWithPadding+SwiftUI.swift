@@ -18,7 +18,7 @@ extension SnapshotSuite.CombinedTraits.BackgroundWithPadding.SwiftUI {
 
     @SnapshotTest
     func backgroundAndPadding() -> some View {
-      Text(#function)
+      snapshotText(#function)
     }
   }
 
@@ -31,7 +31,7 @@ extension SnapshotSuite.CombinedTraits.BackgroundWithPadding.SwiftUI {
 
     @SnapshotTest
     func paddingAndBackground() -> some View {
-      Text(#function)
+      snapshotText(#function)
     }
   }
 }

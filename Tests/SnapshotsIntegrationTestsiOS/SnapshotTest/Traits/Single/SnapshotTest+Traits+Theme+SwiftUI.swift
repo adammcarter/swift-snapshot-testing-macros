@@ -14,7 +14,7 @@ extension SnapshotTest.Traits.Theme {
       .theme(.light)
     )
     func testTraitThemeLightTests() -> some View {
-      Text(".theme(.light)")
+      snapshotText(".theme(.light)")
     }
 
     // MARK: - Dark
@@ -23,7 +23,7 @@ extension SnapshotTest.Traits.Theme {
       .theme(.dark)
     )
     func testTraitThemeDarkTests() -> some View {
-      Text(".theme(.dark)")
+      snapshotText(".theme(.dark)")
     }
 
     // MARK: - All
@@ -32,7 +32,7 @@ extension SnapshotTest.Traits.Theme {
       .theme(.all)
     )
     func testTraitThemeAllTests() -> some View {
-      Text(".theme(.all)")
+      snapshotText(".theme(.all)")
     }
   }
 }

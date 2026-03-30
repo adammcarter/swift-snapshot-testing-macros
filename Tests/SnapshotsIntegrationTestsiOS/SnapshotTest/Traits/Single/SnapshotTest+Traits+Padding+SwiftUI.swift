@@ -16,7 +16,7 @@ extension SnapshotTest.Traits.Padding {
       .padding(.init(top: 20, leading: 30, bottom: 10, trailing: 40))
     )
     func testPaddingEdgeInsets() -> some View {
-      Text(".padding(EdgeInsets(top: 20, leading: 30, bottom: 10, trailing: 40))")
+      snapshotText(".padding(EdgeInsets(top: 20, leading: 30, bottom: 10, trailing: 40))")
     }
 
     // MARK: - Padding with edges and length
@@ -25,21 +25,21 @@ extension SnapshotTest.Traits.Padding {
       .padding(.all, 20)
     )
     func testPaddingAll() -> some View {
-      Text(".padding(.all, 20)")
+      snapshotText(".padding(.all, 20)")
     }
 
     @SnapshotTest(
       .padding(.horizontal, 15)
     )
     func testPaddingHorizontal() -> some View {
-      Text(".padding(.horizontal, 15)")
+      snapshotText(".padding(.horizontal, 15)")
     }
 
     @SnapshotTest(
       .padding(.vertical, 30)
     )
     func testPaddingVertical() -> some View {
-      Text(".padding(.vertical, 30)")
+      snapshotText(".padding(.vertical, 30)")
     }
 
     // MARK: - Padding with length only
@@ -48,7 +48,7 @@ extension SnapshotTest.Traits.Padding {
       .padding(30)
     )
     func testPaddingLength() -> some View {
-      Text(".padding(30)")
+      snapshotText(".padding(30)")
     }
 
     // MARK: - Default padding
@@ -57,14 +57,14 @@ extension SnapshotTest.Traits.Padding {
       .padding
     )
     func testPaddingDefault() -> some View {
-      Text(".padding")
+      snapshotText(".padding")
     }
 
     @SnapshotTest(
       .padding()
     )
     func testPaddingDefaultParens() -> some View {
-      Text(".padding()")
+      snapshotText(".padding()")
     }
 
     // MARK: - Double padding
@@ -74,7 +74,7 @@ extension SnapshotTest.Traits.Padding {
       .padding
     )
     func testDoublePadding() -> some View {
-      Text(".padding, .padding")
+      snapshotText(".padding, .padding")
     }
   }
 }

@@ -20,7 +20,7 @@ extension SnapshotSuite.Traits.Padding.SwiftUI {
 
     @SnapshotTest()
     func testPaddingEdgeInsets() -> some View {
-      Text(".padding(EdgeInsets(top: 20, leading: 30, bottom: 10, trailing: 40))")
+      snapshotText(".padding(EdgeInsets(top: 20, leading: 30, bottom: 10, trailing: 40))")
     }
   }
 }
@@ -37,7 +37,7 @@ extension SnapshotSuite.Traits.Padding.SwiftUI {
 
     @SnapshotTest
     func testPaddingAll() -> some View {
-      Text(".padding(.all, 20)")
+      snapshotText(".padding(.all, 20)")
     }
   }
 
@@ -49,7 +49,7 @@ extension SnapshotSuite.Traits.Padding.SwiftUI {
 
     @SnapshotTest
     func testPaddingHorizontal() -> some View {
-      Text(".padding(.horizontal, 15)")
+      snapshotText(".padding(.horizontal, 15)")
     }
   }
 
@@ -61,7 +61,7 @@ extension SnapshotSuite.Traits.Padding.SwiftUI {
 
     @SnapshotTest
     func testPaddingVertical() -> some View {
-      Text(".padding(.vertical, 30)")
+      snapshotText(".padding(.vertical, 30)")
     }
   }
 }
@@ -78,7 +78,7 @@ extension SnapshotSuite.Traits.Padding.SwiftUI {
 
     @SnapshotTest
     func testPaddingLength() -> some View {
-      Text(".padding(30)")
+      snapshotText(".padding(30)")
     }
   }
 }
@@ -95,7 +95,7 @@ extension SnapshotSuite.Traits.Padding.SwiftUI {
 
     @SnapshotTest
     func testPaddingDefault() -> some View {
-      Text(".padding")
+      snapshotText(".padding")
     }
   }
 
@@ -107,7 +107,7 @@ extension SnapshotSuite.Traits.Padding.SwiftUI {
 
     @SnapshotTest
     func testPaddingDefaultParens() -> some View {
-      Text(".padding()")
+      snapshotText(".padding()")
     }
   }
 }

@@ -10,7 +10,7 @@ extension SnapshotSuite {
 
     @SnapshotTest
     func singleTest() -> some View {
-      Text("One test in a suite")
+      snapshotText("One test in a suite")
     }
   }
 }

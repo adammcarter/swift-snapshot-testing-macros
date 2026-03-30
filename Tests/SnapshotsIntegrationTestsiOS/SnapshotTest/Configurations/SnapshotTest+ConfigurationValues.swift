@@ -17,28 +17,28 @@ extension SnapshotTest {
         configurationValues: [1, 2]
       )
       func testExplicitArray(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
         configurationValues: makeConfigurations()
       )
       func testImplicitArray(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
         configurationValues: makeConfigurations
       )
       func testHigherOrderFunction(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
         configurationValues: configurations
       )
       func testDeclReference(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       #if swift(>=6.1)
@@ -47,7 +47,7 @@ extension SnapshotTest {
         configurationValues: { makeConfigurations() }
       )
       func testClosure(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
       #endif
 
@@ -55,7 +55,7 @@ extension SnapshotTest {
         configurationValues: ConfigurationGenerator.configurationValues
       )
       func testMemberAccess(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
     }
 
@@ -70,7 +70,7 @@ extension SnapshotTest {
         configurationValues: [1, 2]
       )
       func testExplicitArray(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
@@ -78,7 +78,7 @@ extension SnapshotTest {
         configurationValues: makeConfigurations()
       )
       func testImplicitArray(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
@@ -86,7 +86,7 @@ extension SnapshotTest {
         configurationValues: makeConfigurations
       )
       func testHigherOrderFunction(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
@@ -94,7 +94,7 @@ extension SnapshotTest {
         configurationValues: configurations
       )
       func testDeclReference(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       #if swift(>=6.1)
@@ -104,7 +104,7 @@ extension SnapshotTest {
         configurationValues: { makeConfigurations() }
       )
       func testClosure(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
       #endif
 
@@ -113,7 +113,7 @@ extension SnapshotTest {
         configurationValues: ConfigurationGenerator.configurationValues
       )
       func testMemberAccess(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
     }
 
@@ -131,7 +131,7 @@ extension SnapshotTest {
       func testImage(
         value: Int
       ) -> some View {
-        Text(".image: \(value)")
+        snapshotText(".image: \(value)")
       }
 
       @SnapshotTest(
@@ -142,7 +142,7 @@ extension SnapshotTest {
       func testRecursiveDescription(
         value: Int
       ) -> some View {
-        Text(".recursiveDescription: \(value)")
+        snapshotText(".recursiveDescription: \(value)")
       }
     }
   }

@@ -10,7 +10,7 @@ extension SnapshotTest {
 
     @SnapshotTest()
     func swiftUiView() -> some View {
-      Text("Some SwiftUI text")
+      snapshotText("Some SwiftUI text")
     }
   }
 }

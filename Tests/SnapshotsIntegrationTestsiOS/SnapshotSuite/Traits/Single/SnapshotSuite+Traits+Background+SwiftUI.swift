@@ -16,12 +16,12 @@ extension SnapshotSuite.Traits.BackgroundColor.SwiftUI {
 
     @SnapshotTest
     func defaultBackground() -> some View {
-      Text("\(#function) (clear)")
+      snapshotText("\(#function) (clear)")
     }
 
     @SnapshotTest
     func explicitBackground() -> some View {
-      Text("\(#function) (gray)")
+      snapshotText("\(#function) (gray)")
         .foregroundStyle(.primary)
         .background(.gray)
     }
@@ -35,12 +35,12 @@ extension SnapshotSuite.Traits.BackgroundColor.SwiftUI {
 
     @SnapshotTest
     func defaultBackgroundOverridden() -> some View {
-      Text("\(#function) (pink)")
+      snapshotText("\(#function) (pink)")
     }
 
     @SnapshotTest
     func explicitBackgroundOverridden() -> some View {
-      Text("\(#function) (gray)")
+      snapshotText("\(#function) (gray)")
         .background(.gray)
         .foregroundStyle(.primary)
     }
@@ -57,7 +57,7 @@ extension SnapshotSuite.Traits.BackgroundColor.SwiftUI {
 
     @SnapshotTest()
     func blue() -> some View {
-      Text(#function)
+      snapshotText(#function)
     }
   }
 
@@ -73,7 +73,7 @@ extension SnapshotSuite.Traits.BackgroundColor.SwiftUI {
 
     @SnapshotTest
     func clear() -> some View {
-      Text(#function)
+      snapshotText(#function)
     }
   }
 
@@ -87,7 +87,7 @@ extension SnapshotSuite.Traits.BackgroundColor.SwiftUI {
 
     @SnapshotTest
     func viewBackgroundColor() -> some View {
-      Text("\(#function) (yellow)")
+      snapshotText("\(#function) (yellow)")
         .background(.yellow)
     }
 
@@ -95,7 +95,7 @@ extension SnapshotSuite.Traits.BackgroundColor.SwiftUI {
       .backgroundColor(.orange)
     )
     func viewBackgroundColorWithTrait() -> some View {
-      Text("\(#function) (yellow)")
+      snapshotText("\(#function) (yellow)")
         .background(.yellow)
     }
   }
@@ -114,12 +114,12 @@ extension SnapshotSuite.Traits.BackgroundColor.SwiftUI {
       .backgroundColor(.orange)
     )
     func overridden() -> some View {
-      Text("\(#function) (orange)")
+      snapshotText("\(#function) (orange)")
     }
 
     @SnapshotTest
     func inheritedFromSuite() -> some View {
-      Text("\(#function) (gray)")
+      snapshotText("\(#function) (gray)")
     }
   }
 
@@ -139,12 +139,12 @@ extension SnapshotSuite.Traits.BackgroundColor.SwiftUI {
       .backgroundColor(.purple)
     )
     func multipleTest() -> some View {
-      Text("\(#function) (purple)")
+      snapshotText("\(#function) (purple)")
     }
 
     @SnapshotTest
     func multipleInherited() -> some View {
-      Text("\(#function) (green)")
+      snapshotText("\(#function) (green)")
     }
   }
 }

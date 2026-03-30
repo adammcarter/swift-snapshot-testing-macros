@@ -54,7 +54,7 @@ extension SnapshotTest.Traits.Size.FileDimensions.ExplicitSize {
       )
     )
     func referenceImage() -> some View {
-      Text("\(oneScaleSize.formatted()) default scale (\(DefaultScale.deviceScale.formattedAsScale())) reference image (\(DefaultScale.defaultScaleSize.formatted()))")
+      snapshotText("\(oneScaleSize.formatted()) default scale (\(DefaultScale.deviceScale.formattedAsScale())) reference image (\(DefaultScale.defaultScaleSize.formatted()))")
     }
   }
 }
@@ -129,8 +129,8 @@ extension SnapshotTest.Traits.Size.FileDimensions.ExplicitSize {
     private func makeText(
       scale: Double,
       scaledSize: CGSize
-    ) -> Text {
-      Text("\(oneScaleSize.formatted()) \(scale.formattedAsScale()) scale reference image (\(scaledSize.formatted()))")
+    ) -> some View {
+      snapshotText("\(oneScaleSize.formatted()) \(scale.formattedAsScale()) scale reference image (\(scaledSize.formatted()))")
     }
   }
 }
@@ -168,7 +168,7 @@ extension SnapshotTest.Traits.Size.FileDimensions {
     func referenceImage() -> some View {
       let sizeDescription = "\(deviceSize.formatted()) \(device.scale.formattedAsScale())"
 
-      Text("\(device.debugDescription) \(sizeDescription) reference image (\(deviceScaleSize.formatted()))")
+      snapshotText("\(device.debugDescription) \(sizeDescription) reference image (\(deviceScaleSize.formatted()))")
     }
   }
 }

@@ -16,7 +16,7 @@ extension SnapshotSuite {
 
       @SnapshotTest
       func testScoping() -> some View {
-        Text(MyExampleTrait.current)
+        snapshotText(MyExampleTrait.current)
       }
     }
   }

@@ -12,17 +12,17 @@ extension SnapshotSuite {
 
     @SnapshotTest
     func asyncOnly() async -> some View {
-      Text("async")
+      snapshotText("async")
     }
 
     @SnapshotTest
     func throwsOnly() throws -> some View {
-      Text("throws")
+      snapshotText("throws")
     }
 
     @SnapshotTest
     func asyncThrows() async throws -> some View {
-      Text("async throws")
+      snapshotText("async throws")
     }
   }
 }

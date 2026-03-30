@@ -13,12 +13,12 @@ extension SnapshotTest {
 
       @SnapshotTest
       func missingParameters() -> some View {
-        Text("@SnapshotTest")
+        snapshotText("@SnapshotTest")
       }
 
       @SnapshotTest()
       func emptyParameters() -> some View {
-        Text("@SnapshotTest()")
+        snapshotText("@SnapshotTest()")
       }
     }
   }

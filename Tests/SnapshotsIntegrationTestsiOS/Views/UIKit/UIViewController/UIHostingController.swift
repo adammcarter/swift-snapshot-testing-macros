@@ -23,7 +23,7 @@ extension SnapshotTest {
     func uiHostingController() -> UIViewController {
       UIHostingController(
         rootView: VStack {
-          Text(#function)
+          snapshotText(#function)
         }
       )
     }

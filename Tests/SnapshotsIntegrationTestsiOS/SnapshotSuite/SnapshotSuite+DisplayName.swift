@@ -13,7 +13,7 @@ extension SnapshotSuite {
 
       @SnapshotTest
       func named() -> some View {
-        Text(#function)
+        snapshotText(#function)
       }
     }
 
@@ -23,7 +23,7 @@ extension SnapshotSuite {
 
       @SnapshotTest
       func fileSystemNameClashing() -> some View {
-        Text(#function)
+        snapshotText(#function)
       }
     }
 
@@ -33,7 +33,7 @@ extension SnapshotSuite {
 
       @SnapshotTest
       func emptyName() -> some View {
-        Text(#function)
+        snapshotText(#function)
       }
     }
   }

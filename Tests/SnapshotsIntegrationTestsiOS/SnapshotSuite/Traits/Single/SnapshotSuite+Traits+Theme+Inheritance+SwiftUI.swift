@@ -15,12 +15,12 @@ extension SnapshotSuite.Traits.Theme.Inheritance {
       .theme(.dark)
     )
     func overridden() -> some View {
-      Text("\(#function) (.dark)")
+      snapshotText("\(#function) (.dark)")
     }
 
     @SnapshotTest
     func inheritedFromSuite() -> some View {
-      Text("\(#function) (.light)")
+      snapshotText("\(#function) (.light)")
     }
   }
 }

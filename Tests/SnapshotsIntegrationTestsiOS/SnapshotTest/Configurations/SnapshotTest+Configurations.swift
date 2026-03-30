@@ -20,7 +20,7 @@ extension SnapshotTest {
         ]
       )
       func testExplicitArray(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
@@ -30,35 +30,35 @@ extension SnapshotTest {
         ]
       )
       func testDotInitArray(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(configurations: makeConfigurations())
       func testImplicitArray(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(configurations: makeConfigurations)
       func testHigherOrderFunction(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(configurations: configurations)
       func testDeclReference(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       #if swift(>=6.1)
       // Closures inside macros have a compiler bug prior to Swift 6.1
       @SnapshotTest(configurations: { makeConfigurations() })
       func testClosure(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
       #endif
 
       @SnapshotTest(configurations: ConfigurationGenerator.configurations)
       func testMemberAccess(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
@@ -71,7 +71,7 @@ extension SnapshotTest {
         int: Int,
         string: String
       ) -> some View {
-        Text("value: \(int), \(string)")
+        snapshotText("value: \(int), \(string)")
       }
 
       @SnapshotTest(
@@ -85,7 +85,7 @@ extension SnapshotTest {
         string: String,
         double: Double
       ) -> some View {
-        Text("value: \(int), \(string), \(double)")
+        snapshotText("value: \(int), \(string), \(double)")
       }
     }
 
@@ -105,7 +105,7 @@ extension SnapshotTest {
       func testExplicitArray(
         value: Int
       ) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
@@ -116,7 +116,7 @@ extension SnapshotTest {
         ]
       )
       func testDotInitArray(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
@@ -124,7 +124,7 @@ extension SnapshotTest {
         configurations: makeConfigurations()
       )
       func testImplicitArray(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
@@ -132,7 +132,7 @@ extension SnapshotTest {
         configurations: makeConfigurations
       )
       func testHigherOrderFunction(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
@@ -140,7 +140,7 @@ extension SnapshotTest {
         configurations: configurations
       )
       func testDeclReference(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       #if swift(>=6.1)
@@ -150,7 +150,7 @@ extension SnapshotTest {
         configurations: { makeConfigurations() }
       )
       func testClosure(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
       #endif
 
@@ -159,7 +159,7 @@ extension SnapshotTest {
         configurations: ConfigurationGenerator.configurations
       )
       func testMemberAccess(value: Int) -> some View {
-        Text("value: \(value)")
+        snapshotText("value: \(value)")
       }
 
       @SnapshotTest(
@@ -173,7 +173,7 @@ extension SnapshotTest {
         int: Int,
         string: String
       ) -> some View {
-        Text("value: \(int), \(string)")
+        snapshotText("value: \(int), \(string)")
       }
 
       @SnapshotTest(
@@ -188,7 +188,7 @@ extension SnapshotTest {
         string: String,
         double: Double
       ) -> some View {
-        Text("value: \(int), \(string), \(double)")
+        snapshotText("value: \(int), \(string), \(double)")
       }
     }
 
@@ -209,7 +209,7 @@ extension SnapshotTest {
       func testImage(
         value: Int
       ) -> some View {
-        Text(".image: \(value)")
+        snapshotText(".image: \(value)")
       }
 
       @SnapshotTest(
@@ -223,7 +223,7 @@ extension SnapshotTest {
       func testRecursiveDescription(
         value: Int
       ) -> some View {
-        Text(".recursiveDescription: \(value)")
+        snapshotText(".recursiveDescription: \(value)")
       }
     }
   }

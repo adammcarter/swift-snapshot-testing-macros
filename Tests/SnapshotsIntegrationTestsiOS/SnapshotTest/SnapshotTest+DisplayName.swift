@@ -13,17 +13,17 @@ extension SnapshotTest {
 
       @SnapshotTest("Named Test")
       func named() -> some View {
-        Text(#function)
+        snapshotText(#function)
       }
 
       @SnapshotTest("Some.name/with\\slashes")
       func fileSystemNameClashing() -> some View {
-        Text(#function)
+        snapshotText(#function)
       }
 
       @SnapshotTest("")
       func emptyName() -> some View {
-        Text(#function)
+        snapshotText(#function)
       }
     }
   }

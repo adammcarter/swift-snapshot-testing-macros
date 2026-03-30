@@ -15,12 +15,12 @@ extension SnapshotSuite.Traits.Sizes.Inheritance {
       .sizes(devices: .iPhoneX, fitting: .widthAndHeight)
     )
     func overridden() -> some View {
-      Text("\(#function) (.iPhoneX, .widthAndHeight)")
+      snapshotText("\(#function) (.iPhoneX, .widthAndHeight)")
     }
 
     @SnapshotTest
     func inheritedFromSuite() -> some View {
-      Text("\(#function) (.minimum)")
+      snapshotText("\(#function) (.minimum)")
     }
   }
 }

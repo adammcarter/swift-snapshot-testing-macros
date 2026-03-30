@@ -17,7 +17,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testSingularDeviceWidthAndHeight() -> some View {
-        Text(".sizes(devices: .iPhoneX, fitting: .widthAndHeight)")
+        snapshotText(".sizes(devices: .iPhoneX, fitting: .widthAndHeight)")
       }
     }
 
@@ -29,7 +29,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testSingularDeviceHeightButMinimumWidth() -> some View {
-        Text(".sizes(devices: .iPhoneX, fitting: .heightButMinimumWidth)")
+        snapshotText(".sizes(devices: .iPhoneX, fitting: .heightButMinimumWidth)")
       }
     }
 
@@ -41,7 +41,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testSingularDeviceWidthButMinimumHeight() -> some View {
-        Text(".sizes(devices: .iPhoneX, fitting: .widthButMinimumHeight)")
+        snapshotText(".sizes(devices: .iPhoneX, fitting: .widthButMinimumHeight)")
       }
     }
 
@@ -55,7 +55,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testPluralDevicesWidthAndHeight() -> some View {
-        Text(".sizes(devices: .iPhoneX, .iPadPro11, fitting: .widthAndHeight)")
+        snapshotText(".sizes(devices: .iPhoneX, .iPadPro11, fitting: .widthAndHeight)")
       }
     }
 
@@ -67,7 +67,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testPluralDevicesHeightButMinimumWidth() -> some View {
-        Text(".sizes(devices: .iPhoneX, .iPadPro11, fitting: .heightButMinimumWidth)")
+        snapshotText(".sizes(devices: .iPhoneX, .iPadPro11, fitting: .heightButMinimumWidth)")
       }
     }
 
@@ -79,7 +79,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testPluralDevicesWidthButMinimumHeight() -> some View {
-        Text(".sizes(devices: .iPhoneX, .iPadPro11, fitting: .widthButMinimumHeight)")
+        snapshotText(".sizes(devices: .iPhoneX, .iPadPro11, fitting: .widthButMinimumHeight)")
       }
     }
 
@@ -93,7 +93,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testSize320x480() -> some View {
-        Text(".sizes(width: 320, height: 480)")
+        snapshotText(".sizes(width: 320, height: 480)")
       }
     }
 
@@ -107,7 +107,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testWidth320() -> some View {
-        Text(".sizes(width: 320)")
+        snapshotText(".sizes(width: 320)")
       }
     }
 
@@ -121,7 +121,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testHeight480() -> some View {
-        Text(".sizes(height: 480)")
+        snapshotText(".sizes(height: 480)")
       }
     }
 
@@ -135,7 +135,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testMinimumSize() -> some View {
-        Text(".sizes(.minimum)")
+        snapshotText(".sizes(.minimum)")
       }
     }
 
@@ -149,7 +149,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testWidthHeight320x480() -> some View {
-        Text(".sizes(SizesSnapshotTrait.Size(width: 320, height: 480))")
+        snapshotText(".sizes(SizesSnapshotTrait.Size(width: 320, height: 480))")
       }
     }
 
@@ -166,7 +166,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testMultipleSizesVariadic() -> some View {
-        Text(".sizes(SizesSnapshotTrait.Size(width: 320, height: 480), SizesSnapshotTrait.Size(width: 375, height: 667))")
+        snapshotText(".sizes(SizesSnapshotTrait.Size(width: 320, height: 480), SizesSnapshotTrait.Size(width: 375, height: 667))")
       }
     }
 
@@ -181,7 +181,7 @@ extension SnapshotSuite.Traits.Sizes {
 
       @SnapshotTest
       func testMultipleSizesArray() -> some View {
-        Text(".sizes([SizesSnapshotTrait.Size(width: 320, height: 480), SizesSnapshotTrait.Size(width: 375, height: 667)])")
+        snapshotText(".sizes([SizesSnapshotTrait.Size(width: 320, height: 480), SizesSnapshotTrait.Size(width: 375, height: 667)])")
       }
     }
   }

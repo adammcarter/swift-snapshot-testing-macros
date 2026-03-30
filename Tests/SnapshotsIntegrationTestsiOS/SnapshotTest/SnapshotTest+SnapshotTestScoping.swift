@@ -15,7 +15,7 @@ extension SnapshotTest {
         .customValueTrait(value: "Test")
       )
       func custom() -> some View {
-        Text(CustomValueTrait.current)
+        snapshotText(CustomValueTrait.current)
       }
     }
 
@@ -25,7 +25,7 @@ extension SnapshotTest {
 
       @SnapshotTest
       func withoutOverride() -> some View {
-        Text(CustomValueTrait.current)
+        snapshotText(CustomValueTrait.current)
       }
     }
   }

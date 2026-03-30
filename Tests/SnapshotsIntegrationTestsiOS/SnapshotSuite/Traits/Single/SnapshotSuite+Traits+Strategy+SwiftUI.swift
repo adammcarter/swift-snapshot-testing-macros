@@ -14,7 +14,7 @@ extension SnapshotSuite.Traits.Strategy {
 
       @SnapshotTest
       func image() -> some View {
-        Text(".image")
+        snapshotText(".image")
       }
     }
 
@@ -26,7 +26,7 @@ extension SnapshotSuite.Traits.Strategy {
 
       @SnapshotTest
       func recursiveDescription() -> some View {
-        Text(".recursiveDescription")
+        snapshotText(".recursiveDescription")
       }
     }
   }

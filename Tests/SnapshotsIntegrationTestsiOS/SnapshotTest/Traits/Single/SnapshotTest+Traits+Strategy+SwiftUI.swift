@@ -12,14 +12,14 @@ extension SnapshotTest.Traits.Strategy {
       .strategy(.image)
     )
     func image() -> some View {
-      Text(".image")
+      snapshotText(".image")
     }
 
     @SnapshotTest(
       .strategy(.recursiveDescription)
     )
     func recursiveDescription() -> some View {
-      Text(".recursiveDescription")
+      snapshotText(".recursiveDescription")
     }
   }
 }

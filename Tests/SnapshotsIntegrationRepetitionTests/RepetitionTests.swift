@@ -10,7 +10,7 @@ struct RepetitionTests {
 
   @SnapshotTest
   func singular() -> some View {
-    Text("singular reference image")
+    snapshotText("singular reference image")
   }
 
   @SnapshotTest(
@@ -20,6 +20,6 @@ struct RepetitionTests {
       }
   )
   func configurations(int: Int) -> some View {
-    Text("configurations reference image: \(int)")
+    snapshotText("configurations reference image: \(int)")
   }
 }

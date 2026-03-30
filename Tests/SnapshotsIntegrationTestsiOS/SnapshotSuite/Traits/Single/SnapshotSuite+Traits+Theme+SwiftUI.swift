@@ -17,7 +17,7 @@ extension SnapshotSuite.Traits.Theme {
 
       @SnapshotTest
       func light() -> some View {
-        Text(".theme(.light)")
+        snapshotText(".theme(.light)")
       }
     }
 
@@ -31,7 +31,7 @@ extension SnapshotSuite.Traits.Theme {
 
       @SnapshotTest
       func dark() -> some View {
-        Text(".theme(.dark)")
+        snapshotText(".theme(.dark)")
       }
     }
 
@@ -45,7 +45,7 @@ extension SnapshotSuite.Traits.Theme {
 
       @SnapshotTest
       func all() -> some View {
-        Text(".theme(.all)")
+        snapshotText(".theme(.all)")
       }
     }
   }

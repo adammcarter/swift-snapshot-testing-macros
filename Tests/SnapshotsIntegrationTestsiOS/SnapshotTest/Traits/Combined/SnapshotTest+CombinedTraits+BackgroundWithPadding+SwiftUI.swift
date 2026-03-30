@@ -14,7 +14,7 @@ extension SnapshotTest.CombinedTraits.BackgroundWithPadding {
       .padding
     )
     func backgroundAndPadding() -> some View {
-      Text(#function)
+      snapshotText(#function)
     }
 
     @SnapshotTest(
@@ -22,7 +22,7 @@ extension SnapshotTest.CombinedTraits.BackgroundWithPadding {
       .backgroundColor(.red)
     )
     func paddingAndBackground() -> some View {
-      Text(#function)
+      snapshotText(#function)
     }
   }
 }

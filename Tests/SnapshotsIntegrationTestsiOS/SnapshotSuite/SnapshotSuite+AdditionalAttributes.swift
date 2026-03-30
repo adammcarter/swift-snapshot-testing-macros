@@ -14,7 +14,7 @@ extension SnapshotSuite {
 
       @SnapshotTest
       func explicitMainActor() -> some View {
-        Text("Explicit main actor")
+        snapshotText("Explicit main actor")
       }
     }
   }

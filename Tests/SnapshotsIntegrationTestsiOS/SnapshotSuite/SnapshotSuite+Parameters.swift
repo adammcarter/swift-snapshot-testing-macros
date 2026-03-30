@@ -13,7 +13,7 @@ extension SnapshotSuite {
 
       @SnapshotTest
       func missingParameters() -> some View {
-        Text("@SnapshotSuite")
+        snapshotText("@SnapshotSuite")
       }
     }
 
@@ -23,7 +23,7 @@ extension SnapshotSuite {
 
       @SnapshotTest
       func emptyParameters() -> some View {
-        Text("@SnapshotSuite()")
+        snapshotText("@SnapshotSuite()")
       }
     }
   }

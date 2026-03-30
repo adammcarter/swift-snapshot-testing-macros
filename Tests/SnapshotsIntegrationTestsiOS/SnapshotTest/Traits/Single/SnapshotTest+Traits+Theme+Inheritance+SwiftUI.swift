@@ -18,7 +18,7 @@ extension SnapshotTest.Traits.Theme.Inheritance {
         .theme(.light)
       )
       func light() -> some View {
-        Text(".theme(.light)")
+        snapshotText(".theme(.light)")
       }
     }
 
@@ -33,7 +33,7 @@ extension SnapshotTest.Traits.Theme.Inheritance {
         .theme(.dark)
       )
       func dark() -> some View {
-        Text(".theme(.dark)")
+        snapshotText(".theme(.dark)")
       }
     }
 
@@ -48,7 +48,7 @@ extension SnapshotTest.Traits.Theme.Inheritance {
         .theme(.all)
       )
       func all() -> some View {
-        Text(".theme(.all)")
+        snapshotText(".theme(.all)")
       }
     }
   }
