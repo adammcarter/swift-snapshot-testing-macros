@@ -12,6 +12,8 @@ extension SnapshotSuite {
 
     init(
       member: MemberBlockItemSyntax,
+      hostTypeName: TokenSyntax,
+      inheritedTestTraitExprs: [ExprSyntax],
       suiteMacroArguments: SnapshotMacroArguments,
       macroContext: SnapshotSuiteMacroContext
     ) {
@@ -22,6 +24,8 @@ extension SnapshotSuite {
         snapshotTestFunctionDecl.isSupportedForSnapshots
       {
         test = .init(
+          hostTypeName: hostTypeName,
+          inheritedTestTraitExprs: inheritedTestTraitExprs,
           suiteMacroArguments: suiteMacroArguments,
           snapshotTestFunctionDecl: snapshotTestFunctionDecl,
           macroContext: macroContext
@@ -30,6 +34,8 @@ extension SnapshotSuite {
       else if let ifConfigDecl = member.decl.as(IfConfigDeclSyntax.self) {
         ifConfig = .init(
           ifConfigDecl: ifConfigDecl,
+          hostTypeName: hostTypeName,
+          inheritedTestTraitExprs: inheritedTestTraitExprs,
           suiteMacroArguments: suiteMacroArguments,
           macroContext: macroContext
         )

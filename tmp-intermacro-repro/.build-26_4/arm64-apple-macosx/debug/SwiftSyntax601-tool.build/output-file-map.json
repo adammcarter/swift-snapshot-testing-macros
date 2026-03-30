@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntax601-tool.build/primary.swiftdeps"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/VersionMarkerModules/SwiftSyntax601/Empty.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntax601-tool.build/Empty.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntax601-tool.build/Empty.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntax601-tool.build/Empty~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntax601-tool.build/Empty.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntax601-tool.build/Empty.dia"
+  }
+}

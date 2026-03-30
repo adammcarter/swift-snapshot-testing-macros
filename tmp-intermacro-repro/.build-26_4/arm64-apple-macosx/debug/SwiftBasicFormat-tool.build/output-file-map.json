@@ -1,0 +1,47 @@
+{
+  "": {
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/primary.swiftdeps"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/BasicFormat.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/BasicFormat.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/BasicFormat.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/BasicFormat~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/BasicFormat.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/BasicFormat.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/Indenter.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Indenter.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Indenter.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Indenter~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Indenter.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Indenter.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/InferIndentation.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/InferIndentation.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/InferIndentation.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/InferIndentation~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/InferIndentation.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/InferIndentation.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/Syntax+Extensions.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Syntax+Extensions.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Syntax+Extensions.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Syntax+Extensions~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Syntax+Extensions.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Syntax+Extensions.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/SyntaxProtocol+Formatted.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/Trivia+FormatExtensions.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Trivia+FormatExtensions.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Trivia+FormatExtensions.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Trivia+FormatExtensions~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Trivia+FormatExtensions.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftBasicFormat-tool.build/Trivia+FormatExtensions.dia"
+  }
+}

@@ -2,73 +2,11 @@ import SwiftSyntax
 import SwiftSyntaxMacros
 
 struct SnapshotSuite {
-  /*
-   ⚠️
-  
-   Important to include '.snapshots' trait to reset the counter for test repetitions. Without it
-   the counter will continue to count up and create new reference images on each retry.
-   */
-  var expression: DeclSyntax {
-    """
-    @MainActor
-    @Suite(\(suiteTraitsExpr))
-    struct \(nameExpr) {
-      \(commentExpr)
-      \(contentsExpr)
-    }
-    """
+  var expressions: [DeclSyntax] {
+    contentsExpr?.map(\.decl) ?? []
   }
 
   private let macroContext: SnapshotSuiteMacroContext
-  private let comment: String?
-  private let testBlocks: [TestBlock]
-  private let suiteTraitsExprs: [ExprSyntax]
-
-  private var suiteTraitsExpr: LabeledExprListSyntax {
-    LabeledExprListSyntax(
-      suiteTraitsExprs
-        .enumerated()
-        .map { index, expr in
-          LabeledExprSyntax(
-            expression: expr.trimmed,
-            trailingComma: index == suiteTraitsExprs.count - 1 ? nil : .commaToken()
-          )
-        }
-    )
-  }
-
-  private var nameExpr: TokenSyntax {
-    let syntaxNodes = [
-      macroContext.context.lexicalContext,
-      [Syntax(macroContext.declaration)],
-    ]
-    .flatMap { $0 }
-
-    let humanReadableUniqueName =
-      syntaxNodes
-      .compactMap(\.identifierName?.trimmedDescription)
-      .joined(separator: "_")
-      + Constants.GeneratedTypeName.generatedSnapshotSuite
-
-    /*
-     Avoid using the 'makeUniqueName()' function as it does create
-     guaranteed unique names but also gives us names that are much
-     more difficult to read at a glance.
-     */
-
-    /*
-     The above solution of joining the lexical contexts by an '_'
-     should be a good halfway point between almost guaranteed unique
-     code for the trade off of easy to read suite names.
-     */
-
-    return .init(stringLiteral: humanReadableUniqueName)
-  }
-
-  private var commentExpr: ExprSyntax? {
-    comment.flatMap(ExprSyntax.init(stringLiteral:))
-  }
-
   private var contentsExpr: MemberBlockItemListSyntax? {
     let testBlockExpressions = testBlocks.compactMap(\.expression)
 
@@ -93,10 +31,14 @@ struct SnapshotSuite {
   }
 
   init?(comment: String? = nil, macroContext: SnapshotSuiteMacroContext) {
-    self.comment = comment
+    guard let hostTypeName = Syntax(macroContext.declaration).identifierName?.trimmed else {
+      return nil
+    }
+
     self.macroContext = macroContext
 
     let suiteMacroArguments = SnapshotMacroArguments(node: macroContext.node)
+    let inheritedTestTraitExprs = makeInheritedTestTraitExprs(from: suiteMacroArguments.traitExpressions)
 
     self.testBlocks = macroContext
       .declaration
@@ -105,24 +47,26 @@ struct SnapshotSuite {
       .map { member in
         .init(
           member: member,
+          hostTypeName: hostTypeName,
+          inheritedTestTraitExprs: inheritedTestTraitExprs,
           suiteMacroArguments: suiteMacroArguments,
           macroContext: macroContext
         )
       }
-
-    let snapshotsTrait = ".pointfreeSnapshots" as ExprSyntax
-
-    let suiteTraitBoxExprs = makeSuiteTraitBoxExprs(from: suiteMacroArguments.traitExpressions)
-
-    self.suiteTraitsExprs = [snapshotsTrait] + suiteTraitBoxExprs
   }
+
+  private let testBlocks: [TestBlock]
 }
 
-private func makeSuiteTraitBoxExprs(
+private func makeInheritedTestTraitExprs(
   from traitExprs: [ExprSyntax]?
 ) -> [ExprSyntax] {
-  traitExprs?
+  let snapshotsTrait = ".pointfreeSnapshots" as ExprSyntax
+  let boxedTraits =
+    traitExprs?
     .map {
-      "\(raw: Constants.Namespace.snapshotTestingMacros).__SuiteTraitBox(\($0.trimmed)).wrapped" as ExprSyntax
+      "\(raw: Constants.Namespace.snapshotTestingMacros).__TestTraitBox(\($0.trimmed)).wrapped" as ExprSyntax
     } ?? []
+
+  return [snapshotsTrait] + boxedTraits
 }

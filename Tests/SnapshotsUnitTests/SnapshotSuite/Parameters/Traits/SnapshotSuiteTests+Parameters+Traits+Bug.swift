@@ -48,18 +48,18 @@ extension SnapshotSuiteTests.Parameters.Traits {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.bug("https://bugs.swift.org/browse/some-bug")).wrapped)
+        struct URL_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.bug("https://bugs.swift.org/browse/some-bug")).wrapped)
-          struct URL_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = URL.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -107,18 +107,18 @@ extension SnapshotSuiteTests.Parameters.Traits {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.bug("https://bugs.swift.org/browse/some-bug", "A title")).wrapped)
+        struct Title_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.bug("https://bugs.swift.org/browse/some-bug", "A title")).wrapped)
-          struct Title_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = Title.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -166,18 +166,18 @@ extension SnapshotSuiteTests.Parameters.Traits {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.bug(id: "some id")).wrapped)
+        struct ID_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.bug(id: "some id")).wrapped)
-          struct ID_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = ID.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """

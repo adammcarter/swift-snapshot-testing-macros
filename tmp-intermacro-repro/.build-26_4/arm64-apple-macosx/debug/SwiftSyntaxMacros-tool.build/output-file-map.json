@@ -1,0 +1,131 @@
+{
+  "": {
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/primary.swiftdeps"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/AbstractSourceLocation.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AbstractSourceLocation.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AbstractSourceLocation.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AbstractSourceLocation~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AbstractSourceLocation.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AbstractSourceLocation.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroExpansionContext.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MacroExpansionContext.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MacroExpansionContext.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MacroExpansionContext~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MacroExpansionContext.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MacroExpansionContext.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroExpansionDiagnosticMessages.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MacroExpansionDiagnosticMessages.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MacroExpansionDiagnosticMessages.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MacroExpansionDiagnosticMessages~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MacroExpansionDiagnosticMessages.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MacroExpansionDiagnosticMessages.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/AccessorMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AccessorMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AccessorMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AccessorMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AccessorMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AccessorMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/AttachedMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AttachedMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AttachedMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AttachedMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AttachedMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/AttachedMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/BodyMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/BodyMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/BodyMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/BodyMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/BodyMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/BodyMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/CodeItemMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/CodeItemMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/CodeItemMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/CodeItemMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/CodeItemMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/CodeItemMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/DeclarationMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/DeclarationMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/DeclarationMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/DeclarationMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/DeclarationMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/DeclarationMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/ExpressionMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/ExpressionMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/ExpressionMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/ExpressionMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/ExpressionMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/ExpressionMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/ExtensionMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/ExtensionMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/ExtensionMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/ExtensionMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/ExtensionMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/ExtensionMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/FreestandingMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/FreestandingMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/FreestandingMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/FreestandingMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/FreestandingMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/FreestandingMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/Macro+Format.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Macro+Format.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Macro+Format.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Macro+Format~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Macro+Format.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Macro+Format.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/Macro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Macro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Macro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Macro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Macro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Macro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/MemberAttributeMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MemberAttributeMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MemberAttributeMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MemberAttributeMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MemberAttributeMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MemberAttributeMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/MemberMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MemberMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MemberMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MemberMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MemberMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/MemberMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/PeerMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/PeerMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/PeerMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/PeerMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/PeerMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/PeerMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/PreambleMacro.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/PreambleMacro.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/PreambleMacro.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/PreambleMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/PreambleMacro.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/PreambleMacro.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/Syntax+LexicalContext.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Syntax+LexicalContext.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Syntax+LexicalContext.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Syntax+LexicalContext~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Syntax+LexicalContext.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftSyntaxMacros-tool.build/Syntax+LexicalContext.dia"
+  }
+}

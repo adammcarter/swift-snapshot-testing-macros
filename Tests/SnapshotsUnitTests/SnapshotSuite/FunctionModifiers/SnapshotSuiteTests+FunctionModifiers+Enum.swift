@@ -46,18 +46,18 @@ extension SnapshotSuiteTests.FunctionModifiers {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots)
+        struct MyEnum_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots)
-          struct MyEnum_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = MyEnum.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """

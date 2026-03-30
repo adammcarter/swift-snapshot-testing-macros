@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftTestingInterMacroReproTests.build/primary.swiftdeps"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/Tests/tmp-intermacro-reproTests/tmp_intermacro_reproTests.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftTestingInterMacroReproTests.build/tmp_intermacro_reproTests.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftTestingInterMacroReproTests.build/tmp_intermacro_reproTests.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftTestingInterMacroReproTests.build/tmp_intermacro_reproTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftTestingInterMacroReproTests.build/tmp_intermacro_reproTests.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftTestingInterMacroReproTests.build/tmp_intermacro_reproTests.dia"
+  }
+}

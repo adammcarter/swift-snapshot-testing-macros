@@ -46,18 +46,18 @@ extension SnapshotSuiteTests.Parameters.Traits {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.sizes(width: .minimum, height: .minimum)).wrapped)
+        struct Tags_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.sizes(width: .minimum, height: .minimum)).wrapped)
-          struct Tags_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = Tags.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -103,18 +103,18 @@ extension SnapshotSuiteTests.Parameters.Traits {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.sizes(width: .minimum)).wrapped)
+        struct Tags_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.sizes(width: .minimum)).wrapped)
-          struct Tags_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = Tags.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -160,18 +160,18 @@ extension SnapshotSuiteTests.Parameters.Traits {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.sizes(height: .minimum)).wrapped)
+        struct Tags_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.sizes(height: .minimum)).wrapped)
-          struct Tags_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = Tags.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -217,18 +217,18 @@ extension SnapshotSuiteTests.Parameters.Traits {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.sizes(.minimum)).wrapped)
+        struct Tags_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.sizes(.minimum)).wrapped)
-          struct Tags_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = Tags.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """

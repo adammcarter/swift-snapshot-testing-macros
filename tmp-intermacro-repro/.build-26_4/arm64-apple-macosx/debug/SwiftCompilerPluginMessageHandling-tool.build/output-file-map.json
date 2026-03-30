@@ -1,0 +1,89 @@
+{
+  "": {
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/primary.swiftdeps"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/CompilerPluginMessageHandler.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/CompilerPluginMessageHandler.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/CompilerPluginMessageHandler.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/CompilerPluginMessageHandler~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/CompilerPluginMessageHandler.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/CompilerPluginMessageHandler.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/Diagnostics.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/Diagnostics.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/Diagnostics.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/Diagnostics~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/Diagnostics.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/Diagnostics.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/JSON/CodingUtilities.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/CodingUtilities.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/CodingUtilities.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/CodingUtilities~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/CodingUtilities.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/CodingUtilities.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/JSON/JSON.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSON.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSON.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSON~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSON.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSON.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/JSON/JSONDecoding.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSONDecoding.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSONDecoding.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSONDecoding~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSONDecoding.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSONDecoding.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/JSON/JSONEncoding.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSONEncoding.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSONEncoding.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSONEncoding~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSONEncoding.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/JSONEncoding.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/LRUCache.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/LRUCache.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/LRUCache.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/LRUCache~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/LRUCache.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/LRUCache.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/Macros.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/Macros.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/Macros.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/Macros~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/Macros.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/Macros.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/PluginMacroExpansionContext.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMacroExpansionContext.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMacroExpansionContext.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMacroExpansionContext~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMacroExpansionContext.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMacroExpansionContext.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/PluginMessageCompatibility.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMessageCompatibility.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMessageCompatibility.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMessageCompatibility~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMessageCompatibility.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMessageCompatibility.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/PluginMessages.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMessages.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMessages.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMessages~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMessages.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/PluginMessages.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/StandardIOMessageConnection.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/StandardIOMessageConnection.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/StandardIOMessageConnection.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/StandardIOMessageConnection~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/StandardIOMessageConnection.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling-tool.build/StandardIOMessageConnection.dia"
+  }
+}

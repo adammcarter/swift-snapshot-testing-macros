@@ -1,0 +1,19 @@
+{
+  "": {
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/_SwiftSyntaxGenericTestSupport.build/primary.swiftdeps"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/_SwiftSyntaxGenericTestSupport/AssertEqualWithDiff.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/_SwiftSyntaxGenericTestSupport.build/AssertEqualWithDiff.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/_SwiftSyntaxGenericTestSupport.build/AssertEqualWithDiff.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/_SwiftSyntaxGenericTestSupport.build/AssertEqualWithDiff~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/_SwiftSyntaxGenericTestSupport.build/AssertEqualWithDiff.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/_SwiftSyntaxGenericTestSupport.build/AssertEqualWithDiff.dia"
+  },
+  "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/_SwiftSyntaxGenericTestSupport/String+TrimmingTrailingWhitespace.swift": {
+    "dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/_SwiftSyntaxGenericTestSupport.build/String+TrimmingTrailingWhitespace.d",
+    "object": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/_SwiftSyntaxGenericTestSupport.build/String+TrimmingTrailingWhitespace.swift.o",
+    "swiftmodule": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/_SwiftSyntaxGenericTestSupport.build/String+TrimmingTrailingWhitespace~partial.swiftmodule",
+    "swift-dependencies": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/_SwiftSyntaxGenericTestSupport.build/String+TrimmingTrailingWhitespace.swiftdeps",
+    "diagnostics": "/Users/adam.carter/repos/swift-snapshot-testing-macros/tmp-intermacro-repro/.build-26_4/arm64-apple-macosx/debug/_SwiftSyntaxGenericTestSupport.build/String+TrimmingTrailingWhitespace.dia"
+  }
+}

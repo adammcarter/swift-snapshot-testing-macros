@@ -8,10 +8,14 @@ extension SnapshotSuite.TestBlock {
 
     init(
       ifConfigDecl: IfConfigDeclSyntax,
+      hostTypeName: TokenSyntax,
+      inheritedTestTraitExprs: [ExprSyntax],
       suiteMacroArguments: SnapshotMacroArguments,
       macroContext: SnapshotSuiteMacroContext
     ) {
       self.ifConfigDecl = ifConfigDecl.asIfConfigDeclTestExpr(
+        hostTypeName: hostTypeName,
+        inheritedTestTraitExprs: inheritedTestTraitExprs,
         suiteMacroArguments: suiteMacroArguments,
         macroContext: macroContext
       )
@@ -21,6 +25,8 @@ extension SnapshotSuite.TestBlock {
 
 extension IfConfigDeclSyntax {
   fileprivate func asIfConfigDeclTestExpr(
+    hostTypeName: TokenSyntax,
+    inheritedTestTraitExprs: [ExprSyntax],
     suiteMacroArguments: SnapshotMacroArguments,
     macroContext: SnapshotSuiteMacroContext
   ) -> IfConfigDeclSyntax {
@@ -32,6 +38,8 @@ extension IfConfigDeclSyntax {
       }
 
       let blockItems = memberBlockItemListExpr.blockItemTestExprs(
+        hostTypeName: hostTypeName,
+        inheritedTestTraitExprs: inheritedTestTraitExprs,
         suiteMacroArguments: suiteMacroArguments,
         macroContext: macroContext
       )
@@ -65,6 +73,8 @@ extension IfConfigDeclSyntax {
 
 extension MemberBlockItemListSyntax {
   fileprivate func blockItemTestExprs(
+    hostTypeName: TokenSyntax,
+    inheritedTestTraitExprs: [ExprSyntax],
     suiteMacroArguments: SnapshotMacroArguments,
     macroContext: SnapshotSuiteMacroContext
   ) -> [CodeBlockItemSyntax] {
@@ -74,6 +84,8 @@ extension MemberBlockItemListSyntax {
     .filter(\.isSupportedForSnapshots)
     .compactMap { snapshotTestFunctionDecl in
       let test = SnapshotSuite.TestBlock.Test(
+        hostTypeName: hostTypeName,
+        inheritedTestTraitExprs: inheritedTestTraitExprs,
         suiteMacroArguments: suiteMacroArguments,
         snapshotTestFunctionDecl: snapshotTestFunctionDecl,
         macroContext: macroContext

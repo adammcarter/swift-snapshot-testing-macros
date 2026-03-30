@@ -52,18 +52,18 @@ extension SnapshotSuiteTests.SanityChecks {
           func makeMyView() -> some View {
             Text("my view")
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots)
+        struct SnapshotTests_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots)
-          struct SnapshotTests_GeneratedSnapshotSuite {
+          @Test()
+          func makeMyView_snapshotTest() async throws {
+            let generator = SnapshotTests.__generator_container_makeMyView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeMyView_snapshotTest() async throws {
-              let generator = __generator_container_makeMyView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """

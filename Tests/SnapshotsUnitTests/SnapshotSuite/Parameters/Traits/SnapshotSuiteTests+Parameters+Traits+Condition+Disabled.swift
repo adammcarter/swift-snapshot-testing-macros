@@ -46,18 +46,18 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled()).wrapped)
+        struct MySuite_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled()).wrapped)
-          struct MySuite_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = MySuite.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -103,18 +103,18 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled("Some comment")).wrapped)
+        struct DisabledWithComment_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled("Some comment")).wrapped)
-          struct DisabledWithComment_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = DisabledWithComment.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -160,18 +160,18 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled(if: true)).wrapped)
+        struct DisabledIf_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled(if: true)).wrapped)
-          struct DisabledIf_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = DisabledIf.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -217,18 +217,18 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled(if: !enableTests, "Some comment")).wrapped)
+        struct DisabledIfWithComment_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled(if: !enableTests, "Some comment")).wrapped)
-          struct DisabledIfWithComment_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = DisabledIfWithComment.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -274,18 +274,18 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled(if: true)).wrapped)
+        struct DisabledWithCondition_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled(if: true)).wrapped)
-          struct DisabledWithCondition_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = DisabledWithCondition.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -331,20 +331,20 @@ extension SnapshotSuiteTests.Parameters.Traits.Condition {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled("Some comment", {
+              !enableTests
+            })).wrapped)
+        struct DisabledWithCommentAndCondition_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots, SnapshotTestingMacros.__SuiteTraitBox(.disabled("Some comment", {
-                !enableTests
-              })).wrapped)
-          struct DisabledWithCommentAndCondition_GeneratedSnapshotSuite {
+          @Test()
+          func makeView_snapshotTest() async throws {
+            let generator = DisabledWithCommentAndCondition.__generator_container_makeView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeView_snapshotTest() async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """

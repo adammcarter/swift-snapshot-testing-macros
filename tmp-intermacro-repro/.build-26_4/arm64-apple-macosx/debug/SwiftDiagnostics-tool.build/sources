@@ -1,0 +1,10 @@
+/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/Convenience.swift
+/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/Diagnostic.swift
+/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/DiagnosticDecorators/ANSIDiagnosticDecorator.swift
+/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/DiagnosticDecorators/BasicDiagnosticDecorator.swift
+/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/DiagnosticDecorators/DiagnosticDecorator.swift
+/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/DiagnosticsFormatter.swift
+/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/FixIt.swift
+/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/GroupedDiagnostics.swift
+/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/Message.swift
+/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/Note.swift

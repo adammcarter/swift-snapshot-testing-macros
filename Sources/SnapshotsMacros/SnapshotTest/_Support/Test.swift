@@ -8,7 +8,7 @@ extension SnapshotSuite.TestBlock {
   struct Test {
     var expression: DeclSyntax {
       let baseExpression: DeclSyntax = """
-        func \(testFunction.nameExpr)(\(testFunction.parametersExpr)) async throws {
+        static func \(testFunction.nameExpr)(\(testFunction.parametersExpr)) async throws {
           let generator = \(containerMakeGeneratorExpr)
 
           try await \(.Namespace.snapshotTestingMacros).assertSnapshot(with: generator)
@@ -51,6 +51,7 @@ extension SnapshotSuite.TestBlock {
 
     private let testMacro: TestMacro
     private let testFunction: TestFunction
+    private let hostTypeName: TokenSyntax
     private let generatorContainerName: TokenSyntax
     private let parsedAttributesListExpr: AttributeListSyntax?
 
@@ -62,7 +63,7 @@ extension SnapshotSuite.TestBlock {
     }
 
     private var containerMakeGeneratorExpr: ExprSyntax {
-      "\(generatorContainerName).makeGenerator(\(.Parameters.configuration): \(configurationExpr))"
+      "\(hostTypeName).\(generatorContainerName).makeGenerator(\(.Parameters.configuration): \(configurationExpr))"
     }
 
     private var configurationExpr: ExprSyntax {
@@ -74,6 +75,8 @@ extension SnapshotSuite.TestBlock {
     }
 
     init(
+      hostTypeName: TokenSyntax,
+      inheritedTestTraitExprs: [ExprSyntax],
       suiteMacroArguments: SnapshotMacroArguments,
       snapshotTestFunctionDecl: FunctionDeclSyntax,
       macroContext: SnapshotSuiteMacroContext
@@ -95,6 +98,7 @@ extension SnapshotSuite.TestBlock {
       self.configurationsExpr = testMacroArguments.configurationsExpression
       self.configurationValuesExpr = testMacroArguments.configurationValuesExpression
 
+      self.hostTypeName = hostTypeName
       self.generatorContainerName = makeContainerName(from: snapshotTestFunctionDecl)
 
       let configurationExpression =
@@ -102,7 +106,7 @@ extension SnapshotSuite.TestBlock {
         ?? testMacroArguments.configurationsExpression
 
       self.testMacro = .init(
-        traits: makeTestTraitBoxExprs(traitExprs: testMacroArguments.traitExpressions),
+        traits: inheritedTestTraitExprs + makeTestTraitBoxExprs(traitExprs: testMacroArguments.traitExpressions),
         configurationExpression: configurationExpression
       )
 

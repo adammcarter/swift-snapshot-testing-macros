@@ -356,26 +356,26 @@ extension SnapshotSuiteTests {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots)
+        struct SnapshotTests_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots)
-          struct SnapshotTests_GeneratedSnapshotSuite {
+          @Test()
+          func makeHostingController_snapshotTest() async throws {
+            let generator = SnapshotTests.__generator_container_makeHostingController.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeHostingController_snapshotTest() async throws {
-              let generator = __generator_container_makeHostingController.makeGenerator(configuration: .none)
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
+          }
 
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+          @MainActor
+          @Test()
+          func makeViewController_snapshotTest() async throws {
+            let generator = SnapshotTests.__generator_container_makeViewController.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func makeViewController_snapshotTest() async throws {
-              let generator = __generator_container_makeViewController.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -432,13 +432,13 @@ extension SnapshotSuiteTests {
           func makeView() -> some View {
             Text("")
           }
+        }
 
-          @MainActor
-          @Suite(.pointfreeSnapshots)
-          struct MyEnum_GeneratedSnapshotSuite {
+        @MainActor
+        @Suite(.pointfreeSnapshots)
+        struct MyEnum_GeneratedSnapshotSuite {
 
 
-          }
         }
         """
       }

@@ -29,7 +29,7 @@ extension SnapshotSuiteMacro: MemberMacro {
       return []
     }
 
-    return [snapshotSuite.expression]
+    return snapshotSuite.expressions
   }
 }
 

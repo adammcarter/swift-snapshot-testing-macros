@@ -1,0 +1,27 @@
+{
+  "object" : {
+    "artifacts" : [
+
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "swift-syntax",
+          "kind" : "fileSystem",
+          "location" : "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax",
+          "name" : "swift-syntax"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/adam.carter/repos/swift-snapshot-testing-macros/.build/checkouts/swift-syntax"
+        },
+        "subpath" : "swift-syntax"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}

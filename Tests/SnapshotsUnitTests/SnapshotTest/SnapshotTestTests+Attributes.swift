@@ -44,18 +44,18 @@ extension SnapshotTestTests {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots)
+        struct MySnapshots_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots)
-          struct MySnapshots_GeneratedSnapshotSuite {
+          @Test()
+          func myView_snapshotTest() async throws {
+            let generator = MySnapshots.__generator_container_myView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func myView_snapshotTest() async throws {
-              let generator = __generator_container_myView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -101,19 +101,19 @@ extension SnapshotTestTests {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots)
+        struct MySnapshots_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots)
-          struct MySnapshots_GeneratedSnapshotSuite {
+          @Test()
+          @available(iOS 26.0, *)
+          func myView_snapshotTest() async throws {
+            let generator = MySnapshots.__generator_container_myView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            @available(iOS 26.0, *)
-            func myView_snapshotTest() async throws {
-              let generator = __generator_container_myView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -159,18 +159,18 @@ extension SnapshotTestTests {
               )
             }
           }
+        }
 
+        @MainActor
+        @Suite(.pointfreeSnapshots)
+        struct MySnapshots_GeneratedSnapshotSuite {
+
+          @Test()
           @MainActor
-          @Suite(.pointfreeSnapshots)
-          struct MySnapshots_GeneratedSnapshotSuite {
+          func myView_snapshotTest() async throws {
+            let generator = MySnapshots.__generator_container_myView.makeGenerator(configuration: .none)
 
-            @Test()
-            @MainActor
-            func myView_snapshotTest() async throws {
-              let generator = __generator_container_myView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -216,18 +216,18 @@ extension SnapshotTestTests {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots)
+        struct MySnapshots_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots)
-          struct MySnapshots_GeneratedSnapshotSuite {
+          @Test()
+          func myView_snapshotTest() async throws {
+            let generator = MySnapshots.__generator_container_myView.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func myView_snapshotTest() async throws {
-              let generator = __generator_container_myView.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """

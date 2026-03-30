@@ -51,21 +51,21 @@ extension SnapshotTestTests.Configurations {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots)
+        struct SnapshotTests_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots)
-          struct SnapshotTests_GeneratedSnapshotSuite {
+          @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
+                SnapshotConfiguration(name: "Config1", value: "1"),
+                SnapshotConfiguration(name: "Config2", value: "2"),
+              ]))
+          func makeAnotherView_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
+            let generator = SnapshotTests.__generator_container_makeAnotherView.makeGenerator(configuration: configuration)
 
-            @MainActor
-            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([
-                  SnapshotConfiguration(name: "Config1", value: "1"),
-                  SnapshotConfiguration(name: "Config2", value: "2"),
-                ]))
-            func makeAnotherView_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
-              let generator = __generator_container_makeAnotherView.makeGenerator(configuration: configuration)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """

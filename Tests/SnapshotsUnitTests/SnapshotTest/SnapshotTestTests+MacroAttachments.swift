@@ -89,18 +89,18 @@ extension SnapshotTestTests {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots)
+        struct SnapshotTests_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots)
-          struct SnapshotTests_GeneratedSnapshotSuite {
+          @Test()
+          func aTest_snapshotTest() async throws {
+            let generator = SnapshotTests.__generator_container_aTest.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func aTest_snapshotTest() async throws {
-              let generator = __generator_container_aTest.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
@@ -153,18 +153,18 @@ extension SnapshotTestTests {
               )
             }
           }
+        }
+
+        @MainActor
+        @Suite(.pointfreeSnapshots)
+        struct SnapshotTests_GeneratedSnapshotSuite {
 
           @MainActor
-          @Suite(.pointfreeSnapshots)
-          struct SnapshotTests_GeneratedSnapshotSuite {
+          @Test()
+          func aTest_snapshotTest() async throws {
+            let generator = SnapshotTests.__generator_container_aTest.makeGenerator(configuration: .none)
 
-            @MainActor
-            @Test()
-            func aTest_snapshotTest() async throws {
-              let generator = __generator_container_aTest.makeGenerator(configuration: .none)
-
-              try await SnapshotTestingMacros.assertSnapshot(with: generator)
-            }
+            try await SnapshotTestingMacros.assertSnapshot(with: generator)
           }
         }
         """
