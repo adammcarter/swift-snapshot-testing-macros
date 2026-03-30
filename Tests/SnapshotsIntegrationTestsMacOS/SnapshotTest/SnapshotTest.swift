@@ -1,0 +1,1 @@
+../../SnapshotsIntegrationTestsiOS/SnapshotTest/SnapshotTest.swift

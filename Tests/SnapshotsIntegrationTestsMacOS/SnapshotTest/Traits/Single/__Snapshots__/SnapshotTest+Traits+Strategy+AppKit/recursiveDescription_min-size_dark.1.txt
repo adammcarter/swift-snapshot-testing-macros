@@ -1,0 +1,4 @@
+[   A     !     ] h=--- v=--- NSView f=(0,0,500,20) b=(-)
+  [   AF    !     ] h=--- v=--- NSTextField ".recursiveDescription" f=(-2,0,504,20) b=(-)
+    [   AF    !     ] h=--- v=--- _TtC6AppKitP33_72EBFCF981BE77E1C6F26FD717D0893922NSTextFieldSimpleLabel f=(0,0,504,20) b=(-)
+A=autoresizesSubviews, C=canDrawConcurrently, D=needsDisplay, F=flipped, G=gstate, H=hidden (h=by ancestor), L=needsLayout (l=child needsLayout), U=needsUpdateConstraints (u=child needsUpdateConstraints), O=opaque, P=preservesContentDuringLiveResize, S=scaled/rotated, W=wantsLayer (w=ancestor wantsLayer), V=needsVibrancy (v=allowsVibrancy), #=has surface

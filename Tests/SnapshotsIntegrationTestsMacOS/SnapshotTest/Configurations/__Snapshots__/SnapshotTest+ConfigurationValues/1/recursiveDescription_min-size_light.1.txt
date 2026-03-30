@@ -1,0 +1,2 @@
+[   AF    ! W   ] h=--- v=--- _TtGC7SwiftUI13NSHostingViewVS_4Text_ f=(0,0,142,16) b=(-) => <NSViewBackingLayer>
+A=autoresizesSubviews, C=canDrawConcurrently, D=needsDisplay, F=flipped, G=gstate, H=hidden (h=by ancestor), L=needsLayout (l=child needsLayout), U=needsUpdateConstraints (u=child needsUpdateConstraints), O=opaque, P=preservesContentDuringLiveResize, S=scaled/rotated, W=wantsLayer (w=ancestor wantsLayer), V=needsVibrancy (v=allowsVibrancy), #=has surface

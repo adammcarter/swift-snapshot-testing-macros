@@ -40,9 +40,7 @@ struct ThemeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
     #if canImport(UIKit)
     UIWindow().traitCollection.displayScale
     #elseif canImport(AppKit)
-    NSScreen.main.flatMap {
-      Double($0.backingScaleFactor)
-    } ?? 1.0
+    NSScreen.main.flatMap { Double($0.backingScaleFactor) } ?? 1.0
     #endif
   }()
 }

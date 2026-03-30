@@ -34,7 +34,7 @@
             default = "YES">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:Tests/SnapshotsIntegrationTests.xctestplan">
+            reference = "container:Tests/SnapshotsIntegrationTestsiOS.xctestplan">
          </TestPlanReference>
       </TestPlans>
       <Testables>
@@ -55,6 +55,26 @@
                BlueprintIdentifier = "SnapshotsPlayground"
                BuildableName = "SnapshotsPlayground"
                BlueprintName = "SnapshotsPlayground"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "SnapshotsIntegrationTestsMacOS"
+               BuildableName = "SnapshotsIntegrationTestsMacOS"
+               BlueprintName = "SnapshotsIntegrationTestsMacOS"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "SnapshotsIntegrationTestsiOS"
+               BuildableName = "SnapshotsIntegrationTestsiOS"
+               BlueprintName = "SnapshotsIntegrationTestsiOS"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>

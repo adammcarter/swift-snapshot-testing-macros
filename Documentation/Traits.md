@@ -4,7 +4,7 @@ Both `@SnapshotSuite` and `@SnapshotTest` can take predefined traits to overrrid
 
 Many of the Swift Testing traits are available here as well as some new ones bespoke to snapshots such as: custom sizing, add padding, force recording.
 
-For more examples of using traits see the [test fixtures](https://github.com/adammcarter/swift-snapshot-testing-macros/tree/main/Tests/SnapshotsIntegrationTests) for both `SnapshotSuite` and `SnapshotTest`.
+For more examples of using traits see the [test fixtures](https://github.com/adammcarter/swift-snapshot-testing-macros/tree/main/Tests/SnapshotsIntegrationTestsiOS) for both `SnapshotSuite` and `SnapshotTest`.
 
 
 ## Inheritance
@@ -430,7 +430,7 @@ You can use existing [Swift Testing test scopes](https://developer.apple.com/doc
 
 You can create your own or use existing scopes by conforming to `SnapshotTest` and/or `SnapshotSuite`.
 
-You can see an example of this in action [here](https://github.com/adammcarter/swift-snapshot-testing-macros/blob/main/Tests/SnapshotsIntegrationTests/Support/MyExampleTrait.swift).
+You can see an example of this in action [here](https://github.com/adammcarter/swift-snapshot-testing-macros/blob/main/Tests/SnapshotsIntegrationTestsiOS/Support/MyExampleTrait.swift).
 
 This can be used on a `@SnapshotSuite`, a `@SnapshotTest` or both...
 

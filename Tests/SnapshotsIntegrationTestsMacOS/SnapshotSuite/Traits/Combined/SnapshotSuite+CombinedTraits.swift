@@ -1,0 +1,1 @@
+../../../../SnapshotsIntegrationTestsiOS/SnapshotSuite/Traits/Combined/SnapshotSuite+CombinedTraits.swift

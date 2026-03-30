@@ -14,7 +14,18 @@ extension NSDirectionalEdgeInsets: @retroactive Equatable {
 extension NSView {
   var backgroundColor: NSColor? {
     get { layer?.backgroundColor.flatMap { .init(cgColor: $0) } }
-    set { layer?.backgroundColor = newValue?.cgColor }
+    set {
+      guard let newValue else {
+        layer?.backgroundColor = nil
+        return
+      }
+
+      if wantsLayer == false {
+        wantsLayer = true
+      }
+
+      layer?.backgroundColor = newValue.cgColor
+    }
   }
 }
 #endif

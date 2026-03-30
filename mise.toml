@@ -5,4 +5,6 @@ swiftlint = "0.59.0"
 lint = ["./Tools/format-check", "./Tools/check-packages"]
 format = "./Tools/format"
 test = "swift test"
-test-integration = "xcodebuild test -scheme SnapshotsIntegrationTests -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64'"
+test-integration = "xcodebuild test -scheme SnapshotsIntegrationTestsiOS -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64'"
+test-integration-ios = "xcodebuild test -scheme SnapshotsIntegrationTestsiOS -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64'"
+test-integration-macos = "xcodebuild test -scheme SnapshotsIntegrationTestsMacOS -destination 'platform=macOS'"

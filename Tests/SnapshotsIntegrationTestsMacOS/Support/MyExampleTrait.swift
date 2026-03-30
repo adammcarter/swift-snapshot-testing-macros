@@ -1,0 +1,1 @@
+../../SnapshotsIntegrationTestsiOS/Support/MyExampleTrait.swift

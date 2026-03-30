@@ -1,0 +1,1 @@
+../../../../SnapshotsIntegrationTestsiOS/SnapshotTest/Traits/Combined/SnapshotTest+CombinedTraits+BackgroundWithPadding.swift

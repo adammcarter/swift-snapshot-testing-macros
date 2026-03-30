@@ -1,0 +1,1 @@
+../../SnapshotsIntegrationTestsiOS/Support/makeLabel+AppKit.swift

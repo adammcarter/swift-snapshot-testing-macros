@@ -27,9 +27,9 @@ let package = Package(
   targets: [
     /*
      This is where all of the source code parsing happens to convert from raw macro to expanded code.
-    
+
      For example, converting `@SnapshotSuite` in to the code you see when expanding the macro in place.
-    
+
      It's important to remember the expanded macro code is not run in this target, this target acts more as a developer writing the code.
     
      Another way to think about this target is like a protocol definition, there's no real implementation here but we set out the contract.
@@ -96,7 +96,7 @@ let package = Package(
     ),
 
     /*
-     A test target for testing the suite during development.
+     iOS integration target.
     
      Because our macro create tests in the form of snapshot tests, we can create integration tests using the snapshot images as our references.
     
@@ -104,15 +104,40 @@ let package = Package(
     
      This test target simply wraps the SnapshotTestingMacros library so we can run those generated tests.
     
-     This must be run on an iPhone 16 running iOS 18.4 to guarantee matching the reference images with those generated during testing.
+     This must be run on an iPhone simulator to guarantee matching the reference images with those generated during testing.
      */
     .testTarget(
-      name: "SnapshotsIntegrationTests",
+      name: "SnapshotsIntegrationTestsiOS",
       dependencies: [
         "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
       ],
+      path: "Tests/SnapshotsIntegrationTestsiOS",
+      exclude: [
+        "SnapshotSuite/__Snapshots__",
+        "SnapshotSuite/Traits/Combined/__Snapshots__",
+        "SnapshotSuite/Traits/Single/__Snapshots__",
+        "SnapshotTest/__Snapshots__",
+        "SnapshotTest/Configurations/__Snapshots__",
+        "SnapshotTest/Traits/Combined/__Snapshots__",
+        "SnapshotTest/Traits/Single/__Snapshots__",
+      ]
+    ),
+
+    /*
+     macOS integration target.
+
+     Shares integration source definitions with iOS while using macOS-specific references.
+     */
+    .testTarget(
+      name: "SnapshotsIntegrationTestsMacOS",
+      dependencies: [
+        "SnapshotTestSupport",
+        "SnapshotTestingMacros",
+        "SnapshotsMacros",
+      ],
+      path: "Tests/SnapshotsIntegrationTestsMacOS",
       exclude: [
         "SnapshotSuite/__Snapshots__",
         "SnapshotSuite/Traits/Combined/__Snapshots__",
@@ -133,9 +158,6 @@ let package = Package(
         "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
-      ],
-      exclude: [
-        "__Snapshots__"
       ]
     ),
 
