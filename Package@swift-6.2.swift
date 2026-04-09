@@ -112,15 +112,6 @@ let package = Package(
         "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
-      ],
-      exclude: [
-        "SnapshotSuite/__Snapshots__",
-        "SnapshotSuite/Traits/Combined/__Snapshots__",
-        "SnapshotSuite/Traits/Single/__Snapshots__",
-        "SnapshotTest/__Snapshots__",
-        "SnapshotTest/Configurations/__Snapshots__",
-        "SnapshotTest/Traits/Combined/__Snapshots__",
-        "SnapshotTest/Traits/Single/__Snapshots__",
       ]
     ),
 
@@ -133,9 +124,6 @@ let package = Package(
         "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
-      ],
-      exclude: [
-        "__Snapshots__"
       ]
     ),
 
@@ -150,9 +138,6 @@ let package = Package(
         "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
-      ],
-      exclude: [
-        "__Snapshots__"
       ]
     ),
 
