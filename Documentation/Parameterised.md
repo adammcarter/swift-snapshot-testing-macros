@@ -2,7 +2,7 @@
 
 Just as in Swift Testing you can pass [arguments](https://developer.apple.com/documentation/testing/parameterizedtesting), SnapshotTestingMacros uses configurations.
 
-These configurations take a name and a value so the snapshots can be grouped on their configuration and create a cleaner, easier to navigate library of reference snapshot on disk.
+These configurations take a name and a value. Snapshot folders are grouped by test name, and configured snapshots are prefixed by configuration name for clear on-disk organization.
 
 ## Configurations
 
@@ -29,7 +29,7 @@ struct MySnapshots {
 }
 ```
 
-On disk a folder is created for each configuration, with each folder containing the snapshots for that configuration.
+On disk a folder is created for each test, and each configured snapshot file is prefixed with its configuration name.
 
 > 💡
 > This is especially useful if you set traits with multiple variants, e.g. multiple sizes and themes where the number of snapshots can quickly grow.
@@ -37,26 +37,26 @@ On disk a folder is created for each configuration, with each folder containing 
 <img width="516" alt="Screenshot of folder hierarchy for the configuration snapshots" src="https://github.com/user-attachments/assets/ea66538d-231e-49d4-b578-a75ed7f48975">
 
 <details>
-<summary>'Name 1' folder snapshots</summary>
+<summary>'myView' folder snapshots for configuration 'Name 1'</summary>
 
 The above code renders these images:
 
 | Configuration | Light mode | Dark mode |
 |--:|-|-|
 | Image | ![](https://github.com/user-attachments/assets/eee2ce95-d888-44f9-b452-fb71137d6890) | ![](https://github.com/user-attachments/assets/e11772fc-e50f-4f04-8a98-a74d069760a6) |
-| Filename | `myView_min-size_light.1.png` | `myView_min-size_dark.1.png` |
+| Filename | `Name-1_myView_min-size_light.1.png` | `Name-1_myView_min-size_dark.1.png` |
 
 </details>
 
 <details>
-<summary>'Name 2' folder snapshots</summary>
+<summary>'myView' folder snapshots for configuration 'Name 2'</summary>
 
 The above code renders these images:
 
 | Configuration | Light mode | Dark mode |
 |--:|-|-|
 | Image | ![](https://github.com/user-attachments/assets/13bc6dfd-840f-4af9-a642-b20bf6878211) | ![](https://github.com/user-attachments/assets/e932c6f9-4171-4380-ac12-9eade0866305) |
-| Filename | `myView_min-size_light.1.png` | `myView_min-size_dark.1.png` |
+| Filename | `Name-2_myView_min-size_light.1.png` | `Name-2_myView_min-size_dark.1.png` |
 
 </details>
 
@@ -90,19 +90,19 @@ struct MySnapshots {
 
 The above code renders these images:
 
-'Name 1' folder snapshots
+'myView' folder snapshots for configuration 'Name 1'
 
 | Configuration | Light mode | Dark mode |
 |--:|-|-|
 | Image | ![](https://github.com/user-attachments/assets/d5742413-e01f-4807-9169-6038278007c6) | ![](https://github.com/user-attachments/assets/17fa3a7a-eb4b-46b2-86be-a38a12ec2297) |
-| Filename | `myView_min-size_light.1.png` | `myView_min-size_dark.1.png` |
+| Filename | `Name-1_myView_min-size_light.1.png` | `Name-1_myView_min-size_dark.1.png` |
 
-'Name 2' folder snapshots
+'myView' folder snapshots for configuration 'Name 2'
 
 | Configuration | Light mode | Dark mode |
 |--:|-|-|
 | Image | ![](https://github.com/user-attachments/assets/b5bd187b-8c3b-466c-933a-c9e1f21a2719) | ![](https://github.com/user-attachments/assets/75960e42-be98-46ba-b63a-6c27ac13e616) |
-| Filename | `myView_min-size_light.1.png` | `myView_min-size_dark.1.png` |
+| Filename | `Name-2_myView_min-size_light.1.png` | `Name-2_myView_min-size_dark.1.png` |
 
 </details>
 

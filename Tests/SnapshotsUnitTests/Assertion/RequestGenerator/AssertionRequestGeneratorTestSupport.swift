@@ -9,11 +9,13 @@ import Testing
 enum AssertionRequestGeneratorTestSupport {
   static func makeContext(
     name: String = "base",
+    configurationName: String? = nil,
     traitConfiguration: AssertionRequestContext.TraitConfiguration,
     makeSnapshotView: @escaping @MainActor () async throws -> SnapshotViewController = makeSnapshotView
   ) -> AssertionRequestContext {
     AssertionRequestContext(
       name: name,
+      configurationName: configurationName,
       traitConfiguration: traitConfiguration,
       makeSnapshotView: makeSnapshotView,
       snapshotDirectory: "/tmp",

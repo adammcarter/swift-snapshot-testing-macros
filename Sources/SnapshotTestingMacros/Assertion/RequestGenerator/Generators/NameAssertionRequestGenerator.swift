@@ -16,10 +16,12 @@ struct NameAssertionRequestGenerator: AssertionRequestGenerating {
    */
   private var testName: String {
     [
+      context.configurationName,
       context.name,
       traitSize.testNameDescription,
       theme.testNameDescription,
     ]
+    .compactMap { $0 }
     .joined(separator: "_")
   }
 
