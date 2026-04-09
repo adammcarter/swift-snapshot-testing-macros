@@ -25,6 +25,7 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
      */
     let contextWithLaidOutView = AssertionRequestContext(
       name: context.name,
+      configurationName: context.configurationName,
       traitConfiguration: context.traitConfiguration,
       makeSnapshotView: { value.modifiedViewController },
       snapshotDirectory: context.snapshotDirectory,

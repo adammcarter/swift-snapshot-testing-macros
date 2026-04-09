@@ -2,6 +2,7 @@ import Foundation
 
 struct AssertionRequestContext {
   let name: String
+  let configurationName: String?
   let traitConfiguration: TraitConfiguration
   let makeSnapshotView: @MainActor () async throws -> SnapshotViewController
   let snapshotDirectory: String

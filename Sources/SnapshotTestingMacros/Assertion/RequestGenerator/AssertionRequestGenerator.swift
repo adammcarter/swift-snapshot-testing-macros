@@ -23,21 +23,19 @@ struct AssertionRequestGenerator {
       strategy: StrategySnapshotTrait.current
     )
 
-    let folderName: String?
-    if let name = viewGenerator.configuration.name {
-      folderName = SnapshotNameNormalizer.folderComponent(from: name)
-    }
-    else {
-      folderName = nil
+    let configurationName = Self.normalizedNameComponent(from: viewGenerator.configuration.name)
+    let testFolderName = configurationName.flatMap { _ in
+      Self.normalizedNameComponent(from: viewGenerator.displayName)
     }
 
     return .init(
       name: viewGenerator.displayName,
+      configurationName: configurationName,
       traitConfiguration: traitConfiguration,
       makeSnapshotView: { try await viewGenerator.makeDecoratedView() },
-      snapshotDirectory: makeSnapshotDirectory(
-        file: viewGenerator.filePath,
-        folderName: folderName
+      snapshotDirectory: Self.makeSnapshotDirectory(
+        filePath: viewGenerator.filePath,
+        testFolderName: testFolderName
       ),
       fileID: viewGenerator.fileID,
       filePath: viewGenerator.filePath,
@@ -46,9 +44,9 @@ struct AssertionRequestGenerator {
     )
   }
 
-  private func makeSnapshotDirectory(
-    file filePath: StaticString,
-    folderName: String?
+  static func makeSnapshotDirectory(
+    filePath: StaticString,
+    testFolderName: String?
   ) -> String {
     let fileUrl = URL(fileURLWithPath: "\(filePath)", isDirectory: false)
 
@@ -64,11 +62,20 @@ struct AssertionRequestGenerator {
       .appendingPathComponent(fileName)
 
     let snapshotDirectory = with(snapshotsBaseUrl) {
-      if let folderName {
-        $0.appendPathComponent(folderName, isDirectory: true)
+      if let testFolderName {
+        $0.appendPathComponent(testFolderName, isDirectory: true)
       }
     }
 
     return snapshotDirectory.path
+  }
+
+  private static func normalizedNameComponent(from name: String?) -> String? {
+    guard let name else {
+      return nil
+    }
+
+    let normalized = SnapshotNameNormalizer.folderComponent(from: name)
+    return normalized.isEmpty ? nil : normalized
   }
 }

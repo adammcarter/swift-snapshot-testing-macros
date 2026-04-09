@@ -23,6 +23,21 @@ struct NameAssertionRequestGeneratorTests {
     #expect(request.snapshotting.pathExtension == "txt")
   }
 
+  @Test(arguments: themeCases)
+  func `prefixes test name with configuration when present`(
+    theme: ThemeSnapshotTrait.Theme,
+    expectedThemeName: String
+  ) async throws {
+    let request = try await makeRequest(
+      contextName: "base",
+      configurationName: "Name-1",
+      sizeTestName: "test_name_description_1",
+      theme: snapshotTheme(from: theme)
+    )
+
+    #expect(request.testName == "Name-1_base_test_name_description_1_\(expectedThemeName)")
+  }
+
   @Test
   func `passes metadata through to final request`() async throws {
     let request = try await makeRequest(
@@ -43,11 +58,13 @@ struct NameAssertionRequestGeneratorTests {
 
   private func makeRequest(
     contextName: String,
+    configurationName: String? = nil,
     sizeTestName: String,
     theme: SnapshotTheme
   ) async throws -> AssertionRequest<String> {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       name: contextName,
+      configurationName: configurationName,
       traitConfiguration: .init(
         sizes: [],
         theme: .light,
