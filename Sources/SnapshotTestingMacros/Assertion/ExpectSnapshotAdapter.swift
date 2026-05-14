@@ -13,13 +13,12 @@ enum ExpectSnapshotAdapter {
     let baseName = TaskLocalSnapshotExecutionContext.withCurrent(function: function) {
       $0.baseName
     }
-
-    _ = named
+    let displayName = displayName(named: named, baseName: baseName)
 
     SyncSnapshotBridge.run(
       {
         let generator = SnapshotViewGenerator(
-          displayName: baseName,
+          displayName: displayName,
           configuration: .none,
           makeValue: { (_: Void) async throws in value },
           fileID: fileID,
@@ -35,5 +34,9 @@ enum ExpectSnapshotAdapter {
       line: line,
       column: column
     )
+  }
+
+  static func displayName(named: String?, baseName: String) -> String {
+    named ?? baseName
   }
 }
