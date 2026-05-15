@@ -1,5 +1,13 @@
+import Foundation
+
+private final class SnapshotExecutionContextNameState: @unchecked Sendable {
+  let lock = NSLock()
+  var usedNames = Set<String>()
+}
+
 final class SnapshotExecutionContext: Sendable {
   let baseName: String
+  private let nameState = SnapshotExecutionContextNameState()
 
   init(function: StaticString) {
     let raw = String(describing: function)
@@ -8,7 +16,22 @@ final class SnapshotExecutionContext: Sendable {
   }
 
   func resolvedAssertionName(named override: String?) -> String {
-    Self.resolvedAssertionName(named: override, baseName: baseName)
+    let requestedName = Self.resolvedAssertionName(named: override, baseName: baseName)
+    return nameState.lock.withLock {
+      if nameState.usedNames.insert(requestedName).inserted {
+        return requestedName
+      }
+
+      var suffix = 2
+      while true {
+        let candidate = "\(requestedName)-\(suffix)"
+        if nameState.usedNames.insert(candidate).inserted {
+          return candidate
+        }
+
+        suffix += 1
+      }
+    }
   }
 
   static func resolvedAssertionName(named override: String?, baseName: String) -> String {

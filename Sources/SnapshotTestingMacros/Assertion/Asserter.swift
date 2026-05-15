@@ -2,12 +2,53 @@ import Foundation
 import SnapshotTesting
 
 /// Top level asserter - allows us to change the base and internals without updating the top level call site
-@MainActor
 struct Asserter {
 
-  func assertSnapshots(from requests: [any AssertionRequesting]) {
-    let asserter = IssueRecordingAsserter(base: PointfreeAsserter())
+  func assertSnapshots(from requests: [any AssertionRequesting]) async throws {
+    if let test = Test.current {
+      let trait: _SnapshotsTestTrait = .snapshots(
+        record: RecordSnapshotTrait.current,
+        diffTool: DiffToolSnapshotTrait.current
+      )
 
+      try await trait.provideScope(
+        for: test,
+        testCase: Test.Case.current,
+        performing: Self.makeScopedAssertionOperation(requests: requests)
+      )
+    } else {
+      await MainActor.run {
+        SnapshotTesting.withSnapshotTesting(
+          record: RecordSnapshotTrait.current,
+          diffTool: DiffToolSnapshotTrait.current
+        ) {
+          Self.performAssertions(
+            using: IssueRecordingAsserter(base: PointfreeAsserter()),
+            requests: requests
+          )
+        }
+      }
+    }
+  }
+
+  private static func makeScopedAssertionOperation(
+    requests: [any AssertionRequesting]
+  ) -> @Sendable () async -> Void {
+    { [requests] in
+      await MainActor.run {
+        performAssertions(
+          using: IssueRecordingAsserter(base: PointfreeAsserter()),
+          requests: requests
+        )
+      }
+    }
+  }
+
+  @MainActor
+  private static func performAssertions(
+    using asserter: IssueRecordingAsserter,
+    requests: [any AssertionRequesting]
+  ) {
     for request in requests {
       asserter.assertSnapshot(request)
     }
@@ -117,12 +158,7 @@ struct IssueRecordingAsserter: SnapshotAsserting {
 private struct PointfreeAsserter: SnapshotAsserting {
 
   func assertSnapshot(_ request: any AssertionRequesting) throws {
-    try SnapshotTesting.withSnapshotTesting(
-      record: RecordSnapshotTrait.current,
-      diffTool: DiffToolSnapshotTrait.current
-    ) {
-      try verifySnapshot(request: request)
-    }
+    try verifySnapshot(request: request)
   }
 
   #warning("TODO: Allow timeout customisation via new trait")

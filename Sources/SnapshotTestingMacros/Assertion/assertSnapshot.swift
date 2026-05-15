@@ -5,5 +5,5 @@ import Foundation
 public func assertSnapshot(with viewGenerator: some SnapshotViewGenerating) async throws {
   let requests = try await AssertionRequestGenerator(viewGenerator: viewGenerator).generateRequests()
 
-  Asserter().assertSnapshots(from: requests)
+  try await Asserter().assertSnapshots(from: requests)
 }

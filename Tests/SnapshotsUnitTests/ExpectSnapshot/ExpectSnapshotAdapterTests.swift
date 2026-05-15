@@ -18,7 +18,7 @@ struct ExpectSnapshotAdapterTests {
   @Test
   func throwingClosureHelperRethrowsClosureErrors() {
     do {
-      try __expectSnapshot(named: "unused") {
+      try __expectSnapshot(named: "unused") { () throws -> Text in
         throw ClosureFailure.sentinel
       }
 
@@ -34,7 +34,7 @@ struct ExpectSnapshotAdapterTests {
   @Test
   func asyncThrowingClosureHelperRethrowsClosureErrors() async {
     do {
-      try await __expectSnapshot(named: "unused") {
+      try await __expectSnapshot(named: "unused") { () async throws -> Text in
         await Task.yield()
         throw ClosureFailure.sentinel
       }
