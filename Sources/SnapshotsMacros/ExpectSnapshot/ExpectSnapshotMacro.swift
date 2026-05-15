@@ -9,11 +9,41 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
   ) throws -> ExprSyntax {
     let unlabeledArguments = node.arguments.filter { $0.label == nil }
     let argumentValue = node.arguments.first { $0.label?.text == "argument" }?.expression
+    let trailingClosure = node.trailingClosure
+    let firstUnlabeledClosure =
+      unlabeledArguments
+      .compactMap { $0.expression.as(ClosureExprSyntax.self) }
+      .first
+    let value: ExprSyntax? =
+      if let argumentValue {
+        argumentValue
+      }
+      else if let firstUnlabeledArgument = unlabeledArguments.first,
+        firstUnlabeledArgument.expression.as(ClosureExprSyntax.self) == nil
+      {
+        firstUnlabeledArgument.expression
+      }
+      else {
+        nil
+      }
+    let makeValueArguments =
+      if argumentValue == nil, value != nil {
+        unlabeledArguments.dropFirst()
+      }
+      else {
+        unlabeledArguments[...]
+      }
+    let makeValueClosure =
+      trailingClosure
+      ?? firstUnlabeledClosure
+      ?? makeValueArguments
+      .compactMap { $0.expression.as(ClosureExprSyntax.self) }
+      .first
 
-    guard let value = argumentValue ?? unlabeledArguments.first?.expression else {
+    guard value != nil || makeValueClosure != nil else {
       context.diagnose(
         DiagnosticFactory.generalErrorMessage(
-          message: "#expectSnapshot requires an unlabeled value argument.",
+          message: "#expectSnapshot requires an unlabeled value argument or closure.",
           node: node
         )
       )
@@ -22,16 +52,6 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
     }
 
     let named = node.arguments.first { $0.label?.text == "named" }?.expression ?? "nil"
-    let makeValueArguments = if argumentValue == nil {
-      unlabeledArguments.dropFirst()
-    } else {
-      unlabeledArguments[...]
-    }
-    let makeValueClosure =
-      node.trailingClosure
-      ?? makeValueArguments
-      .compactMap { $0.expression.as(ClosureExprSyntax.self) }
-      .first
     let makeValue =
       makeValueClosure.map {
         """
@@ -39,16 +59,21 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
           makeValue: \($0)
         """
       } ?? ""
-    let valueArgument = if argumentValue == nil {
-      "\(value)"
-    } else {
-      "argument: \(value)"
-    }
-
-    return ExprSyntax(
-      stringLiteral: """
-        SnapshotTestingMacros.__expectSnapshot(
-          \(valueArgument),
+    let valueArgument: String? =
+      if let value, argumentValue == nil {
+        "\(value)"
+      }
+      else if let value {
+        "argument: \(value)"
+      }
+      else {
+        nil
+      }
+    let leadingArguments = valueArgument.map { "  \($0),\n" } ?? ""
+    let expansion =
+      "SnapshotTestingMacros.__expectSnapshot(\n"
+      + leadingArguments
+        + """
           named: \(named),
           function: #function,
           fileID: #fileID,
@@ -57,6 +82,9 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
           column: #column\(makeValue)
         )
         """
+
+    return ExprSyntax(
+      stringLiteral: expansion
     )
   }
 }

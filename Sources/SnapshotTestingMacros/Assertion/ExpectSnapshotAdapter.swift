@@ -28,6 +28,94 @@ enum ExpectSnapshotAdapter {
     return DerivedSnapshotNames.argumentName(from: configuration.value)
   }
 
+  static func run<V: View>(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping () -> V
+  ) {
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+
+    run(
+      makeValue(),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  static func run<V: View>(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping () async throws -> V
+  ) async throws {
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+
+    run(
+      try await makeValue(),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  static func run<V: View>(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping () async -> V
+  ) async {
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+
+    run(
+      await makeValue(),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  static func run<V: View>(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping () throws -> V
+  ) throws {
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+
+    run(
+      try makeValue(),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
   static func run<V: View, Argument: Sendable>(
     argument: Argument,
     named: String?,

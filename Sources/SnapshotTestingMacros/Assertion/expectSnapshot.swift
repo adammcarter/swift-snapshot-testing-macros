@@ -24,6 +24,94 @@ public func __expectSnapshot<V: View>(
 
 @_documentation(visibility: private)
 // swiftlint:disable:next identifier_name
+public func __expectSnapshot<V: View>(
+  named: String? = nil,
+  function: StaticString = #function,
+  fileID: StaticString = #fileID,
+  filePath: StaticString = #filePath,
+  line: UInt = #line,
+  column: UInt = #column,
+  makeValue: @escaping () -> V
+) {
+  ExpectSnapshotAdapter.run(
+    named: named,
+    function: function,
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column,
+    makeValue: makeValue
+  )
+}
+
+@_documentation(visibility: private)
+// swiftlint:disable:next identifier_name
+public func __expectSnapshot<V: View>(
+  named: String? = nil,
+  function: StaticString = #function,
+  fileID: StaticString = #fileID,
+  filePath: StaticString = #filePath,
+  line: UInt = #line,
+  column: UInt = #column,
+  makeValue: @escaping () throws -> V
+) throws {
+  try ExpectSnapshotAdapter.run(
+    named: named,
+    function: function,
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column,
+    makeValue: makeValue
+  )
+}
+
+@_documentation(visibility: private)
+// swiftlint:disable:next identifier_name
+public func __expectSnapshot<V: View>(
+  named: String? = nil,
+  function: StaticString = #function,
+  fileID: StaticString = #fileID,
+  filePath: StaticString = #filePath,
+  line: UInt = #line,
+  column: UInt = #column,
+  makeValue: @escaping () async -> V
+) async {
+  await ExpectSnapshotAdapter.run(
+    named: named,
+    function: function,
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column,
+    makeValue: makeValue
+  )
+}
+
+@_documentation(visibility: private)
+// swiftlint:disable:next identifier_name
+public func __expectSnapshot<V: View>(
+  named: String? = nil,
+  function: StaticString = #function,
+  fileID: StaticString = #fileID,
+  filePath: StaticString = #filePath,
+  line: UInt = #line,
+  column: UInt = #column,
+  makeValue: @escaping () async throws -> V
+) async throws {
+  try await ExpectSnapshotAdapter.run(
+    named: named,
+    function: function,
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column,
+    makeValue: makeValue
+  )
+}
+
+@_documentation(visibility: private)
+// swiftlint:disable:next identifier_name
 public func __expectSnapshot<V: View, Argument: Sendable>(
   argument: Argument,
   named: String? = nil,

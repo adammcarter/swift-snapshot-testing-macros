@@ -371,7 +371,7 @@ struct ExpectSnapshotMacroTests {
         func myView() {
           #expectSnapshot(named: "custom")
           ┬───────────────────────────────
-          ╰─ 🛑 #expectSnapshot requires an unlabeled value argument.
+          ╰─ 🛑 #expectSnapshot requires an unlabeled value argument or closure.
         }
       }
       """
