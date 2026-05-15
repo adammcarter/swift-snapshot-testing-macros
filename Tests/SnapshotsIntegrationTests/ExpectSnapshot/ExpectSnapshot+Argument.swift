@@ -14,4 +14,11 @@ struct ExpectSnapshotArgumentIntegrationTests {
       Text("state-\(state.rawValue)")
     }
   }
+
+  @Test(arguments: CountState.allCases)
+  func explicitNameKeepsDerivedArgumentScope(state: CountState) {
+    #expectSnapshot(argument: state, named: "custom") { state in
+      Text("custom-\(state.rawValue)")
+    }
+  }
 }

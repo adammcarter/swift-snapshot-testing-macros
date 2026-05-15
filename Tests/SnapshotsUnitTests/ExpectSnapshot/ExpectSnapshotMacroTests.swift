@@ -246,6 +246,60 @@ struct ExpectSnapshotMacroTests {
   }
 
   @Test
+  func expandsArgumentAssertionWithExplicitName() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      enum CountState: Int, Sendable {
+        case zero
+      }
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let state = CountState.zero
+          #expectSnapshot(argument: state, named: "custom") { state in
+            Text("\\(state.rawValue)")
+          }
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      enum CountState: Int, Sendable {
+        case zero
+      }
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let state = CountState.zero
+          SnapshotTestingMacros.__expectSnapshot(
+            argument: state,
+            named: "custom",
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: { state in
+                Text("\\(state.rawValue)")
+              }
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
   func expandsConfigurationAssertionWithInParenthesesClosure() {
     assertMacro {
       """
