@@ -92,6 +92,98 @@ struct ExpectSnapshotMacroTests {
   }
 
   @Test
+  func expandsConfigurationAssertionWithTrailingClosure() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let configuration = SnapshotConfiguration(name: nil, value: "test")
+          #expectSnapshot(configuration) { value in
+            Text(value)
+          }
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let configuration = SnapshotConfiguration(name: nil, value: "test")
+          SnapshotTestingMacros.__expectSnapshot(
+            configuration,
+            named: nil,
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: { value in
+                Text(value)
+              }
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
+  func expandsConfigurationAssertionWithInParenthesesClosure() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let configuration = SnapshotConfiguration(name: nil, value: "test")
+          #expectSnapshot(configuration, { value in
+            Text(value)
+          })
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let configuration = SnapshotConfiguration(name: nil, value: "test")
+          SnapshotTestingMacros.__expectSnapshot(
+            configuration,
+            named: nil,
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: { value in
+                Text(value)
+              }
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
   func recoversWhenDirectValueIsMissing() {
     assertMacro {
       """
