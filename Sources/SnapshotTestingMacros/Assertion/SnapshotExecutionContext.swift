@@ -6,4 +6,12 @@ final class SnapshotExecutionContext: Sendable {
     let candidate = raw.split(separator: "(").first.map(String.init) ?? raw
     self.baseName = candidate.isEmpty ? "snapshot" : candidate
   }
+
+  func resolvedAssertionName(named override: String?) -> String {
+    Self.resolvedAssertionName(named: override, baseName: baseName)
+  }
+
+  static func resolvedAssertionName(named override: String?, baseName: String) -> String {
+    override ?? baseName
+  }
 }

@@ -1,4 +1,5 @@
 import SwiftUI
+import Testing
 
 enum ExpectSnapshotAdapter {
   static func run<V: View>(
@@ -10,10 +11,11 @@ enum ExpectSnapshotAdapter {
     line: UInt,
     column: UInt
   ) {
-    let baseName = TaskLocalSnapshotExecutionContext.withCurrent(function: function) {
-      $0.baseName
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+
+    let displayName = TaskLocalSnapshotExecutionContext.withCurrent(function: function) {
+      $0.resolvedAssertionName(named: named)
     }
-    let displayName = displayName(named: named, baseName: baseName)
 
     SyncSnapshotBridge.run(
       {
@@ -37,6 +39,6 @@ enum ExpectSnapshotAdapter {
   }
 
   static func displayName(named: String?, baseName: String) -> String {
-    named ?? baseName
+    SnapshotExecutionContext.resolvedAssertionName(named: named, baseName: baseName)
   }
 }
