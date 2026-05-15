@@ -22,6 +22,7 @@ public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable>(
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable, C: Sendable>(
+  // swiftlint:disable:next large_tuple
   _ configuration: SnapshotConfiguration<(A, B, C)>,
   named: String? = nil,
   _ makeValue: @escaping (A, B, C) -> V

@@ -24,9 +24,9 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
     let makeValueClosure =
       node.trailingClosure
       ?? unlabeledArguments
-        .dropFirst()
-        .compactMap { $0.expression.as(ClosureExprSyntax.self) }
-        .first
+      .dropFirst()
+      .compactMap { $0.expression.as(ClosureExprSyntax.self) }
+      .first
     let makeValue =
       makeValueClosure.map {
         """

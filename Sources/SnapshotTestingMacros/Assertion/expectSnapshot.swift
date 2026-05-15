@@ -73,6 +73,7 @@ public func __expectSnapshot<V: View, A: Sendable, B: Sendable>(
 @_documentation(visibility: private)
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<V: View, A: Sendable, B: Sendable, C: Sendable>(
+  // swiftlint:disable:next large_tuple
   _ configuration: SnapshotConfiguration<(A, B, C)>,
   named: String? = nil,
   function: StaticString = #function,

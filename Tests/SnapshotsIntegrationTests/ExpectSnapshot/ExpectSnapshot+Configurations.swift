@@ -12,7 +12,7 @@ enum UserState: Sendable {
   case loggedIn
 }
 
-struct ExpectSnapshotConfigurationIntegrationTests {
+struct ExpectSnapshotConfigurationsTests {
   @Test(arguments: [
     SnapshotConfiguration(name: "compact-empty", value: (Layout.compact, UserState.loggedOut)),
     SnapshotConfiguration(name: "regular-loaded", value: (Layout.regular, UserState.loggedIn)),
@@ -28,6 +28,7 @@ struct ExpectSnapshotConfigurationIntegrationTests {
     SnapshotConfiguration(name: "compact-dark-scale1", value: (Layout.compact, UserState.loggedOut, 1.0)),
     SnapshotConfiguration(name: "regular-light-scale2", value: (Layout.regular, UserState.loggedIn, 2.0)),
   ])
+  // swiftlint:disable:next large_tuple
   func tuple3(configuration: SnapshotConfiguration<(Layout, UserState, Double)>) {
     #expectSnapshot(configuration) { layout, state, scale in
       Text("\(String(describing: layout))-\(String(describing: state))-\(scale)")

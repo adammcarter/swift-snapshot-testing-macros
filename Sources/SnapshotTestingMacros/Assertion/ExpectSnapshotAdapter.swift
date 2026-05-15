@@ -141,6 +141,7 @@ enum ExpectSnapshotAdapter {
   }
 
   static func run<V: View, A: Sendable, B: Sendable, C: Sendable>(
+    // swiftlint:disable:next large_tuple
     configuration: SnapshotConfiguration<(A, B, C)>,
     named: String?,
     function: StaticString,
