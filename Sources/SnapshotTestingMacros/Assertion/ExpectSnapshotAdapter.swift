@@ -38,6 +38,8 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping (Argument) -> V
   ) {
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+
     let configuration = SnapshotConfiguration(
       name: DerivedSnapshotNames.argumentName(from: argument),
       value: argument
