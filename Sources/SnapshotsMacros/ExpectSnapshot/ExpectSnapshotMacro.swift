@@ -10,7 +10,7 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
     let unlabeledArguments = node.arguments.filter { $0.label == nil }
     let argumentValue = node.arguments.first { $0.label?.text == "argument" }?.expression
 
-    guard let value = unlabeledArguments.first?.expression ?? argumentValue else {
+    guard let value = argumentValue ?? unlabeledArguments.first?.expression else {
       context.diagnose(
         DiagnosticFactory.generalErrorMessage(
           message: "#expectSnapshot requires an unlabeled value argument.",
@@ -22,10 +22,14 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
     }
 
     let named = node.arguments.first { $0.label?.text == "named" }?.expression ?? "nil"
+    let makeValueArguments = if argumentValue == nil {
+      unlabeledArguments.dropFirst()
+    } else {
+      unlabeledArguments[...]
+    }
     let makeValueClosure =
       node.trailingClosure
-      ?? unlabeledArguments
-      .dropFirst()
+      ?? makeValueArguments
       .compactMap { $0.expression.as(ClosureExprSyntax.self) }
       .first
     let makeValue =
