@@ -9,7 +9,7 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
   ) throws -> ExprSyntax {
     guard let value = node.arguments.first(where: { $0.label == nil })?.expression else {
       context.diagnose(
-        DiagnosticFactory.generalMessage(
+        DiagnosticFactory.generalErrorMessage(
           message: "#expectSnapshot requires an unlabeled value argument.",
           node: node
         )

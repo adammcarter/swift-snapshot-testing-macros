@@ -117,20 +117,7 @@ struct ExpectSnapshotMacroTests {
         func myView() {
           #expectSnapshot(named: "custom")
           ┬───────────────────────────────
-          ╰─ ⚠️ #expectSnapshot requires an unlabeled value argument.
-        }
-      }
-      """
-    } expansion: {
-      """
-      import SnapshotTestingMacros
-      import SwiftUI
-      import Testing
-
-      struct MySnapshots {
-        @Test
-        func myView() {
-          ()
+          ╰─ 🛑 #expectSnapshot requires an unlabeled value argument.
         }
       }
       """
