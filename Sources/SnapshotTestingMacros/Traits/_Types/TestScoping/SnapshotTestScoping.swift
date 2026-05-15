@@ -5,11 +5,21 @@ import Testing
 ///
 /// This protocol allows traits to wrap the execution of a test or suite, enabling setup and teardown logic,
 /// or modifying the environment (e.g., using `@TaskLocal` values).
-public protocol SnapshotTestScoping: Testing.Trait {
+public protocol SnapshotTestScoping: Testing.Trait, Testing.TestScoping {
   /// Wraps the execution of the test function.
   ///
   /// - Parameter function: The test function to execute.
   func provideScope(
     performing function: () async throws -> Void
   ) async throws
+}
+
+extension SnapshotTestScoping {
+  public func provideScope(
+    for _: Test,
+    testCase _: Test.Case?,
+    performing function: () async throws -> Void
+  ) async throws {
+    try await provideScope(performing: function)
+  }
 }
