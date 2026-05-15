@@ -1,6 +1,6 @@
 import SwiftUI
 
-@available(*, message: "This is an implementation detail. Do not call this function directly.")
+@_documentation(visibility: private)
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<V: View>(
   _ value: sending V,

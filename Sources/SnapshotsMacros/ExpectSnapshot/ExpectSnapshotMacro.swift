@@ -5,9 +5,19 @@ import SwiftSyntaxMacros
 public struct ExpectSnapshotMacro: ExpressionMacro {
   public static func expansion(
     of node: some FreestandingMacroExpansionSyntax,
-    in _: some MacroExpansionContext
+    in context: some MacroExpansionContext
   ) throws -> ExprSyntax {
-    let value = node.arguments.first { $0.label == nil }!.expression
+    guard let value = node.arguments.first(where: { $0.label == nil })?.expression else {
+      context.diagnose(
+        DiagnosticFactory.generalMessage(
+          message: "#expectSnapshot requires an unlabeled value argument.",
+          node: node
+        )
+      )
+
+      return "()"
+    }
+
     let named = node.arguments.first { $0.label?.text == "named" }?.expression ?? "nil"
 
     return ExprSyntax(
