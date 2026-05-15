@@ -1,5 +1,6 @@
 import SwiftUI
 
+// swiftlint:disable:next identifier_name
 public func __expectSnapshot<V: View>(
   _ value: sending V,
   named: String? = nil,

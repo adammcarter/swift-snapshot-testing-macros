@@ -1,1 +1,1 @@
-enum SnapshotsIntegrationRepetitionTestsPlaceholder {}
+enum Placeholder {}

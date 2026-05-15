@@ -7,7 +7,7 @@ import Testing
 @Suite(
   .macros(
     [
-      "expectSnapshot": ExpectSnapshotMacro.self,
+      "expectSnapshot": ExpectSnapshotMacro.self
     ],
     record: .missing
   )
