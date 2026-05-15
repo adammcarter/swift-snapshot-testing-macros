@@ -3,7 +3,7 @@
 import Testing
 
 @Suite(ThemeSnapshotTrait.theme(.dark))
-struct DirectSwiftTestingSnapshotTraitScopingTests {
+struct DirectSwiftTestingTraitScopingTests {
   @Test
   func suiteTraitAppliesTaskLocalState() {
     #expect(ThemeSnapshotTrait.current == .dark)

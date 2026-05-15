@@ -4,9 +4,9 @@ import Testing
 
 struct ResolvedSnapshotRuntimeStateTests {
   @Test
-  func defaultsMatchTheApprovedSpec() {
+  func defaultsMatchTheApprovedSpec() throws {
     let runtime = ResolvedSnapshotRuntimeState.current
-    let defaultSize = try! #require(runtime.sizes.first)
+    let defaultSize = try #require(runtime.sizes.first)
 
     #expect(runtime.theme == .all)
     #expect(runtime.strategy == .image)
