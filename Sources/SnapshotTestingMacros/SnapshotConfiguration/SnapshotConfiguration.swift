@@ -1,45 +1,39 @@
 import Foundation
 
-/// A type to define logical variants of snapshot tests that share common setup.
+/// Names and carries a parameterised snapshot case for native Swift Testing.
 ///
-/// Similar to parameterized testing, configurations allow you to run the same test with varying inputs.
+/// Pass `SnapshotConfiguration` values to `@Test(arguments:)`, then use
+/// `#expectSnapshot(configuration) { ... }` to build the snapshot value.
 ///
-/// For example, you might use a snapshot configuration for an array of string values:
 /// ```swift
-/// @SnapshotSuite
+/// @Suite(.theme(.all), .sizes(.minimum))
 /// struct MySnapshots {
-///
-///   @SnapshotTest(
-///     configurations: [
-///       SnapshotConfiguration(name: "Populated", value: "some_string"),
-///       SnapshotConfiguration(name: "Empty", value: ""),
-///       SnapshotConfiguration(name: "Nil", value: nil),
-///     ]
-///   )
-///   func myView(input: String?) -> some View {
-///     Text("value: \(input ?? "<nil>")")
+///   @Test(arguments: [
+///     SnapshotConfiguration(name: "populated", value: "some_string"),
+///     SnapshotConfiguration(name: "empty", value: ""),
+///     SnapshotConfiguration(name: "nil", value: nil),
+///   ])
+///   func myView(configuration: SnapshotConfiguration<String?>) {
+///     #expectSnapshot(configuration) { input in
+///       Text("value: \(input ?? "<nil>")")
+///     }
 ///   }
 /// }
 /// ```
 ///
-/// You can also pass more complex types to `value`, including tuples.
+/// Tuple-2 and tuple-3 values are unpacked into the builder closure parameters.
 ///
-/// Tuples get unpacked in to arguments when the test function is invoked.
-///
-/// In the below the `value` has the tuple `(Int, String)` which is then unpacked in to the function arguments as `myView(int: Int, description: String)`:
 /// ```swift
-/// @SnapshotSuite
-/// struct MySnapshots {
-///
-///   @SnapshotTest(
-///     configurations: [
-///       SnapshotConfiguration(name: "One", value: (1, "one")),
-///       SnapshotConfiguration(name: "Two", value: (2, "two")),
-///       SnapshotConfiguration(name: "Three", value: (3, "three")),
-///     ]
-///   )
-///   func myView(int: Int, description: String) -> some View {
-///     Text("\(int.formatted()) == \(description)")
+/// @Suite(.theme(.all), .sizes(.minimum))
+/// struct TupleSnapshots {
+///   @Test(arguments: [
+///     SnapshotConfiguration(name: "one", value: (1, "one")),
+///     SnapshotConfiguration(name: "two", value: (2, "two")),
+///   ])
+///   func myView(configuration: SnapshotConfiguration<(Int, String)>) {
+///     #expectSnapshot(configuration) { int, description in
+///       Text("\(int.formatted()) == \(description)")
+///     }
 ///   }
 /// }
 /// ```

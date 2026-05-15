@@ -23,11 +23,13 @@ extension SnapshotTrait where Self == PaddingSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.padding(.all, 16))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.padding(.all, 16))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func padding(
@@ -44,11 +46,13 @@ extension SnapshotTrait where Self == PaddingSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.padding(20))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.padding(20))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func padding(

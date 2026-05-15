@@ -8,11 +8,13 @@ extension SnapshotTrait where Self == StrategySnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.strategy(.image))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.strategy(.image))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func strategy(

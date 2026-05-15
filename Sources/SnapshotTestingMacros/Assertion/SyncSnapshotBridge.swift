@@ -24,7 +24,8 @@ enum SyncSnapshotBridge {
         resultBox.lock.withLock {
           resultBox.value = .success(())
         }
-      } catch {
+      }
+      catch {
         resultBox.lock.withLock {
           resultBox.value = .failure(error)
         }

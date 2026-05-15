@@ -92,8 +92,7 @@ let package = Package(
 
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
         .product(name: "MacroTesting", package: "swift-macro-testing"),
-      ],
-      exclude: ["SnapshotSuite", "SnapshotTest"]
+      ]
     ),
 
     /*
@@ -113,8 +112,7 @@ let package = Package(
         "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
-      ],
-      exclude: ["SnapshotSuite", "SnapshotTest", "Views"]
+      ]
     ),
 
     /*
@@ -126,8 +124,7 @@ let package = Package(
         "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
-      ],
-      exclude: ["Playground.swift"]
+      ]
     ),
 
     /*
@@ -141,8 +138,7 @@ let package = Package(
         "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
-      ],
-      exclude: ["RepetitionTests.swift"]
+      ]
     ),
 
     /*

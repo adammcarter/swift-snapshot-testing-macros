@@ -1,80 +1,101 @@
 # Usage
 
-`SnapshotTestingMacros` is a thin layer over [swift-testing](https://github.com/swiftlang/swift-testing) and [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing) to allow for macro based snapshots using a syntax similar to Swift Testing.
+The preferred API is native Swift Testing plus `#expectSnapshot(...)`.
 
-Just as Swift Testing has `@Suite` and `@Test`, `SnapshotTestingMacros` uses `@SnapshotSuite` and `@SnapshotTest` to mark up code.
-
-This allows for snapshots to quickly be created by simply marking up functions that return views.
-
-## Example code
-
-In the simplest case this is all that's needed for a snapshot test:
+## Preferred shape
 
 ```swift
-// ✅ Create a simple snapshot test for some SwiftUI text.
+import SnapshotTestingMacros
+import SwiftUI
+import Testing
 
-@Suite
-@SnapshotSuite
+@Suite(.theme(.all), .sizes(.minimum))
 struct MySnapshots {
-
-  @SnapshotTest
-  func myView() -> some View {
-    Text("Some text")
+  @Test
+  func myView() {
+    #expectSnapshot(Text("Some text"))
   }
 }
 ```
 
-> Note that while `@Suite` isn't explicitly needed to run the snapshots, it's currently recommneded so Xcode can pickup the generated Suite inside the macro. Due to macro limitations it seems that Xcode cannot see Suites when they're embedded inside macro expansion code.
+## Named snapshots
 
-## Async and Throws support
-
-Snapshot tests can also be `async` and/or `throws`, allowing you to perform asynchronous work or throw errors within your snapshot generation logic.
+`@Test("...")` changes the test's display name in Swift Testing output. `named:` changes the snapshot artifact name on disk.
 
 ```swift
-@Suite
-@SnapshotSuite
-struct AsyncSnapshots {
-
-  @SnapshotTest
-  func asyncView() async throws -> some View {
-    let data = try await fetchData()
-    return MyView(data: data)
+@Suite(.theme(.all), .sizes(.minimum))
+struct ProfileCardSnapshots {
+  @Test("Profile card")
+  func compactCard() {
+    #expectSnapshot(ProfileCard(), named: "compact")
   }
 }
 ```
 
-## Explicit names
+## SwiftUI closure forms
 
-By default, snapshots have a display name based on the name of the function that makes the view, but this can be overriden for more user friendly names.
-
-Just like Swift Testing the `@SnapshotTest` macro can take a display name as its first argument:
+SwiftUI supports closure-backed snapshot generation when you want the assertion to own the value creation:
 
 ```swift
-// ✅ Use explicit names for test
+@Suite(.theme(.all), .sizes(.minimum))
+struct ClosureSnapshots {
+  @Test
+  func syncClosure() {
+    #expectSnapshot(named: "sync-closure") {
+      Text("Sync closure")
+    }
+  }
 
-@Suite
-@SnapshotSuite
-struct MySnapshots {
+  @Test
+  func throwingClosure() throws {
+    try #expectSnapshot(named: "throwing-closure") {
+      Text("Throwing closure")
+    }
+  }
 
-  @SnapshotTest("Sample text") // ⬅️ Added display name
-  func myView() -> some View {
-    Text("Some text")
+  @Test
+  func asyncClosure() async {
+    await #expectSnapshot(named: "async-closure") {
+      Text("Async closure")
+    }
+  }
+
+  @Test
+  func asyncThrowingClosure() async throws {
+    try await #expectSnapshot(named: "async-throwing-closure") {
+      Text("Async throwing closure")
+    }
   }
 }
 ```
 
-This allows tests to adopt these display names in the generated file name for the snapshot images.
+## UIKit and AppKit direct values
 
-<details>
-<summary>Sample code renderings</summary>
+UIKit and AppKit support the direct-value overloads in the native API:
 
-| Theme | Light mode | Dark mode |
-|--:|-|-|
-| Image | ![](https://github.com/user-attachments/assets/ae13d955-a284-42b9-8977-bd57ba625d2d) | ![](https://github.com/user-attachments/assets/fa4cca2e-8391-485a-b959-0989d1dc1eea) |
-| Filename | `Sample-text_min-size_light.1.png` | `Sample-text_min-size_dark.1.png` |
+```swift
+import SnapshotTestingMacros
+import Testing
 
-_Note how the filenames now use the 'Sample-text' display name for their prefix._
+@Suite(.theme(.all), .sizes(.minimum))
+struct PlatformSnapshots {
+  @Test
+  func profileController() {
+    #expectSnapshot(makeProfileController())
+  }
+}
+```
 
-</details>
+For these platform views, the recommended pattern is:
 
-> ⚠️ `@SnapshotSuite` can also have a display name but this is currently unused. There's future plans to use this as potentially the folder name for the snapshots and (if/when Xcode supports it) overloading the display name of the Suites so it can be seen in the Xcode GUI in the Test Navigator.
+1. Keep the test itself as a regular `@Test`.
+2. Build the view or controller in a helper expression.
+3. Pass that expression directly to `#expectSnapshot(...)`.
+
+That keeps the call site native while still creating the platform view on the main actor inside the snapshot operation.
+
+In v1, UIKit and AppKit support the direct-value overloads only. Closure forms, `SnapshotConfiguration`, and `argument:` helpers remain SwiftUI-only.
+
+## Legacy macros
+
+`@SnapshotSuite` and `@SnapshotTest` are deprecated. See [MIGRATION.md](../MIGRATION.md) for before-and-after examples.

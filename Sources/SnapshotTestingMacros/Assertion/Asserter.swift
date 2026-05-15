@@ -16,7 +16,8 @@ struct Asserter {
         testCase: Test.Case.current,
         performing: Self.makeScopedAssertionOperation(requests: requests)
       )
-    } else {
+    }
+    else {
       await MainActor.run {
         SnapshotTesting.withSnapshotTesting(
           record: RecordSnapshotTrait.current,

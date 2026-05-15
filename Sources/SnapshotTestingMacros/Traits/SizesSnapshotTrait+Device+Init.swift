@@ -10,14 +10,16 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.sizes(devices:
+  ///   @Test(.sizes(devices:
   ///     .iPhoneX,
   ///     .iPhone12
   ///   ))
-  ///   func myView() -> some View { ... }
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func sizes(

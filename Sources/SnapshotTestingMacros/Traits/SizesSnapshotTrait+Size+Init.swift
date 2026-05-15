@@ -8,14 +8,16 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.sizes(
+  ///   @Test(.sizes(
   ///     .init(width: .fixed(300), height: .fixed(200)),
   ///     .init(width: .fixed(400), height: .fixed(300))
   ///   ))
-  ///   func myView() -> some View { ... }
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func sizes(
@@ -31,11 +33,13 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.sizes([.init(width: .fixed(300), height: .fixed(200))]))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.sizes([.init(width: .fixed(300), height: .fixed(200))]))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func sizes(

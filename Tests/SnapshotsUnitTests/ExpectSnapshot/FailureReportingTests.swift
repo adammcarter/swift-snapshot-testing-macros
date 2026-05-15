@@ -14,10 +14,10 @@ struct FailureReportingTests {
       base: MockAsserter(
         errorToThrow: SnapshotError(
           message: """
-          snapshot mismatch: logged-out_profileCard_dark
+            snapshot mismatch: logged-out_profileCard_dark
 
-          ksdiff "/tmp/reference.png" "/tmp/failure.png"
-          """
+            ksdiff "/tmp/reference.png" "/tmp/failure.png"
+            """
         )
       ),
       recordIssue: { message, _, _, filePath, line, column in

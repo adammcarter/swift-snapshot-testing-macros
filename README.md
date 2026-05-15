@@ -1,52 +1,81 @@
 [![Snapshot Tests](https://github.com/adammcarter/swift-snapshot-testing-macros/actions/workflows/run-tests.yaml/badge.svg)](https://github.com/adammcarter/swift-snapshot-testing-macros/actions/workflows/run-tests.yaml)
 
-# Overview
+# SnapshotTestingMacros
 
-`SnapshotTestingMacros` is a thin layer over [swift-testing](https://github.com/swiftlang/swift-testing) and [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing) to allow for macro based snapshots using a syntax similar to Swift Testing.
+`SnapshotTestingMacros` adds snapshot assertions and snapshot-specific traits to [Swift Testing](https://github.com/swiftlang/swift-testing) while continuing to use [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing) as the snapshot engine under the hood.
 
-Just as Swift Testing has `@Suite` and `@Test`, `SnapshotTestingMacros` uses `@SnapshotSuite` and `@SnapshotTest` to mark up code.
+The preferred API is native Swift Testing:
 
-This allows for snapshots to quickly be created by simply marking up functions that return views.
+- `@Suite`
+- `@Test`
+- `#expectSnapshot(...)`
+- Snapshot traits such as `.theme(...)`, `.sizes(...)`, `.padding(...)`, `.record(...)`, and `.strategy(...)`
 
-# Example code
+The legacy `@SnapshotSuite` and `@SnapshotTest` macros remain available as a migration surface, but they are deprecated.
 
-In the simplest case this is all that's needed for a snapshot test:
+## Quick start
 
 ```swift
-// ✅ Create a simple snapshot test for some SwiftUI text.
+import SnapshotTestingMacros
+import SwiftUI
+import Testing
 
-@Suite
-@SnapshotSuite
-struct MySnapshots {
-
-  @SnapshotTest
-  func myView() -> some View {
-    Text("Some text")
+@Suite(.theme(.all), .sizes(.minimum))
+struct ProfileCardSnapshots {
+  @Test
+  func profileCard() {
+    #expectSnapshot(ProfileCard())
   }
 }
 ```
 
-> Note that while `@Suite` isn't explicitly needed to run the snapshots, it's currently recommneded so Xcode can pickup the generated Suite inside the macro. Due to macro limitations it seems that Xcode cannot see Suites when they're embedded inside macro expansion code.
+## Supported native surface
 
-# Documentation
+| Surface | Support |
+| --- | --- |
+| SwiftUI | Direct-value snapshots, `named:`, closure forms, `SnapshotConfiguration`, and `argument:` helpers |
+| UIKit / AppKit | Direct-value snapshots for `UIView` / `NSView` and `UIViewController` / `NSViewController` |
 
-- [Usage](Documentation/Usage.md) - Basic usage, example code, and async support.
-- [Traits](Documentation/Traits.md) - Customising snapshots with traits (sizes, themes, padding, etc.).
-- [Parameterised Tests](Documentation/Parameterised.md) - Creating snapshots for multiple configurations.
+In v1, the convenience builder forms are SwiftUI-only. UIKit and AppKit callers should build the view or controller first and then pass it to the direct-value `#expectSnapshot(...)` overload.
 
-# Supported views
+For UIKit and AppKit, keep the test itself as a regular `@Test` and pass a helper-backed expression such as `#expectSnapshot(makeViewController())`. The helper expression is evaluated on the main actor inside the snapshot operation.
 
-- **SwiftUI**: Any view conforming to `View`
-- **UIKit** (iOS, tvOS, visionOS): `UIView`, `UIViewController`
-- **AppKit** (macOS): `NSView`, `NSViewController`
+## Documentation
 
+- [Usage](Documentation/Usage.md)
+- [Traits](Documentation/Traits.md)
+- [Parameterised tests](Documentation/Parameterised.md)
+- [Migration](MIGRATION.md)
 
-# Running tests
+## Development
 
-For detailed instructions on running tests, please see [CONTRIBUTING.md](CONTRIBUTING.md).
+For local setup and detailed contributor guidance, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-# Contributing
+Common commands:
 
-This project uses [mise](https://mise.jdx.dev) to manage development tools.
+```shell
+mise run lint
+swift test
+```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed setup and guidelines.
+```shell
+xcodebuild test \
+  -scheme SnapshotsUnitTests \
+  -destination 'platform=macOS'
+```
+
+```shell
+xcodebuild test \
+  -scheme SnapshotsIntegrationTests \
+  -destination "platform=iOS Simulator,name=<available-simulator>,OS=<installed-os>,arch=arm64"
+```
+
+```shell
+xcodebuild build-for-testing \
+  -scheme SnapshotsUnitTests \
+  -destination 'platform=macOS'
+
+xcodebuild build-for-testing \
+  -scheme SnapshotsIntegrationTests \
+  -destination 'platform=macOS'
+```

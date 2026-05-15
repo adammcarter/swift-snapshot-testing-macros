@@ -8,11 +8,13 @@ extension SnapshotTrait where Self == DiffToolSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.diffTool(.ksdiff))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.diffTool(.ksdiff))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func diffTool(_ diffTool: DiffToolSnapshotTrait.DiffTool) -> Self {

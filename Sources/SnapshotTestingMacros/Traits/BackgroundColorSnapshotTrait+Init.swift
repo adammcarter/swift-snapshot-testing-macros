@@ -12,11 +12,13 @@ extension SnapshotTrait where Self == BackgroundColorSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.backgroundColor(uiColor: .red))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.backgroundColor(uiColor: .red))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func backgroundColor(
@@ -32,11 +34,13 @@ extension SnapshotTrait where Self == BackgroundColorSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.backgroundColor(nsColor: .red))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.backgroundColor(nsColor: .red))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func backgroundColor(
@@ -54,11 +58,13 @@ extension SnapshotTrait where Self == BackgroundColorSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.backgroundColor(.blue))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.backgroundColor(.blue))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func backgroundColor(

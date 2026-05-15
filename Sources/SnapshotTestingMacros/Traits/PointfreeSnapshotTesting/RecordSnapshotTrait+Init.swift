@@ -8,11 +8,13 @@ extension SnapshotTrait where Self == RecordSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.record(true))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.record(true))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func record(_ record: Bool) -> Self {
@@ -26,11 +28,13 @@ extension SnapshotTrait where Self == RecordSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.record(.all))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.record(.all))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func record(_ record: RecordSnapshotTrait.RecordKind) -> Self {
@@ -45,11 +49,13 @@ extension SnapshotTrait where Self == RecordSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.record)
-  ///   func myView() -> some View { ... }
+  ///   @Test(.record)
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static var record: Self {

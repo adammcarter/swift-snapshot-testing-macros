@@ -60,7 +60,8 @@ enum TaskLocalSnapshotExecutionContext {
         cache.contexts[key] = created
         return created
       }
-    } else {
+    }
+    else {
       context = SnapshotExecutionContext(function: function)
     }
 

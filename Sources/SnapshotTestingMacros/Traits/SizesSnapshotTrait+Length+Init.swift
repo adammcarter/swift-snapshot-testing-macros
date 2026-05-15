@@ -11,24 +11,32 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
   ///   // explicit `.fixed()`
-  ///   @SnapshotTest(.sizes(width: .fixed(300), height: .fixed(200)))
-  ///   func fixedLength() -> some View { ... }
+  ///   @Test(.sizes(width: .fixed(300), height: .fixed(200)))
+  ///   func fixedLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // integer literal
-  ///   @SnapshotTest(.sizes(width: 300, height: 200))
-  ///   func integerLiteralLength() -> some View { ... }
+  ///   @Test(.sizes(width: 300, height: 200))
+  ///   func integerLiteralLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // float literal
-  ///   @SnapshotTest(.sizes(width: 300.0, height: 200.0))
-  ///   func floatingPointLiteralLength() -> some View { ... }
+  ///   @Test(.sizes(width: 300.0, height: 200.0))
+  ///   func floatingPointLiteralLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // explicit scale
-  ///   @SnapshotTest(.sizes(width: 300, height: 200, scale: 2.0))
-  ///   func scaledLength() -> some View { ... }
+  ///   @Test(.sizes(width: 300, height: 200, scale: 2.0))
+  ///   func scaledLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func sizes(
@@ -52,24 +60,32 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
   ///   // explicit `.fixed()`
-  ///   @SnapshotTest(.sizes(width: .fixed(300)))
-  ///   func fixedLengthWidth() -> some View { ... }
+  ///   @Test(.sizes(width: .fixed(300)))
+  ///   func fixedLengthWidth() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // integer literal
-  ///   @SnapshotTest(.sizes(width: 300))
-  ///   func integerLiteralWidth() -> some View { ... }
+  ///   @Test(.sizes(width: 300))
+  ///   func integerLiteralWidth() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // float literal
-  ///   @SnapshotTest(.sizes(width: 300.0))
-  ///   func floatingPointLiteralWidth() -> some View { ... }
+  ///   @Test(.sizes(width: 300.0))
+  ///   func floatingPointLiteralWidth() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // explicit scale
-  ///   @SnapshotTest(.sizes(width: 300, scale: 2.0))
-  ///   func scaledWidth() -> some View { ... }
+  ///   @Test(.sizes(width: 300, scale: 2.0))
+  ///   func scaledWidth() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func sizes(
@@ -88,24 +104,32 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
   ///   // explicit `.fixed()`
-  ///   @SnapshotTest(.sizes(height: .fixed(200)))
-  ///   func fixedLengthHeight() -> some View { ... }
+  ///   @Test(.sizes(height: .fixed(200)))
+  ///   func fixedLengthHeight() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // integer literal
-  ///   @SnapshotTest(.sizes(height: 200))
-  ///   func integerLiteralHeight() -> some View { ... }
+  ///   @Test(.sizes(height: 200))
+  ///   func integerLiteralHeight() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // float literal
-  ///   @SnapshotTest(.sizes(height: 200.0))
-  ///   func floatingPointLiteralHeight() -> some View { ... }
+  ///   @Test(.sizes(height: 200.0))
+  ///   func floatingPointLiteralHeight() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // explicit scale
-  ///   @SnapshotTest(.sizes(height: 200, scale: 2.0))
-  ///   func scaledHeight() -> some View { ... }
+  ///   @Test(.sizes(height: 200, scale: 2.0))
+  ///   func scaledHeight() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func sizes(
@@ -124,15 +148,19 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.sizes(.minimum))
-  ///   func minimumLength() -> some View { ... }
+  ///   @Test(.sizes(.minimum))
+  ///   func minimumLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // explicit scale
-  ///   @SnapshotTest(.sizes(.minimum, scale: 2.0))
-  ///   func scaledMinimumLength() -> some View { ... }
+  ///   @Test(.sizes(.minimum, scale: 2.0))
+  ///   func scaledMinimumLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func sizes(

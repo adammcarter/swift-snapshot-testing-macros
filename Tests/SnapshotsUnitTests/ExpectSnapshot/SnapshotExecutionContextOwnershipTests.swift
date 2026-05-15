@@ -37,7 +37,8 @@ struct SnapshotExecutionContextOwnershipTests {
     ) {
       await Task.detached {
         TaskLocalSnapshotExecutionContext.current != nil
-      }.value
+      }
+      .value
     }
 
     #expect(inherited == false)
@@ -56,7 +57,8 @@ struct SnapshotExecutionContextOwnershipTests {
     let parent = TaskLocalSnapshotExecutionContext.withCurrent(function: "profileCard()") { $0 }
     let child = await Task {
       TaskLocalSnapshotExecutionContext.withCurrent(function: "profileCard()") { $0 }
-    }.value
+    }
+    .value
 
     #expect(parent !== child)
   }
