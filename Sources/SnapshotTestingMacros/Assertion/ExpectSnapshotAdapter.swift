@@ -185,6 +185,84 @@ enum ExpectSnapshotAdapter {
     }
   }
 
+  static func run(
+    view makeView: @escaping @MainActor () -> SnapshotView,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) {
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+
+    TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      let runtime = ResolvedSnapshotRuntimeState.current
+      let displayName = context.resolvedAssertionName(named: named)
+
+      SyncSnapshotBridge.run(
+        {
+          let generator = SnapshotViewGenerator(
+            displayName: displayName,
+            configuration: .none,
+            makeValue: { (_: Void) async throws in makeView() },
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+          )
+
+          try await runtime.withAppliedValues {
+            try await assertSnapshot(with: generator)
+          }
+        },
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+  }
+
+  static func run(
+    viewController makeViewController: @escaping @MainActor () -> SnapshotViewController,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) {
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+
+    TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      let runtime = ResolvedSnapshotRuntimeState.current
+      let displayName = context.resolvedAssertionName(named: named)
+
+      SyncSnapshotBridge.run(
+        {
+          let generator = SnapshotViewGenerator(
+            displayName: displayName,
+            configuration: .none,
+            makeValue: { (_: Void) async throws in makeViewController() },
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+          )
+
+          try await runtime.withAppliedValues {
+            try await assertSnapshot(with: generator)
+          }
+        },
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+  }
+
   static func run<V: View, ConfigurationValue: Sendable>(
     configuration: SnapshotConfiguration<ConfigurationValue>,
     named: String?,

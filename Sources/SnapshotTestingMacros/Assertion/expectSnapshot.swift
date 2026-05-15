@@ -24,6 +24,50 @@ public func __expectSnapshot<V: View>(
 
 @_documentation(visibility: private)
 // swiftlint:disable:next identifier_name
+public func __expectSnapshot(
+  _ value: @autoclosure @escaping @MainActor () -> SnapshotView,
+  named: String? = nil,
+  function: StaticString = #function,
+  fileID: StaticString = #fileID,
+  filePath: StaticString = #filePath,
+  line: UInt = #line,
+  column: UInt = #column
+) {
+  ExpectSnapshotAdapter.run(
+    view: value,
+    named: named,
+    function: function,
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column
+  )
+}
+
+@_documentation(visibility: private)
+// swiftlint:disable:next identifier_name
+public func __expectSnapshot(
+  _ value: @autoclosure @escaping @MainActor () -> SnapshotViewController,
+  named: String? = nil,
+  function: StaticString = #function,
+  fileID: StaticString = #fileID,
+  filePath: StaticString = #filePath,
+  line: UInt = #line,
+  column: UInt = #column
+) {
+  ExpectSnapshotAdapter.run(
+    viewController: value,
+    named: named,
+    function: function,
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column
+  )
+}
+
+@_documentation(visibility: private)
+// swiftlint:disable:next identifier_name
 public func __expectSnapshot<V: View>(
   named: String? = nil,
   function: StaticString = #function,
