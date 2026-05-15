@@ -25,8 +25,34 @@ enum ExpectSnapshotAdapter {
       return explicitName
     }
 
-    let normalized = SnapshotNameNormalizer.folderComponent(from: String(describing: configuration.value))
-    return normalized.isEmpty ? "snapshot" : normalized
+    return DerivedSnapshotNames.argumentName(from: configuration.value)
+  }
+
+  static func run<V: View, Argument: Sendable>(
+    argument: Argument,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping (Argument) -> V
+  ) {
+    let configuration = SnapshotConfiguration(
+      name: DerivedSnapshotNames.argumentName(from: argument),
+      value: argument
+    )
+
+    run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: makeValue
+    )
   }
 
   static func run<V: View>(

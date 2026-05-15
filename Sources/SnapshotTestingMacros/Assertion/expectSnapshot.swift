@@ -24,6 +24,30 @@ public func __expectSnapshot<V: View>(
 
 @_documentation(visibility: private)
 // swiftlint:disable:next identifier_name
+public func __expectSnapshot<V: View, Argument: Sendable>(
+  argument: Argument,
+  named: String? = nil,
+  function: StaticString = #function,
+  fileID: StaticString = #fileID,
+  filePath: StaticString = #filePath,
+  line: UInt = #line,
+  column: UInt = #column,
+  makeValue: @escaping (Argument) -> V
+) {
+  ExpectSnapshotAdapter.run(
+    argument: argument,
+    named: named,
+    function: function,
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column,
+    makeValue: makeValue
+  )
+}
+
+@_documentation(visibility: private)
+// swiftlint:disable:next identifier_name
 public func __expectSnapshot<V: View, ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
   named: String? = nil,

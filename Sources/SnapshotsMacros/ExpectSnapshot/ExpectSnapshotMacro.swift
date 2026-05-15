@@ -8,8 +8,9 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
     in context: some MacroExpansionContext
   ) throws -> ExprSyntax {
     let unlabeledArguments = node.arguments.filter { $0.label == nil }
+    let argumentValue = node.arguments.first { $0.label?.text == "argument" }?.expression
 
-    guard let value = unlabeledArguments.first?.expression else {
+    guard let value = unlabeledArguments.first?.expression ?? argumentValue else {
       context.diagnose(
         DiagnosticFactory.generalErrorMessage(
           message: "#expectSnapshot requires an unlabeled value argument.",
@@ -34,11 +35,16 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
           makeValue: \($0)
         """
       } ?? ""
+    let valueArgument = if argumentValue == nil {
+      "\(value)"
+    } else {
+      "argument: \(value)"
+    }
 
     return ExprSyntax(
       stringLiteral: """
         SnapshotTestingMacros.__expectSnapshot(
-          \(value),
+          \(valueArgument),
           named: \(named),
           function: #function,
           fileID: #fileID,
