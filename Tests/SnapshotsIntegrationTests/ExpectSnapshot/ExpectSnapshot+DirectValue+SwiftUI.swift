@@ -7,4 +7,9 @@ struct ExpectSnapshotDirectValueSwiftUITests {
   func swiftUiView() {
     #expectSnapshot(Text("Some SwiftUI text"))
   }
+
+  @Test
+  func namedSwiftUiView() {
+    #expectSnapshot(Text("Some SwiftUI text"), named: "custom-name")
+  }
 }
