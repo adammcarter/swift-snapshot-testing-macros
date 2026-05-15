@@ -19,6 +19,13 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
     }
 
     let named = node.arguments.first { $0.label?.text == "named" }?.expression ?? "nil"
+    let makeValue =
+      node.trailingClosure.map {
+        """
+        ,
+          makeValue: \($0)
+        """
+      } ?? ""
 
     return ExprSyntax(
       stringLiteral: """
@@ -29,7 +36,7 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
           fileID: #fileID,
           filePath: #filePath,
           line: #line,
-          column: #column
+          column: #column\(makeValue)
         )
         """
     )

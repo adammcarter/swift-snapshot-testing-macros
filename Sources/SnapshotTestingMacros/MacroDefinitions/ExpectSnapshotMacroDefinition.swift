@@ -5,3 +5,24 @@ public macro expectSnapshot<V: SwiftUI.View>(
   _ value: V,
   named: String? = nil
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
+
+@freestanding(expression)
+public macro expectSnapshot<V: SwiftUI.View, ConfigurationValue: Sendable>(
+  _ configuration: SnapshotConfiguration<ConfigurationValue>,
+  named: String? = nil,
+  _ makeValue: @escaping (ConfigurationValue) -> V
+) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
+
+@freestanding(expression)
+public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable>(
+  _ configuration: SnapshotConfiguration<(A, B)>,
+  named: String? = nil,
+  _ makeValue: @escaping (A, B) -> V
+) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
+
+@freestanding(expression)
+public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable, C: Sendable>(
+  _ configuration: SnapshotConfiguration<(A, B, C)>,
+  named: String? = nil,
+  _ makeValue: @escaping (A, B, C) -> V
+) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")

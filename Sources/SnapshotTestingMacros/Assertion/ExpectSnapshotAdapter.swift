@@ -9,7 +9,26 @@ private final class SnapshotValueBox<V>: @unchecked Sendable {
   }
 }
 
+private final class SnapshotMakeValueBox<ConfigurationValue: Sendable, V>: @unchecked Sendable {
+  let makeValue: (ConfigurationValue) -> V
+
+  init(_ makeValue: @escaping (ConfigurationValue) -> V) {
+    self.makeValue = makeValue
+  }
+}
+
 enum ExpectSnapshotAdapter {
+  static func configurationName<T: Sendable>(
+    for configuration: SnapshotConfiguration<T>
+  ) -> String? {
+    if let explicitName = configuration.name {
+      return explicitName
+    }
+
+    let normalized = SnapshotNameNormalizer.folderComponent(from: String(describing: configuration.value))
+    return normalized.isEmpty ? "snapshot" : normalized
+  }
+
   static func run<V: View>(
     _ value: sending V,
     named: String?,
@@ -48,6 +67,101 @@ enum ExpectSnapshotAdapter {
         column: column
       )
     }
+  }
+
+  static func run<V: View, ConfigurationValue: Sendable>(
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping (ConfigurationValue) -> V
+  ) {
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+
+    let resolvedConfiguration = SnapshotConfiguration(
+      name: configurationName(for: configuration),
+      value: configuration.value
+    )
+    let makeValueBox = SnapshotMakeValueBox(makeValue)
+
+    TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      let runtime = ResolvedSnapshotRuntimeState.current
+
+      SyncSnapshotBridge.run(
+        {
+          let generator = SnapshotViewGenerator(
+            displayName: context.resolvedAssertionName(named: named),
+            configuration: resolvedConfiguration,
+            makeValue: { value async throws in
+              makeValueBox.makeValue(value)
+            },
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+          )
+
+          try await runtime.withAppliedValues {
+            try await assertSnapshot(with: generator)
+          }
+        },
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+  }
+
+  static func run<V: View, A: Sendable, B: Sendable>(
+    configuration: SnapshotConfiguration<(A, B)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping (A, B) -> V
+  ) {
+    run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in
+        makeValue(value.0, value.1)
+      }
+    )
+  }
+
+  static func run<V: View, A: Sendable, B: Sendable, C: Sendable>(
+    configuration: SnapshotConfiguration<(A, B, C)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping (A, B, C) -> V
+  ) {
+    run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in
+        makeValue(value.0, value.1, value.2)
+      }
+    )
   }
 
   static func displayName(named: String?, baseName: String) -> String {
