@@ -1,14 +1,16 @@
 import Foundation
 
+public enum ProjectScannerError: Error, Equatable {
+  case invalidProjectRoot(String)
+}
+
 public struct ScannedFile: Equatable {
   public let absolutePath: String
   public let relativePath: String
-  public let contents: String
 
-  public init(absolutePath: String, relativePath: String, contents: String) {
+  public init(absolutePath: String, relativePath: String) {
     self.absolutePath = absolutePath
     self.relativePath = relativePath
-    self.contents = contents
   }
 }
 
@@ -33,6 +35,7 @@ public struct ProjectScanner {
   public func scan(projectRoot: String, maxFileSizeBytes: Int) throws -> ScanResult {
     let rootURL = URL(fileURLWithPath: projectRoot).standardizedFileURL.resolvingSymlinksInPath()
     let fileManager = FileManager.default
+    try validateProjectRoot(rootURL, originalProjectRoot: projectRoot, fileManager: fileManager)
 
     var swiftFiles: [(url: URL, relativePath: String)] = []
     collectSwiftFiles(in: rootURL, rootURL: rootURL, fileManager: fileManager, output: &swiftFiles)
@@ -56,13 +59,31 @@ public struct ProjectScanner {
       candidates.append(
         ScannedFile(
           absolutePath: file.url.path,
-          relativePath: file.relativePath,
-          contents: contents
+          relativePath: file.relativePath
         )
       )
     }
 
     return ScanResult(filesScanned: filesScanned, candidateFiles: candidates)
+  }
+
+  private func validateProjectRoot(_ rootURL: URL, originalProjectRoot: String, fileManager: FileManager) throws {
+    let path = rootURL.path
+    var isDirectory = ObjCBool(false)
+    guard fileManager.fileExists(atPath: path, isDirectory: &isDirectory), isDirectory.boolValue else {
+      throw ProjectScannerError.invalidProjectRoot(originalProjectRoot)
+    }
+
+    guard
+      let values = try? rootURL.resourceValues(forKeys: [.isReadableKey]),
+      values.isReadable == true
+    else {
+      throw ProjectScannerError.invalidProjectRoot(originalProjectRoot)
+    }
+
+    guard (try? fileManager.contentsOfDirectory(atPath: path)) != nil else {
+      throw ProjectScannerError.invalidProjectRoot(originalProjectRoot)
+    }
   }
 
   private func collectSwiftFiles(

@@ -98,4 +98,41 @@ struct ProjectScannerTests {
     #expect(result.filesScanned == 2)
     #expect(result.candidateFiles.map(\.relativePath) == ["Tests/Readable.swift"])
   }
+
+  @Test
+  func throwsDedicatedErrorWhenProjectRootDoesNotExist() {
+    let missingRoot = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+      .appendingPathComponent("missing-root-\(UUID().uuidString)", isDirectory: true).path
+
+    let scanner = ProjectScanner()
+
+    do {
+      _ = try scanner.scan(projectRoot: missingRoot, maxFileSizeBytes: 2_000_000)
+      Issue.record("Expected scan to throw for missing root")
+    } catch let error as ProjectScannerError {
+      #expect(error == .invalidProjectRoot(missingRoot))
+    } catch {
+      Issue.record("Expected ProjectScannerError, got \(error)")
+    }
+  }
+
+  @Test
+  func throwsDedicatedErrorWhenProjectRootIsUnreadable() throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    try fixture.setPOSIXPermissions(path: ".", permissions: 0o000)
+    defer { try? fixture.setPOSIXPermissions(path: ".", permissions: 0o700) }
+
+    let scanner = ProjectScanner()
+
+    do {
+      _ = try scanner.scan(projectRoot: fixture.root, maxFileSizeBytes: 2_000_000)
+      Issue.record("Expected scan to throw for unreadable root")
+    } catch let error as ProjectScannerError {
+      #expect(error == .invalidProjectRoot(fixture.root))
+    } catch {
+      Issue.record("Expected ProjectScannerError, got \(error)")
+    }
+  }
 }

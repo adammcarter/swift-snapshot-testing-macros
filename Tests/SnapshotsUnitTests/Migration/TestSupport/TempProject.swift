@@ -24,7 +24,13 @@ struct TempProject {
   }
 
   func setPOSIXPermissions(path: String, permissions: Int) throws {
-    let filePath = URL(fileURLWithPath: root).appendingPathComponent(path).path
+    let rootURL = URL(fileURLWithPath: root)
+    let filePath: String
+    if path == "." || path.isEmpty {
+      filePath = rootURL.path
+    } else {
+      filePath = rootURL.appendingPathComponent(path).path
+    }
     try FileManager.default.setAttributes([.posixPermissions: permissions], ofItemAtPath: filePath)
   }
 
