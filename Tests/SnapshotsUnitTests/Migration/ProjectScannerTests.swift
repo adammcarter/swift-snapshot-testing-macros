@@ -66,4 +66,36 @@ struct ProjectScannerTests {
     #expect(result.filesScanned == 1)
     #expect(result.candidateFiles.map(\.relativePath) == ["Tests/Real.swift"])
   }
+
+  @Test
+  func skipsUnreadableFilesAndContinuesScanning() throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    try fixture.write(path: "Tests/Readable.swift", contents: "@SnapshotSuite struct Readable {}")
+    try fixture.write(path: "Tests/Unreadable.swift", contents: "@SnapshotTest func unreadable() {}")
+    try fixture.setPOSIXPermissions(path: "Tests/Unreadable.swift", permissions: 0o000)
+    defer { try? fixture.setPOSIXPermissions(path: "Tests/Unreadable.swift", permissions: 0o644) }
+
+    let scanner = ProjectScanner()
+    let result = try scanner.scan(projectRoot: fixture.root, maxFileSizeBytes: 2_000_000)
+
+    #expect(result.filesScanned == 2)
+    #expect(result.candidateFiles.map(\.relativePath) == ["Tests/Readable.swift"])
+  }
+
+  @Test
+  func skipsNonUTF8FilesAndContinuesScanning() throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    try fixture.write(path: "Tests/Readable.swift", contents: "@SnapshotSuite struct Readable {}")
+    try fixture.write(path: "Tests/InvalidEncoding.swift", data: Data([0xFF, 0xFE, 0xFD]))
+
+    let scanner = ProjectScanner()
+    let result = try scanner.scan(projectRoot: fixture.root, maxFileSizeBytes: 2_000_000)
+
+    #expect(result.filesScanned == 2)
+    #expect(result.candidateFiles.map(\.relativePath) == ["Tests/Readable.swift"])
+  }
 }

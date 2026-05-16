@@ -35,20 +35,22 @@ public struct ProjectScanner {
     let fileManager = FileManager.default
 
     var swiftFiles: [(url: URL, relativePath: String)] = []
-    try collectSwiftFiles(in: rootURL, rootURL: rootURL, fileManager: fileManager, output: &swiftFiles)
-
-    let orderedFiles = swiftFiles.sorted { $0.relativePath < $1.relativePath }
+    collectSwiftFiles(in: rootURL, rootURL: rootURL, fileManager: fileManager, output: &swiftFiles)
 
     var filesScanned = 0
     var candidates: [ScannedFile] = []
 
-    for file in orderedFiles {
+    for file in swiftFiles {
       filesScanned += 1
 
-      let resourceValues = try file.url.resourceValues(forKeys: [.fileSizeKey])
-      guard (resourceValues.fileSize ?? 0) <= maxFileSizeBytes else { continue }
+      guard
+        let resourceValues = try? file.url.resourceValues(forKeys: [.fileSizeKey]),
+        (resourceValues.fileSize ?? 0) <= maxFileSizeBytes
+      else {
+        continue
+      }
 
-      let contents = try String(contentsOf: file.url, encoding: .utf8)
+      guard let contents = try? String(contentsOf: file.url, encoding: .utf8) else { continue }
       guard contents.contains("@SnapshotSuite") || contents.contains("@SnapshotTest") else { continue }
 
       candidates.append(
@@ -68,24 +70,34 @@ public struct ProjectScanner {
     rootURL: URL,
     fileManager: FileManager,
     output: inout [(url: URL, relativePath: String)]
-  ) throws {
-    let entries = try fileManager.contentsOfDirectory(
-      at: directory,
-      includingPropertiesForKeys: [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey],
-      options: []
-    )
-    .sorted {
-      relativePath(for: $0, rootURL: rootURL) < relativePath(for: $1, rootURL: rootURL)
+  ) {
+    let directoryResourceKeys: Set<URLResourceKey> = [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey]
+
+    guard
+      let entries = try? fileManager.contentsOfDirectory(
+        at: directory,
+        includingPropertiesForKeys: Array(directoryResourceKeys),
+        options: []
+      )
+      .sorted(by: {
+        relativePath(for: $0, rootURL: rootURL) < relativePath(for: $1, rootURL: rootURL)
+      })
+    else {
+      return
     }
 
     for entry in entries {
       let relative = relativePath(for: entry, rootURL: rootURL)
-      let values = try entry.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey])
+      guard
+        let values = try? entry.resourceValues(forKeys: directoryResourceKeys)
+      else {
+        continue
+      }
 
       if values.isDirectory == true {
         guard values.isSymbolicLink != true else { continue }
         guard !Self.excludedDirectories.contains(entry.lastPathComponent) else { continue }
-        try collectSwiftFiles(in: entry, rootURL: rootURL, fileManager: fileManager, output: &output)
+        collectSwiftFiles(in: entry, rootURL: rootURL, fileManager: fileManager, output: &output)
         continue
       }
 

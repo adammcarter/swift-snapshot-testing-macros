@@ -12,10 +12,20 @@ struct TempProject {
 
   @discardableResult
   func write(path: String, contents: String) throws -> String {
+    try write(path: path, data: Data(contents.utf8))
+  }
+
+  @discardableResult
+  func write(path: String, data: Data) throws -> String {
     let fileURL = URL(fileURLWithPath: root).appendingPathComponent(path)
     try FileManager.default.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try contents.write(to: fileURL, atomically: true, encoding: .utf8)
+    try data.write(to: fileURL)
     return fileURL.path
+  }
+
+  func setPOSIXPermissions(path: String, permissions: Int) throws {
+    let filePath = URL(fileURLWithPath: root).appendingPathComponent(path).path
+    try FileManager.default.setAttributes([.posixPermissions: permissions], ofItemAtPath: filePath)
   }
 
   func cleanup() {
