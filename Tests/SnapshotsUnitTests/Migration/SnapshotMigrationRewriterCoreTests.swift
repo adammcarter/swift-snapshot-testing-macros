@@ -29,11 +29,11 @@ struct SnapshotMigrationRewriterCoreTests {
   }
 
   @Test
-  func reportsUnsupportedSignatureShapeWhenLegacyBodyCannotBeSafelyRewritten() throws {
+  func reportsUnsupportedSignatureShapeWhenNonParameterizedFunctionHasParameters() throws {
     let input = """
     @SnapshotSuite
     struct ProfileCardSnapshots {
-      @SnapshotTest(configurations: makeStates())
+      @SnapshotTest
       func profileCard(state: UserState) -> some View {
         return ProfileCard(state: state)
       }
@@ -43,7 +43,7 @@ struct SnapshotMigrationRewriterCoreTests {
     let result = try SnapshotMigrationRewriter().rewrite(source: input)
 
     #expect(result.reasons.contains(where: { $0.code == "unsupported-signature-shape" }))
-    #expect(result.output.contains("@SnapshotTest(configurations: makeStates())"))
-    #expect(!result.output.contains("@Test(configurations: makeStates())"))
+    #expect(result.output.contains("@SnapshotTest"))
+    #expect(!result.output.contains("@Test"))
   }
 }
