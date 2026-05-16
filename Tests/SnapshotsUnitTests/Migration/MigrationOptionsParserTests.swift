@@ -6,9 +6,7 @@ import Testing
 struct MigrationOptionsParserTests {
   @Test
   func requiresProjectRoot() {
-    #expect(throws: MigrationCLIError.self) {
-      _ = try MigrationOptionsParser.parse(arguments: [])
-    }
+    assertParseError(arguments: [], expected: .missingProjectRoot)
   }
 
   @Test
@@ -36,5 +34,38 @@ struct MigrationOptionsParserTests {
     #expect(options.keepTemp == true)
     #expect(options.failOnSkips == true)
     #expect(options.jsonReportPath == "report.json")
+  }
+
+  @Test
+  func missingProjectRootValueReturnsError() {
+    assertParseError(arguments: ["--project-root"], expected: .missingOptionValue("--project-root"))
+  }
+
+  @Test
+  func missingJsonReportValueReturnsError() {
+    assertParseError(arguments: ["--project-root", "/tmp/example", "--json-report"], expected: .missingOptionValue("--json-report"))
+  }
+
+  @Test
+  func invalidIntegerOptionReturnsError() {
+    assertParseError(arguments: ["--project-root", "/tmp/example", "--max-file-size-bytes", "abc"], expected: .invalidIntegerOption("--max-file-size-bytes"))
+    assertParseError(arguments: ["--project-root", "/tmp/example", "--max-staged-bytes", "abc"], expected: .invalidIntegerOption("--max-staged-bytes"))
+    assertParseError(arguments: ["--project-root", "/tmp/example", "--apply-lock-timeout-seconds", "abc"], expected: .invalidIntegerOption("--apply-lock-timeout-seconds"))
+  }
+
+  @Test
+  func unknownOptionReturnsDedicatedError() {
+    assertParseError(arguments: ["--project-root", "/tmp/example", "--bogus"], expected: .unknownOption("--bogus"))
+  }
+
+  private func assertParseError(arguments: [String], expected: MigrationCLIError) {
+    do {
+      _ = try MigrationOptionsParser.parse(arguments: arguments)
+      Issue.record("Expected parse to throw \(expected), but it succeeded")
+    } catch let error as MigrationCLIError {
+      #expect(error == expected)
+    } catch {
+      Issue.record("Expected MigrationCLIError \(expected), but got \(error)")
+    }
   }
 }

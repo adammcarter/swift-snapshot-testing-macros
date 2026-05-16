@@ -38,4 +38,5 @@ public enum MigrationCLIError: Error, Equatable {
   case missingProjectRoot
   case missingOptionValue(String)
   case invalidIntegerOption(String)
+  case unknownOption(String)
 }

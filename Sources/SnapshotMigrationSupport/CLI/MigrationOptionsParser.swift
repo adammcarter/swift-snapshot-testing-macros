@@ -49,7 +49,7 @@ public enum MigrationOptionsParser {
         }
         applyLockTimeoutSeconds = value
       default:
-        break
+        throw MigrationCLIError.unknownOption(arguments[index])
       }
 
       index += 1
