@@ -7,10 +7,12 @@ public enum ProjectScannerError: Error, Equatable {
 public struct ScannedFile: Equatable {
   public let absolutePath: String
   public let relativePath: String
+  public let contents: String
 
-  public init(absolutePath: String, relativePath: String) {
+  public init(absolutePath: String, relativePath: String, contents: String) {
     self.absolutePath = absolutePath
     self.relativePath = relativePath
+    self.contents = contents
   }
 }
 
@@ -59,12 +61,14 @@ public struct ProjectScanner {
       candidates.append(
         ScannedFile(
           absolutePath: file.url.path,
-          relativePath: file.relativePath
+          relativePath: file.relativePath,
+          contents: contents
         )
       )
     }
 
-    return ScanResult(filesScanned: filesScanned, candidateFiles: candidates)
+    let sortedCandidates = candidates.sorted { $0.relativePath < $1.relativePath }
+    return ScanResult(filesScanned: filesScanned, candidateFiles: sortedCandidates)
   }
 
   private func validateProjectRoot(_ rootURL: URL, originalProjectRoot: String, fileManager: FileManager) throws {

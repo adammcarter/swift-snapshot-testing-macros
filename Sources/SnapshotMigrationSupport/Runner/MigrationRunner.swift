@@ -12,16 +12,10 @@ public struct MigrationRunner {
   public init() {}
 
   public func run(options: MigrationOptions) async throws -> MigrationExitCode {
-    let scan: ScanResult
-    do {
-      scan = try ProjectScanner().scan(
-        projectRoot: options.projectRoot,
-        maxFileSizeBytes: options.maxFileSizeBytes
-      )
-    } catch is ProjectScannerError {
-      return .migrationFailure
-    }
-
+    let scan = try ProjectScanner().scan(
+      projectRoot: options.projectRoot,
+      maxFileSizeBytes: options.maxFileSizeBytes
+    )
     return scan.candidateFiles.isEmpty ? .success : .migrationFailure
   }
 }
