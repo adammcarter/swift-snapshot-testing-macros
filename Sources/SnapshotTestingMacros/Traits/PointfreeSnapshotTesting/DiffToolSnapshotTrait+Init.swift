@@ -1,6 +1,7 @@
 import Foundation
+import Testing
 
-extension SnapshotTrait where Self == DiffToolSnapshotTrait {
+extension Testing.Trait where Self == DiffToolSnapshotTrait {
   /// Configures the diff tool to use when snapshot tests fail.
   ///
   /// - Parameter diffTool: The diff tool configuration to use.

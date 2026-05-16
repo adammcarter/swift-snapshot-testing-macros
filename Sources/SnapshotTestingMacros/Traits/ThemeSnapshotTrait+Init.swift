@@ -1,6 +1,7 @@
 import Foundation
+import Testing
 
-extension SnapshotTrait where Self == ThemeSnapshotTrait {
+extension Testing.Trait where Self == ThemeSnapshotTrait {
   /// Allows the snapshot to specify a theme.
   ///
   /// - Parameter theme: The theme to use.

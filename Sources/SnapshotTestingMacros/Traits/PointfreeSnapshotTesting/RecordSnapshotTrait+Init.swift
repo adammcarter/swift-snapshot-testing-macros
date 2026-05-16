@@ -1,6 +1,7 @@
 import Foundation
+import Testing
 
-extension SnapshotTrait where Self == RecordSnapshotTrait {
+extension Testing.Trait where Self == RecordSnapshotTrait {
   /// Sets whether to record snapshots.
   ///
   /// - Parameter record: When `true`, all snapshots will be re-recorded. When `false`, they are verified.

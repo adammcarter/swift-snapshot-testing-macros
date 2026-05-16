@@ -23,7 +23,7 @@ jobs:
         run: mise run lint
     
   swift-build-matrix:
-    name: Swift Build Matrix
+    name: Swift Test Matrix
     needs: [format-and-lint]
     runs-on: macos-15
     strategy:
@@ -39,8 +39,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Swift build
-        run: swift build
+      - name: Run focused unit suites
+        run: |
+          swift test --filter ExpectSnapshotAdapterTests
+          swift test --filter ExpectSnapshotMacroTests
+          swift test --filter SnapshotSuiteTests
+          swift test --filter SnapshotTestTests
     
   ios-integration-tests:
     name: Integration Tests

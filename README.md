@@ -58,6 +58,15 @@ mise run lint
 swift test
 ```
 
+For fast local iteration, prefer the focused unit suites CI also uses across Xcode versions:
+
+```shell
+swift test --filter ExpectSnapshotAdapterTests
+swift test --filter ExpectSnapshotMacroTests
+swift test --filter SnapshotSuiteTests
+swift test --filter SnapshotTestTests
+```
+
 ```shell
 xcodebuild test \
   -scheme SnapshotsUnitTests \
@@ -67,8 +76,10 @@ xcodebuild test \
 ```shell
 xcodebuild test \
   -scheme SnapshotsIntegrationTests \
-  -destination "platform=iOS Simulator,name=<available-simulator>,OS=<installed-os>,arch=arm64"
+  -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64"
 ```
+
+Latest-Xcode CI also runs fast macOS build-for-testing smoke checks on 26.4 and 26.5:
 
 ```shell
 xcodebuild build-for-testing \

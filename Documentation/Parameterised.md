@@ -39,6 +39,8 @@ Tuple-2 and tuple-3 configurations unpack into the builder closure parameters.
 
 If you also pass `named:`, the explicit name replaces only the assertion name. The configuration scope on disk still comes from the `SnapshotConfiguration`.
 
+Like the plain SwiftUI closure forms, both parameterised builders support synchronous, throwing, async, and async-throwing builders.
+
 ## `argument:`
 
 Use `argument:` when the value itself already carries a good name and you do not need a separate `SnapshotConfiguration`.

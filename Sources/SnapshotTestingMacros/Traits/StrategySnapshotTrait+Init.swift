@@ -1,6 +1,7 @@
 import Foundation
+import Testing
 
-extension SnapshotTrait where Self == StrategySnapshotTrait {
+extension Testing.Trait where Self == StrategySnapshotTrait {
   /// Sets the snapshot strategy.
   ///
   /// - Parameter strategy: The strategy to use.

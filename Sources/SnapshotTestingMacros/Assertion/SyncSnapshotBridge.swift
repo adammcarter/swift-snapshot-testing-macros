@@ -7,13 +7,9 @@ private final class SyncSnapshotBridgeResultBox: @unchecked Sendable {
 }
 
 enum SyncSnapshotBridge {
-  static func run(
+  private static func perform(
     _ operation: sending @escaping @MainActor () async throws -> Void,
-    fileID: StaticString,
-    filePath: StaticString,
-    line: UInt,
-    column: UInt
-  ) {
+  ) -> Result<Void, Error> {
     let resultBox = SyncSnapshotBridgeResultBox()
     let group = DispatchGroup()
 
@@ -38,9 +34,19 @@ enum SyncSnapshotBridge {
       RunLoop.current.run(mode: .default, before: Date(timeIntervalSinceNow: 0.01))
     }
 
-    let finalResult = resultBox.lock.withLock { resultBox.value }
+    return resultBox.lock.withLock { resultBox.value } ?? .success(())
+  }
 
-    if case .failure(let error)? = finalResult {
+  static func run(
+    _ operation: sending @escaping @MainActor () async throws -> Void,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) {
+    let finalResult = perform(operation)
+
+    if case .failure(let error) = finalResult {
       Issue.record(
         error,
         sourceLocation: .init(
@@ -50,6 +56,14 @@ enum SyncSnapshotBridge {
           column: Int(column)
         )
       )
+    }
+  }
+
+  static func runThrowing(
+    _ operation: sending @escaping @MainActor () async throws -> Void
+  ) throws {
+    if case .failure(let error) = perform(operation) {
+      throw error
     }
   }
 }

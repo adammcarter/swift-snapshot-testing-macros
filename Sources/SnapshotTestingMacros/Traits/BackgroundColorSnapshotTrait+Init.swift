@@ -1,9 +1,9 @@
 #if canImport(SwiftUI)
 import SwiftUI
 #endif
+import Testing
 
-@MainActor
-extension SnapshotTrait where Self == BackgroundColorSnapshotTrait {
+extension Testing.Trait where Self == BackgroundColorSnapshotTrait {
   #if canImport(UIKit)
   /// Sets the background color for the snapshot using a `UIColor`.
   ///

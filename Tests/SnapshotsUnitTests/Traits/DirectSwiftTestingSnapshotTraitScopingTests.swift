@@ -2,14 +2,14 @@
 @testable import SnapshotTestingMacros
 import Testing
 
-@Suite(ThemeSnapshotTrait.theme(.dark))
+@Suite(.theme(.dark))
 struct DirectSwiftTestingTraitScopingTests {
   @Test
   func suiteTraitAppliesTaskLocalState() {
     #expect(ThemeSnapshotTrait.current == .dark)
   }
 
-  @Test(ThemeSnapshotTrait.theme(.light), ThemeSnapshotTrait.theme(.dark))
+  @Test(.theme(.light), .theme(.dark))
   func laterDirectTraitsWin() {
     #expect(ThemeSnapshotTrait.current == .dark)
   }

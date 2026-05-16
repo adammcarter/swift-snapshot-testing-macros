@@ -1,6 +1,7 @@
 import Foundation
+import Testing
 
-extension SnapshotTrait where Self == SizesSnapshotTrait {
+extension Testing.Trait where Self == SizesSnapshotTrait {
   /// Allows the snapshot to render to the specified sizes.
   ///
   /// - Parameter sizes: The sizes to render.
