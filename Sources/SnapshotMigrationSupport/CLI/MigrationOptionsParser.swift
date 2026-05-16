@@ -14,7 +14,7 @@ public enum MigrationOptionsParser {
       switch arguments[index] {
       case "--project-root":
         index += 1
-        guard index < arguments.count else {
+        guard index < arguments.count, !arguments[index].hasPrefix("--") else {
           throw MigrationCLIError.missingOptionValue("--project-root")
         }
         projectRoot = arguments[index]
@@ -22,7 +22,7 @@ public enum MigrationOptionsParser {
         mode = .apply
       case "--json-report":
         index += 1
-        guard index < arguments.count else {
+        guard index < arguments.count, !arguments[index].hasPrefix("--") else {
           throw MigrationCLIError.missingOptionValue("--json-report")
         }
         jsonReportPath = arguments[index]
@@ -32,19 +32,19 @@ public enum MigrationOptionsParser {
         failOnSkips = true
       case "--max-file-size-bytes":
         index += 1
-        guard index < arguments.count, let value = Int(arguments[index]) else {
+        guard index < arguments.count, !arguments[index].hasPrefix("--"), let value = Int(arguments[index]) else {
           throw MigrationCLIError.invalidIntegerOption("--max-file-size-bytes")
         }
         maxFileSizeBytes = value
       case "--max-staged-bytes":
         index += 1
-        guard index < arguments.count, let value = Int(arguments[index]) else {
+        guard index < arguments.count, !arguments[index].hasPrefix("--"), let value = Int(arguments[index]) else {
           throw MigrationCLIError.invalidIntegerOption("--max-staged-bytes")
         }
         maxStagedBytes = value
       case "--apply-lock-timeout-seconds":
         index += 1
-        guard index < arguments.count, let value = Int(arguments[index]) else {
+        guard index < arguments.count, !arguments[index].hasPrefix("--"), let value = Int(arguments[index]) else {
           throw MigrationCLIError.invalidIntegerOption("--apply-lock-timeout-seconds")
         }
         applyLockTimeoutSeconds = value

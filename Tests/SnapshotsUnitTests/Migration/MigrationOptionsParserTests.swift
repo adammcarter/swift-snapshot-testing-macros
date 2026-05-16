@@ -42,8 +42,21 @@ struct MigrationOptionsParserTests {
   }
 
   @Test
+  func projectRootValueCannotBeAnotherOption() {
+    assertParseError(arguments: ["--project-root", "--apply"], expected: .missingOptionValue("--project-root"))
+  }
+
+  @Test
   func missingJsonReportValueReturnsError() {
     assertParseError(arguments: ["--project-root", "/tmp/example", "--json-report"], expected: .missingOptionValue("--json-report"))
+  }
+
+  @Test
+  func jsonReportValueCannotBeAnotherOption() {
+    assertParseError(
+      arguments: ["--project-root", "/tmp/example", "--json-report", "--apply"],
+      expected: .missingOptionValue("--json-report")
+    )
   }
 
   @Test
@@ -51,6 +64,36 @@ struct MigrationOptionsParserTests {
     assertParseError(arguments: ["--project-root", "/tmp/example", "--max-file-size-bytes", "abc"], expected: .invalidIntegerOption("--max-file-size-bytes"))
     assertParseError(arguments: ["--project-root", "/tmp/example", "--max-staged-bytes", "abc"], expected: .invalidIntegerOption("--max-staged-bytes"))
     assertParseError(arguments: ["--project-root", "/tmp/example", "--apply-lock-timeout-seconds", "abc"], expected: .invalidIntegerOption("--apply-lock-timeout-seconds"))
+  }
+
+  @Test
+  func integerOptionValueCannotBeAnotherOption() {
+    assertParseError(
+      arguments: ["--project-root", "/tmp/example", "--max-file-size-bytes", "--apply"],
+      expected: .invalidIntegerOption("--max-file-size-bytes")
+    )
+    assertParseError(
+      arguments: ["--project-root", "/tmp/example", "--max-staged-bytes", "--apply"],
+      expected: .invalidIntegerOption("--max-staged-bytes")
+    )
+    assertParseError(
+      arguments: ["--project-root", "/tmp/example", "--apply-lock-timeout-seconds", "--apply"],
+      expected: .invalidIntegerOption("--apply-lock-timeout-seconds")
+    )
+  }
+
+  @Test
+  func acceptsExplicitNumericOverrides() throws {
+    let options = try MigrationOptionsParser.parse(arguments: [
+      "--project-root", "/tmp/example",
+      "--max-file-size-bytes", "100",
+      "--max-staged-bytes", "200",
+      "--apply-lock-timeout-seconds", "3",
+    ])
+
+    #expect(options.maxFileSizeBytes == 100)
+    #expect(options.maxStagedBytes == 200)
+    #expect(options.applyLockTimeoutSeconds == 3)
   }
 
   @Test
