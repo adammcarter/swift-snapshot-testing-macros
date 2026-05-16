@@ -16,6 +16,14 @@ public struct MigrationRunner {
       projectRoot: options.projectRoot,
       maxFileSizeBytes: options.maxFileSizeBytes
     )
+
+    if options.mode == .dryRun {
+      let rewriter = SnapshotMigrationRewriter()
+      for file in scan.candidateFiles {
+        _ = try rewriter.rewrite(source: file.contents)
+      }
+    }
+
     return scan.candidateFiles.isEmpty ? .success : .migrationFailure
   }
 }
