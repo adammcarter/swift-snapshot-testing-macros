@@ -3,10 +3,19 @@ import SnapshotMigrationSupport
 
 @main
 enum SnapshotMigrationCLI {
-  static func main() {
+  static func main() async {
     do {
-      _ = try MigrationOptionsParser.parse(arguments: Array(CommandLine.arguments.dropFirst()))
-      exit(1)
+      let options = try MigrationOptionsParser.parse(arguments: Array(CommandLine.arguments.dropFirst()))
+      let outcome = try await MigrationRunner().runWithOutcome(options: options)
+
+      let consoleReporter = ConsoleReporter()
+      consoleReporter.printSummary(report: outcome.report, maxIssues: 50)
+
+      if let jsonReportPath = options.jsonReportPath {
+        try JSONReporter().write(report: outcome.report, to: jsonReportPath)
+      }
+
+      exit(Int32(outcome.exitCode.rawValue))
     } catch let error as MigrationCLIError {
       fputs("migration error: \(userFacingMessage(for: error))\n", stderr)
       exit(3)
