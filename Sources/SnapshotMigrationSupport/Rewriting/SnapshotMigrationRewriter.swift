@@ -56,6 +56,14 @@ public struct SnapshotMigrationRewriter {
         continue
       }
 
+      edits.append(
+        TextEdit(
+          startUTF8Offset: legacyFunction.snapshotAttributeNameStartUTF8Offset,
+          endUTF8Offset: legacyFunction.snapshotAttributeNameEndUTF8Offset,
+          replacement: "Test"
+        )
+      )
+
       if let returnClause = legacyFunction.function.signature.returnClause,
          returnClause.type.trimmedDescription == "some View"
       {
@@ -197,14 +205,6 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
           replacement: "Suite"
         )
       )
-    } else if identifier == "SnapshotTest" {
-      attributeEdits.append(
-        TextEdit(
-          startUTF8Offset: node.attributeName.positionAfterSkippingLeadingTrivia.utf8Offset,
-          endUTF8Offset: node.attributeName.endPositionBeforeTrailingTrivia.utf8Offset,
-          replacement: "Test"
-        )
-      )
     }
 
     return .visitChildren
@@ -216,7 +216,12 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
     }
 
     let namedLiteral = namedLiteral(from: snapshotAttribute)
-    let legacyFunction = LegacyFunction(function: node, namedLiteral: namedLiteral)
+    let legacyFunction = LegacyFunction(
+      function: node,
+      namedLiteral: namedLiteral,
+      snapshotAttributeNameStartUTF8Offset: snapshotAttribute.attributeName.positionAfterSkippingLeadingTrivia.utf8Offset,
+      snapshotAttributeNameEndUTF8Offset: snapshotAttribute.attributeName.endPositionBeforeTrailingTrivia.utf8Offset
+    )
     legacyFunctions.append(legacyFunction)
 
     return .visitChildren
@@ -245,6 +250,8 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
 private struct LegacyFunction: Hashable {
   let function: FunctionDeclSyntax
   let namedLiteral: String?
+  let snapshotAttributeNameStartUTF8Offset: Int
+  let snapshotAttributeNameEndUTF8Offset: Int
 }
 
 private struct TextEdit: Hashable {

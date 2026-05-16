@@ -43,5 +43,7 @@ struct SnapshotMigrationRewriterCoreTests {
     let result = try SnapshotMigrationRewriter().rewrite(source: input)
 
     #expect(result.reasons.contains(where: { $0.code == "unsupported-signature-shape" }))
+    #expect(result.output.contains("@SnapshotTest(configurations: makeStates())"))
+    #expect(!result.output.contains("@Test(configurations: makeStates())"))
   }
 }
