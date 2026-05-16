@@ -194,7 +194,7 @@ struct ApplySafetyTests {
   }
 
   @Test
-  func dryRunReturnsMigrationFailureWhenCandidatesExist() async throws {
+  func dryRunReturnsSuccessAndKeepsTempOutput() async throws {
     let fixture = try TempProject.make()
     defer { fixture.cleanup() }
 
@@ -220,10 +220,14 @@ struct ApplySafetyTests {
       applyLockTimeoutSeconds: 0
     )
 
-    let exitCode = try await MigrationRunner().run(options: options)
+    let outcome = try await MigrationRunner().runWithOutcome(options: options)
+    let tempRoot = "/tmp/snapshot-migration/\(outcome.report.runID)"
+    let fileManager = FileManager.default
+    defer { try? fileManager.removeItem(atPath: tempRoot) }
     let updated = try String(contentsOfFile: filePath, encoding: .utf8)
 
-    #expect(exitCode == .migrationFailure)
+    #expect(outcome.exitCode == .success)
+    #expect(fileManager.fileExists(atPath: tempRoot))
     #expect(updated == original)
   }
 

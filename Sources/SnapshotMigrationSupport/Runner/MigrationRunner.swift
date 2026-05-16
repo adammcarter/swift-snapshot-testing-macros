@@ -62,7 +62,6 @@ public struct MigrationRunner {
       }
 
       if !rewriteResult.reasons.isEmpty {
-        hadMigrationFailures = true
         skippedDeclarations += 1
         for reason in rewriteResult.reasons {
           issueLines.append("\(file.relativePath):\(reason.line) <unknown> \(reason.code) \(reason.message)")
@@ -75,7 +74,7 @@ public struct MigrationRunner {
         continue
       }
 
-      if options.mode == .apply || options.keepTemp {
+      if options.mode == .apply || options.mode == .dryRun || options.keepTemp {
         do {
           if stagingStore == nil {
             stagingStore = try RunStagingStore.create(runID: runID)
@@ -197,9 +196,6 @@ public struct MigrationRunner {
 
     var exitCode = report.resolveExitCode(failOnSkips: options.failOnSkips)
     if options.mode == .apply, hadMigrationFailures, exitCode == .success {
-      exitCode = .migrationFailure
-    }
-    if options.mode == .dryRun, report.candidateDeclarations > 0, exitCode == .success {
       exitCode = .migrationFailure
     }
 

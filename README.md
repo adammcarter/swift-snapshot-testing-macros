@@ -47,6 +47,17 @@ For UIKit and AppKit, keep the test itself as a regular `@Test` and pass a helpe
 - [Parameterised tests](Documentation/Parameterised.md)
 - [Migration](MIGRATION.md)
 
+## Migration script
+
+This repository includes a migration helper for adopters moving from `@SnapshotSuite` / `@SnapshotTest` to native `@Suite` / `@Test` / `#expectSnapshot(...)`.
+
+```shell
+Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo
+Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo --apply --json-report ./snapshot-migration-report.json
+```
+
+It defaults to dry-run mode and prints a summary of migrated, skipped, and failed declarations. Use `--apply` to write changes.
+
 ## Development
 
 For local setup and detailed contributor guidance, see [CONTRIBUTING.md](CONTRIBUTING.md).

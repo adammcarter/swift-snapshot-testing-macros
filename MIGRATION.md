@@ -120,6 +120,25 @@ SwiftUI keeps the broader convenience surface:
 - `SnapshotConfiguration`
 - `argument:`
 
+## Migration script
+
+Run from a checkout of this repository:
+
+```shell
+Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo
+Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo --apply --json-report ./snapshot-migration-report.json
+```
+
+The command defaults to dry-run mode. Add `--apply` to write migrated files.
+
+Recommended rollout:
+
+1. Use dry-run first.
+2. Resolve skip and failure items from the report output.
+3. Re-run with `--apply`.
+4. Run consumer test and snapshot suites.
+5. Re-run dry-run to confirm an idempotent no-op.
+
 ## Next steps
 
 - Update call sites to `@Suite`, `@Test`, and `#expectSnapshot(...)`
