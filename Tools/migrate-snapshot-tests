@@ -1,0 +1,5 @@
+#!/bin/zsh
+set -euo pipefail
+
+root_dir="${0%/*}/.."
+exec swift run --package-path "$root_dir" SnapshotMigrationCLI "$@"
