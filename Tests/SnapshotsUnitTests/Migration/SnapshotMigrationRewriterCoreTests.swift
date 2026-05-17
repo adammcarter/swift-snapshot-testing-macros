@@ -46,4 +46,54 @@ struct SnapshotMigrationRewriterCoreTests {
     #expect(result.output.contains("@SnapshotTest"))
     #expect(!result.output.contains("@Test"))
   }
+
+  @Test
+  func rewritesNonParameterizedBodyWithSetupStatements() throws {
+    let input = """
+    @SnapshotSuite
+    struct CompareAdvertButtonSnapshotTests {
+      @SnapshotTest
+      func highlighted() -> UIView {
+        let button = CompareAdvertButton()
+        button.isHighlighted = true
+
+        return button
+      }
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.output.contains("@Test"))
+    #expect(!result.output.contains("-> UIView"))
+    #expect(result.output.contains("let button = CompareAdvertButton()"))
+    #expect(result.output.contains("button.isHighlighted = true"))
+    #expect(result.output.contains("let snapshotValue = button"))
+    #expect(result.output.contains("#expectSnapshot(snapshotValue)"))
+    #expect(result.reasons.isEmpty)
+    #expect(result.changed)
+  }
+
+  @Test
+  func skipsNonParameterizedRewriteWhenPreludeContainsEarlyReturn() throws {
+    let input = """
+    @SnapshotSuite
+    struct ConditionalSnapshots {
+      @SnapshotTest
+      func conditional() -> UIView {
+        if Bool.random() {
+          return PlaceholderView()
+        }
+
+        return FinalView()
+      }
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.reasons.contains(where: { $0.code == "unsupported-signature-shape" }))
+    #expect(result.output.contains("@SnapshotTest"))
+    #expect(!result.output.contains("@Test"))
+  }
 }

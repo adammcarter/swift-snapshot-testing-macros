@@ -77,7 +77,7 @@ struct SnapshotMigrationRewriterParameterizedTests {
   }
 
   @Test
-  func skipsUIKitConfigurationValuesWithoutStableArgumentNaming() throws {
+  func rewritesUIKitConfigurationValuesWithoutExplicitLegacyName() throws {
     let input = """
     @SnapshotTest(configurationValues: makeStates())
     func card(state: CardState) -> UIViewController {
@@ -87,8 +87,53 @@ struct SnapshotMigrationRewriterParameterizedTests {
 
     let result = try SnapshotMigrationRewriter().rewrite(source: input)
 
-    #expect(result.reasons.contains(where: { $0.code == "unsupported-argument-naming" }))
-    #expect(result.output.contains("@SnapshotTest(configurationValues: makeStates())"))
-    #expect(!result.output.contains("@Test(arguments: makeStates())"))
+    #expect(result.output.contains("@Test(arguments: makeStates())"))
+    #expect(result.output.contains("func card(state: CardState)"))
+    #expect(result.output.contains("let snapshotValue = makeController(state: state)"))
+    #expect(result.output.contains("#expectSnapshot(snapshotValue, named: String(describing: state))"))
+    #expect(result.reasons.isEmpty)
+  }
+
+  @Test
+  func rewritesSwiftUIConfigurationsWhenArgumentsExpressionUsesMapClosure() throws {
+    let input = """
+    @SnapshotTest(
+      configurations: Bool.allCases.map {
+        .init(name: "signed \\($0 ? "in" : "out")", value: $0)
+      }
+    )
+    func makeView(isSignedIn: Bool) -> some View {
+      BrandView(isSignedIn: isSignedIn)
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.output.contains("@Test("))
+    #expect(result.output.contains("arguments: Bool.allCases.map"))
+    #expect(result.output.contains("func makeView(configuration: SnapshotConfiguration<Bool>)"))
+    #expect(result.reasons.isEmpty)
+  }
+
+  @Test
+  func rewritesParameterizedBodyWithSetupStatementsForSwiftUIConfigurations() throws {
+    let input = """
+    @SnapshotTest(configurations: styles)
+    func populated(style: SignpostStyle) async throws -> some View {
+      let viewModel = makeViewModel(style: style)
+      viewModel.contentView = makeContentView()
+      return Signpost(viewModel: viewModel)
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.output.contains("@Test(arguments: styles)"))
+    #expect(result.output.contains("func populated(configuration: SnapshotConfiguration<SignpostStyle>) async throws"))
+    #expect(result.output.contains("#expectSnapshot(configuration) { style in"))
+    #expect(result.output.contains("let viewModel = makeViewModel(style: style)"))
+    #expect(result.output.contains("viewModel.contentView = makeContentView()"))
+    #expect(result.output.contains("Signpost(viewModel: viewModel)"))
+    #expect(result.reasons.isEmpty)
   }
 }

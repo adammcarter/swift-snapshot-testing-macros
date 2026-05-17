@@ -102,7 +102,7 @@ public struct SnapshotMigrationRewriter {
     }
 
     guard let body = function.body,
-          let expression = extractBodyExpression(from: function)
+          let bodyParts = extractBodyParts(from: function)
     else {
       reasons.append(
         makeReason(
@@ -152,7 +152,8 @@ public struct SnapshotMigrationRewriter {
         startUTF8Offset: body.positionAfterSkippingLeadingTrivia.utf8Offset,
         endUTF8Offset: body.endPositionBeforeTrailingTrivia.utf8Offset,
         replacement: rewriteDirectBody(
-          expression: expression,
+          expression: bodyParts.terminalExpression,
+          preludeStatements: bodyParts.preludeStatements,
           namedLiteral: legacyFunction.namedLiteral,
           body: body,
           source: source
@@ -200,7 +201,7 @@ public struct SnapshotMigrationRewriter {
     }
 
     guard let body = function.body,
-          let expression = extractBodyExpression(from: function)
+          let bodyParts = extractBodyParts(from: function)
     else {
       reasons.append(
         makeReason(
@@ -311,7 +312,8 @@ public struct SnapshotMigrationRewriter {
       switch platform {
       case .swiftUI:
         rewrittenBody = rewriteSwiftUIConfigurationsBody(
-          expression: expression,
+          expression: bodyParts.terminalExpression,
+          preludeStatements: bodyParts.preludeStatements,
           parameterNames: parameterInfos.map(\.localName),
           namedLiteral: legacyFunction.namedLiteral,
           body: body,
@@ -319,7 +321,8 @@ public struct SnapshotMigrationRewriter {
         )
       case .uiKitOrAppKit:
         rewrittenBody = rewriteDirectConfigurationsBody(
-          expression: expression,
+          expression: bodyParts.terminalExpression,
+          preludeStatements: bodyParts.preludeStatements,
           parameterNames: parameterInfos.map(\.localName),
           namedLiteral: legacyFunction.namedLiteral,
           body: body,
@@ -346,7 +349,8 @@ public struct SnapshotMigrationRewriter {
       switch platform {
       case .swiftUI:
         rewrittenBody = rewriteSwiftUIConfigurationValuesBody(
-          expression: expression,
+          expression: bodyParts.terminalExpression,
+          preludeStatements: bodyParts.preludeStatements,
           parameterName: parameterName,
           namedLiteral: legacyFunction.namedLiteral,
           body: body,
@@ -354,7 +358,8 @@ public struct SnapshotMigrationRewriter {
         )
       case .uiKitOrAppKit:
         rewrittenBody = rewriteDirectConfigurationValuesBody(
-          expression: expression,
+          expression: bodyParts.terminalExpression,
+          preludeStatements: bodyParts.preludeStatements,
           parameterName: parameterName,
           namedLiteral: legacyFunction.namedLiteral,
           body: body,
@@ -376,27 +381,48 @@ public struct SnapshotMigrationRewriter {
     return functionEdits
   }
 
-  private func extractBodyExpression(from function: FunctionDeclSyntax) -> String? {
+  private func extractBodyParts(from function: FunctionDeclSyntax) -> BodyRewriteParts? {
     guard let body = function.body else { return nil }
 
-    let statements = body.statements
-    guard statements.count == 1, let statement = statements.first else { return nil }
+    let statements = Array(body.statements)
+    guard let terminalStatement = statements.last else { return nil }
 
-    if let returnStatement = statement.item.as(ReturnStmtSyntax.self),
+    let terminalExpression: String
+    if let returnStatement = terminalStatement.item.as(ReturnStmtSyntax.self),
        let expression = returnStatement.expression
     {
-      return expression.trimmedDescription
+      terminalExpression = expression.trimmedDescription
+    } else if let expression = terminalStatement.item.as(ExprSyntax.self) {
+      terminalExpression = expression.trimmedDescription
+    } else if let expressionStatement = terminalStatement.item.as(ExpressionStmtSyntax.self) {
+      terminalExpression = expressionStatement.expression.trimmedDescription
+    } else {
+      return nil
     }
 
-    if let expression = statement.item.as(ExprSyntax.self) {
-      return expression.trimmedDescription
+    var preludeStatements: [String] = []
+    for statement in statements.dropLast() {
+      guard !containsTopLevelReturn(in: statement) else { return nil }
+      guard let preludeStatement = statementText(for: statement) else { return nil }
+      preludeStatements.append(preludeStatement)
     }
 
-    if let expressionStatement = statement.item.as(ExpressionStmtSyntax.self) {
-      return expressionStatement.expression.trimmedDescription
-    }
+    return BodyRewriteParts(
+      preludeStatements: preludeStatements,
+      terminalExpression: terminalExpression
+    )
+  }
 
-    return nil
+  private func statementText(for statement: CodeBlockItemSyntax) -> String? {
+    let text = statement.item.description.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !text.isEmpty else { return nil }
+    return text
+  }
+
+  private func containsTopLevelReturn(in statement: CodeBlockItemSyntax) -> Bool {
+    let detector = TopLevelReturnDetector(viewMode: .sourceAccurate)
+    detector.walk(Syntax(statement.item))
+    return detector.hasTopLevelReturn
   }
 
   private func functionParameterInfos(from function: FunctionDeclSyntax) -> [FunctionParameterInfo]? {
@@ -432,30 +458,11 @@ public struct SnapshotMigrationRewriter {
     let trimmed = expression.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return nil }
 
-    if trimmed.hasPrefix("[") || trimmed.hasSuffix(")") {
-      return trimmed
-    }
-
     if trimmed.hasPrefix("{") {
       return "(\(trimmed))()"
     }
 
-    if isCallableReference(trimmed) {
-      return trimmed
-    }
-
-    return nil
-  }
-
-  private func isCallableReference(_ expression: String) -> Bool {
-    let parts = expression.split(separator: ".", omittingEmptySubsequences: false)
-    guard !parts.isEmpty else { return false }
-    return parts.allSatisfy { part in
-      let value = String(part)
-      guard let first = value.first else { return false }
-      guard first.isLetter || first == "_" else { return false }
-      return value.dropFirst().allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
-    }
+    return trimmed
   }
 
   private func requiresUnsupportedArgumentNamingSkip(
@@ -465,7 +472,7 @@ public struct SnapshotMigrationRewriter {
   ) -> Bool {
     switch kind {
     case .configurationValues:
-      return legacyNameLiteral == nil
+      return false
     case .configurations:
       guard normalizedArguments.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("[") else {
         return false
@@ -502,6 +509,7 @@ public struct SnapshotMigrationRewriter {
 
   private func rewriteDirectBody(
     expression: String,
+    preludeStatements: [String],
     namedLiteral: String?,
     body: CodeBlockSyntax,
     source: String
@@ -514,10 +522,11 @@ public struct SnapshotMigrationRewriter {
       ?? (closingIndent + "  ")
 
     let namedSuffix = namedLiteral.map { ", named: \($0)" } ?? ""
+    let prelude = renderStatements(preludeStatements, indentation: statementIndent)
 
     return """
     {
-    \(statementIndent)let snapshotValue = \(expression)
+    \(prelude)\(statementIndent)let snapshotValue = \(expression)
     \(statementIndent)#expectSnapshot(snapshotValue\(namedSuffix))
     \(closingIndent)}
     """
@@ -525,6 +534,7 @@ public struct SnapshotMigrationRewriter {
 
   private func rewriteSwiftUIConfigurationsBody(
     expression: String,
+    preludeStatements: [String],
     parameterNames: [String],
     namedLiteral: String?,
     body: CodeBlockSyntax,
@@ -540,11 +550,12 @@ public struct SnapshotMigrationRewriter {
 
     let namedSuffix = namedLiteral.map { ", named: \($0)" } ?? ""
     let builderParameters = parameterNames.joined(separator: ", ")
+    let prelude = renderStatements(preludeStatements, indentation: builderIndent)
 
     return """
     {
     \(statementIndent)#expectSnapshot(configuration\(namedSuffix)) { \(builderParameters) in
-    \(builderIndent)\(expression)
+    \(prelude)\(builderIndent)\(expression)
     \(statementIndent)}
     \(closingIndent)}
     """
@@ -552,6 +563,7 @@ public struct SnapshotMigrationRewriter {
 
   private func rewriteDirectConfigurationsBody(
     expression: String,
+    preludeStatements: [String],
     parameterNames: [String],
     namedLiteral: String?,
     body: CodeBlockSyntax,
@@ -575,11 +587,12 @@ public struct SnapshotMigrationRewriter {
       legacyNameLiteral: namedLiteral,
       caseNameExpression: caseNameExpression
     )
+    let prelude = renderStatements(preludeStatements, indentation: statementIndent)
 
     return """
     {
     \(statementIndent)\(extractedValueLine)
-    \(statementIndent)let snapshotValue = \(expression)
+    \(prelude)\(statementIndent)let snapshotValue = \(expression)
     \(statementIndent)#expectSnapshot(snapshotValue, named: \(synthesizedName))
     \(closingIndent)}
     """
@@ -587,6 +600,7 @@ public struct SnapshotMigrationRewriter {
 
   private func rewriteSwiftUIConfigurationValuesBody(
     expression: String,
+    preludeStatements: [String],
     parameterName: String,
     namedLiteral: String?,
     body: CodeBlockSyntax,
@@ -601,11 +615,12 @@ public struct SnapshotMigrationRewriter {
     let builderIndent = statementIndent + "  "
 
     let namedSuffix = namedLiteral.map { ", named: \($0)" } ?? ""
+    let prelude = renderStatements(preludeStatements, indentation: builderIndent)
 
     return """
     {
     \(statementIndent)#expectSnapshot(argument: \(parameterName)\(namedSuffix)) { \(parameterName) in
-    \(builderIndent)\(expression)
+    \(prelude)\(builderIndent)\(expression)
     \(statementIndent)}
     \(closingIndent)}
     """
@@ -613,6 +628,7 @@ public struct SnapshotMigrationRewriter {
 
   private func rewriteDirectConfigurationValuesBody(
     expression: String,
+    preludeStatements: [String],
     parameterName: String,
     namedLiteral: String?,
     body: CodeBlockSyntax,
@@ -630,13 +646,29 @@ public struct SnapshotMigrationRewriter {
       legacyNameLiteral: namedLiteral,
       caseNameExpression: caseNameExpression
     )
+    let prelude = renderStatements(preludeStatements, indentation: statementIndent)
 
     return """
     {
-    \(statementIndent)let snapshotValue = \(expression)
+    \(prelude)\(statementIndent)let snapshotValue = \(expression)
     \(statementIndent)#expectSnapshot(snapshotValue, named: \(synthesizedName))
     \(closingIndent)}
     """
+  }
+
+  private func renderStatements(_ statements: [String], indentation: String) -> String {
+    guard !statements.isEmpty else { return "" }
+    let rendered = statements
+      .map { renderMultiline($0, indentation: indentation) }
+      .joined(separator: "\n")
+    return "\(rendered)\n"
+  }
+
+  private func renderMultiline(_ statement: String, indentation: String) -> String {
+    statement
+      .split(separator: "\n", omittingEmptySubsequences: false)
+      .map { "\(indentation)\($0)" }
+      .joined(separator: "\n")
   }
 
   private func synthesizedNameExpression(
@@ -847,6 +879,11 @@ private struct FunctionParameterInfo {
   let typeDescription: String
 }
 
+private struct BodyRewriteParts {
+  let preludeStatements: [String]
+  let terminalExpression: String
+}
+
 private struct ParsedSnapshotAttribute {
   let namedLiteral: String?
   let parameterizedArgument: ParameterizedSnapshotArgument?
@@ -876,4 +913,61 @@ private struct TextEdit: Hashable {
   let startUTF8Offset: Int
   let endUTF8Offset: Int
   let replacement: String
+}
+
+private final class TopLevelReturnDetector: SyntaxVisitor {
+  private(set) var hasTopLevelReturn = false
+  private var nestedCallableDepth = 0
+
+  override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+    nestedCallableDepth += 1
+    return .visitChildren
+  }
+
+  override func visitPost(_ node: ClosureExprSyntax) {
+    nestedCallableDepth = max(0, nestedCallableDepth - 1)
+  }
+
+  override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+    nestedCallableDepth += 1
+    return .visitChildren
+  }
+
+  override func visitPost(_ node: FunctionDeclSyntax) {
+    nestedCallableDepth = max(0, nestedCallableDepth - 1)
+  }
+
+  override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+    nestedCallableDepth += 1
+    return .visitChildren
+  }
+
+  override func visitPost(_ node: InitializerDeclSyntax) {
+    nestedCallableDepth = max(0, nestedCallableDepth - 1)
+  }
+
+  override func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
+    nestedCallableDepth += 1
+    return .visitChildren
+  }
+
+  override func visitPost(_ node: SubscriptDeclSyntax) {
+    nestedCallableDepth = max(0, nestedCallableDepth - 1)
+  }
+
+  override func visit(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {
+    nestedCallableDepth += 1
+    return .visitChildren
+  }
+
+  override func visitPost(_ node: AccessorDeclSyntax) {
+    nestedCallableDepth = max(0, nestedCallableDepth - 1)
+  }
+
+  override func visit(_ node: ReturnStmtSyntax) -> SyntaxVisitorContinueKind {
+    if nestedCallableDepth == 0 {
+      hasTopLevelReturn = true
+    }
+    return .skipChildren
+  }
 }
