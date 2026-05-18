@@ -21,6 +21,25 @@ struct ResolvedSnapshotRuntimeState {
 
   @MainActor
   func withAppliedValues<T>(
+    _ operation: () throws -> T
+  ) rethrows -> T {
+    try RecordSnapshotTrait.$current.withValue(record) {
+      try DiffToolSnapshotTrait.$current.withValue(diffTool) {
+        try StrategySnapshotTrait.$current.withValue(strategy) {
+          try ThemeSnapshotTrait.$current.withValue(theme) {
+            try SizesSnapshotTrait.$current.withValue(sizes) {
+              try __SnapshotViewDecoratorConfiguration.$value.withValue(decoratorConfiguration) {
+                try operation()
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @MainActor
+  func withAppliedValues<T>(
     _ operation: () async throws -> T
   ) async rethrows -> T {
     try await RecordSnapshotTrait.$current.withValue(record) {

@@ -20,7 +20,7 @@ struct ThemeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
     }
   }
 
-  func accumulateRequests(for theme: SnapshotTheme) async throws -> [any AssertionRequesting] {
+  func accumulateRequests(for theme: SnapshotTheme) throws -> [any AssertionRequesting] {
     let base = NameAssertionRequestGenerator(
       context: context,
       traitSize: traitSize,
@@ -29,7 +29,7 @@ struct ThemeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
       displayScale: makeDisplayScale(sizeTrait: traitSize)
     )
 
-    return try await base.generateRequests()
+    return try base.generateRequestsSync()
   }
 
   private func makeDisplayScale(sizeTrait: SizesSnapshotTrait.Size) -> Double {

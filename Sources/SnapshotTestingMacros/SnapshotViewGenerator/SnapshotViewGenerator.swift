@@ -3,7 +3,7 @@ import SnapshotSupport
 public struct SnapshotViewGenerator<ConfigurationValue: Sendable>: SnapshotViewGenerating {
   public let displayName: String
   public let configuration: SnapshotConfiguration<ConfigurationValue>
-  public let makeViewController: @MainActor (ConfigurationValue) async throws -> SnapshotViewController
+  public let makeViewController: @MainActor (ConfigurationValue) throws -> SnapshotViewController
   public let fileID: StaticString
   public let filePath: StaticString
   public let line: UInt
@@ -12,7 +12,7 @@ public struct SnapshotViewGenerator<ConfigurationValue: Sendable>: SnapshotViewG
   public init(
     displayName: String,
     configuration: SnapshotConfiguration<ConfigurationValue>,
-    makeValue: @escaping @MainActor (ConfigurationValue) async throws -> SnapshotViewController,
+    makeValue: @escaping @MainActor (ConfigurationValue) throws -> SnapshotViewController,
     fileID: StaticString,
     filePath: StaticString,
     line: UInt,

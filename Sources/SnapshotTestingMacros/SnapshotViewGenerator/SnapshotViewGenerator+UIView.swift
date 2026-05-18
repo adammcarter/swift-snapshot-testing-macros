@@ -4,7 +4,7 @@ extension SnapshotViewGenerator {
   public init(
     displayName: String,
     configuration: SnapshotConfiguration<ConfigurationValue>,
-    makeValue: @escaping @MainActor (ConfigurationValue) async throws -> SnapshotView,
+    makeValue: @escaping @MainActor (ConfigurationValue) throws -> SnapshotView,
     fileID: StaticString,
     filePath: StaticString,
     line: UInt,
@@ -14,7 +14,7 @@ extension SnapshotViewGenerator {
       displayName: displayName,
       configuration: configuration,
       makeValue: {
-        let view = try await makeValue($0)
+        let view = try makeValue($0)
 
         return with(SnapshotViewController()) {
           $0.view = view

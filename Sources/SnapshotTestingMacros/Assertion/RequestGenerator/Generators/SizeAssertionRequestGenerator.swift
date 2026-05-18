@@ -12,12 +12,12 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
   let context: AssertionRequestContext
 
   var values: any Collection<SizePair> {
-    get async throws {
-      try await makeSizes()
+    get throws {
+      try makeSizes()
     }
   }
 
-  func accumulateRequests(for value: SizePair) async throws -> [any AssertionRequesting] {
+  func accumulateRequests(for value: SizePair) throws -> [any AssertionRequesting] {
     /*
      Return the view controller that's just gone through the layout process in this generator.
     
@@ -41,7 +41,7 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
       size: value.size
     )
 
-    return try await base.generateRequests()
+    return try base.generateRequestsSync()
   }
 
   enum SizeError: LocalizedError {
@@ -70,8 +70,8 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
     }
   }
 
-  private func makeSizes() async throws -> [SizePair] {
-    let viewController = try await context.makeSnapshotView()
+  private func makeSizes() throws -> [SizePair] {
+    let viewController = try context.makeSnapshotView()
 
     do {
       let sizes =

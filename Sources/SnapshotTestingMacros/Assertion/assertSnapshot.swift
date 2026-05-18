@@ -3,7 +3,12 @@ import Foundation
 @available(*, message: "This is an implementation detail. Do not call this function directly.")
 @MainActor
 public func assertSnapshot(with viewGenerator: some SnapshotViewGenerating) async throws {
-  let requests = try await AssertionRequestGenerator(viewGenerator: viewGenerator).generateRequests()
+  try assertSnapshotSync(with: viewGenerator)
+}
 
-  try await Asserter().assertSnapshots(from: requests)
+@MainActor
+func assertSnapshotSync(with viewGenerator: some SnapshotViewGenerating) throws {
+  let requests = try AssertionRequestGenerator(viewGenerator: viewGenerator).generateRequestsSync()
+
+  Asserter().assertSnapshotsSync(from: requests)
 }

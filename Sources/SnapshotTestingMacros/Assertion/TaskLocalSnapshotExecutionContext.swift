@@ -69,4 +69,36 @@ enum TaskLocalSnapshotExecutionContext {
       try work(context)
     }
   }
+
+  static func withCurrent<T>(
+    function: StaticString,
+    perform work: (SnapshotExecutionContext) async throws -> T
+  ) async rethrows -> T {
+    if let current {
+      return try await work(current)
+    }
+
+    let context: SnapshotExecutionContext
+    if let key = SnapshotExecutionContextCacheKey(
+      currentTest: Test.current,
+      currentCase: Test.Case.current
+    ) {
+      context = cache.lock.withLock {
+        if let existing = cache.contexts[key] {
+          return existing
+        }
+
+        let created = SnapshotExecutionContext(function: function)
+        cache.contexts[key] = created
+        return created
+      }
+    }
+    else {
+      context = SnapshotExecutionContext(function: function)
+    }
+
+    return try await $current.withValue(context) {
+      try await work(context)
+    }
+  }
 }

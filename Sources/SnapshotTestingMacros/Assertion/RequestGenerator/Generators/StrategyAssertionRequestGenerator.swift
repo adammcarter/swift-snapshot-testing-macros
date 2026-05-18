@@ -16,13 +16,13 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
   let displayScale: Double
   let testName: String
 
-  func generateRequests() async throws -> [any AssertionRequesting] {
+  func generateRequestsSync() throws -> [any AssertionRequesting] {
     let request: any AssertionRequesting
 
     switch context.traitConfiguration.strategy {
       case .recursiveDescription:
         request = AssertionRequest(
-          view: try await context.makeSnapshotView(),
+          view: try context.makeSnapshotView(),
           snapshotting: .recursiveDescription,
           snapshotDirectory: context.snapshotDirectory,
           testName: testName,
@@ -35,7 +35,7 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
       case .image:
         #if canImport(UIKit)
         request = AssertionRequest(
-          view: try await context.makeSnapshotView(),
+          view: try context.makeSnapshotView(),
           snapshotting: .image(
             size: size,
             traits: makeTraits()
@@ -49,7 +49,7 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
         )
         #elseif canImport(AppKit)
         request = AssertionRequest(
-          view: try await context.makeSnapshotView(),
+          view: try context.makeSnapshotView(),
           snapshotting: .image(size: size),
           snapshotDirectory: context.snapshotDirectory,
           testName: testName,

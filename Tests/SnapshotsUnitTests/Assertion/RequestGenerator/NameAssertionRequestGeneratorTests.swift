@@ -39,6 +39,18 @@ struct NameAssertionRequestGeneratorTests {
   }
 
   @Test
+  func `uses slash delimited display names as folder plus file when no configuration is present`() async throws {
+    let request = try await makeRequest(
+      contextName: "dealer is verified and has reply/view",
+      sizeTestName: "test_name_description_1",
+      theme: .light
+    )
+
+    #expect(request.snapshotDirectory == "/tmp/dealer-is-verified-and-has-reply")
+    #expect(request.testName == "view_test_name_description_1_light")
+  }
+
+  @Test
   func `passes metadata through to final request`() async throws {
     let request = try await makeRequest(
       contextName: "base",

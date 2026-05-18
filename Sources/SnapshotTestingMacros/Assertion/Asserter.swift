@@ -4,44 +4,22 @@ import SnapshotTesting
 /// Top level asserter - allows us to change the base and internals without updating the top level call site
 struct Asserter {
 
-  func assertSnapshots(from requests: [any AssertionRequesting]) async throws {
-    if let test = Test.current {
-      let trait: _SnapshotsTestTrait = .snapshots(
-        record: RecordSnapshotTrait.current,
-        diffTool: DiffToolSnapshotTrait.current
+  @MainActor
+  func assertSnapshotsSync(from requests: [any AssertionRequesting]) {
+    SnapshotTesting.withSnapshotTesting(
+      record: RecordSnapshotTrait.current,
+      diffTool: DiffToolSnapshotTrait.current
+    ) {
+      Self.performAssertions(
+        using: IssueRecordingAsserter(base: PointfreeAsserter()),
+        requests: requests
       )
-
-      try await trait.provideScope(
-        for: test,
-        testCase: Test.Case.current,
-        performing: Self.makeScopedAssertionOperation(requests: requests)
-      )
-    }
-    else {
-      await MainActor.run {
-        SnapshotTesting.withSnapshotTesting(
-          record: RecordSnapshotTrait.current,
-          diffTool: DiffToolSnapshotTrait.current
-        ) {
-          Self.performAssertions(
-            using: IssueRecordingAsserter(base: PointfreeAsserter()),
-            requests: requests
-          )
-        }
-      }
     }
   }
 
-  private static func makeScopedAssertionOperation(
-    requests: [any AssertionRequesting]
-  ) -> @Sendable () async -> Void {
-    { [requests] in
-      await MainActor.run {
-        performAssertions(
-          using: IssueRecordingAsserter(base: PointfreeAsserter()),
-          requests: requests
-        )
-      }
+  func assertSnapshots(from requests: [any AssertionRequesting]) async throws {
+    await MainActor.run {
+      assertSnapshotsSync(from: requests)
     }
   }
 

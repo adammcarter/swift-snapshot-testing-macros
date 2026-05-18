@@ -11,7 +11,7 @@ enum AssertionRequestGeneratorTestSupport {
     name: String = "base",
     configurationName: String? = nil,
     traitConfiguration: AssertionRequestContext.TraitConfiguration,
-    makeSnapshotView: @escaping @MainActor () async throws -> SnapshotViewController = makeSnapshotView
+    makeSnapshotView: @escaping @MainActor () throws -> SnapshotViewController = makeSnapshotView
   ) -> AssertionRequestContext {
     AssertionRequestContext(
       name: name,
@@ -50,7 +50,7 @@ enum AssertionRequestGeneratorTestSupport {
     #expect(request.column == 1)
   }
 
-  static func makeSnapshotView() async throws -> SnapshotViewController {
+  static func makeSnapshotView() throws -> SnapshotViewController {
     let controller = SnapshotViewController()
     controller.view = SnapshotView(frame: .init(x: 0, y: 0, width: 200, height: 200))
     return controller

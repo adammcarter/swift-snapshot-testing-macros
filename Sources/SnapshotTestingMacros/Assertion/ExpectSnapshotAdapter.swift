@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import Testing
 
@@ -25,20 +26,9 @@ private final class SnapshotThrowingMakeValueBox<ConfigurationValue: Sendable, V
   }
 }
 
-private final class SnapshotAsyncMakeValueBox<ConfigurationValue: Sendable, V>: @unchecked Sendable {
-  let makeValue: (ConfigurationValue) async -> V
-
-  init(_ makeValue: @escaping (ConfigurationValue) async -> V) {
-    self.makeValue = makeValue
-  }
-}
-
-private final class SnapshotAsyncThrowingMakeValueBox<ConfigurationValue: Sendable, V>: @unchecked Sendable {
-  let makeValue: (ConfigurationValue) async throws -> V
-
-  init(_ makeValue: @escaping (ConfigurationValue) async throws -> V) {
-    self.makeValue = makeValue
-  }
+private final class SyncMainActorResultBox<T>: @unchecked Sendable {
+  let lock = NSLock()
+  var result: Result<T, Error>?
 }
 
 enum ExpectSnapshotAdapter {
@@ -260,31 +250,25 @@ enum ExpectSnapshotAdapter {
     _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
 
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
-      let runtime = ResolvedSnapshotRuntimeState.current
-      let displayName = context.resolvedAssertionName(named: named)
       let valueBox = SnapshotValueBox(value)
-
-      SyncSnapshotBridge.run(
-        {
-          let generator = SnapshotViewGenerator(
-            displayName: displayName,
-            configuration: .none,
-            makeValue: { (_: Void) async throws in valueBox.value },
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-
-          try await runtime.withAppliedValues {
-            try await assertSnapshot(with: generator)
-          }
-        },
+      runOnMainActorRecordingIssues(
+        context: context,
         fileID: fileID,
         filePath: filePath,
         line: line,
         column: column
-      )
+      ) {
+        try runMainActorSnapshot(
+          context: context,
+          named: named,
+          configuration: .none,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column,
+          makeValue: { (_: Void) in valueBox.value }
+        )
+      }
     }
   }
 
@@ -300,30 +284,24 @@ enum ExpectSnapshotAdapter {
     _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
 
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
-      let runtime = ResolvedSnapshotRuntimeState.current
-      let displayName = context.resolvedAssertionName(named: named)
-
-      SyncSnapshotBridge.run(
-        {
-          let generator = SnapshotViewGenerator(
-            displayName: displayName,
-            configuration: .none,
-            makeValue: { (_: Void) async throws in makeView() },
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-
-          try await runtime.withAppliedValues {
-            try await assertSnapshot(with: generator)
-          }
-        },
+      runOnMainActorRecordingIssues(
+        context: context,
         fileID: fileID,
         filePath: filePath,
         line: line,
         column: column
-      )
+      ) {
+        try runMainActorSnapshot(
+          context: context,
+          named: named,
+          configuration: .none,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column,
+          makeValue: { (_: Void) in makeView() }
+        )
+      }
     }
   }
 
@@ -339,30 +317,24 @@ enum ExpectSnapshotAdapter {
     _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
 
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
-      let runtime = ResolvedSnapshotRuntimeState.current
-      let displayName = context.resolvedAssertionName(named: named)
-
-      SyncSnapshotBridge.run(
-        {
-          let generator = SnapshotViewGenerator(
-            displayName: displayName,
-            configuration: .none,
-            makeValue: { (_: Void) async throws in makeViewController() },
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-
-          try await runtime.withAppliedValues {
-            try await assertSnapshot(with: generator)
-          }
-        },
+      runOnMainActorRecordingIssues(
+        context: context,
         fileID: fileID,
         filePath: filePath,
         line: line,
         column: column
-      )
+      ) {
+        try runMainActorSnapshot(
+          context: context,
+          named: named,
+          configuration: .none,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column,
+          makeValue: { (_: Void) in makeViewController() }
+        )
+      }
     }
   }
 
@@ -374,42 +346,30 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (ConfigurationValue) async throws -> V
+    makeValue: @escaping @MainActor (ConfigurationValue) throws -> V
   ) {
     _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
-
-    let resolvedConfiguration = SnapshotConfiguration(
-      name: configurationName(for: configuration),
-      value: configuration.value
-    )
-    let makeValueBox = SnapshotAsyncThrowingMakeValueBox(makeValue)
+    let resolvedConfiguration = resolvedConfiguration(from: configuration)
 
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
-      let runtime = ResolvedSnapshotRuntimeState.current
-
-      SyncSnapshotBridge.run(
-        {
-          let generator = SnapshotViewGenerator(
-            displayName: context.resolvedAssertionName(named: named),
-            configuration: resolvedConfiguration,
-            makeValue: { value async throws in
-              try await makeValueBox.makeValue(value)
-            },
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-
-          try await runtime.withAppliedValues {
-            try await assertSnapshot(with: generator)
-          }
-        },
+      runOnMainActorRecordingIssues(
+        context: context,
         fileID: fileID,
         filePath: filePath,
         line: line,
         column: column
-      )
+      ) {
+        try runMainActorSnapshot(
+          context: context,
+          named: named,
+          configuration: resolvedConfiguration,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column,
+          makeValue: makeValue
+        )
+      }
     }
   }
 
@@ -421,35 +381,87 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (ConfigurationValue) async throws -> V
+    makeValue: @escaping @MainActor (ConfigurationValue) throws -> V
   ) throws {
     _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
-
-    let resolvedConfiguration = SnapshotConfiguration(
-      name: configurationName(for: configuration),
-      value: configuration.value
-    )
-    let makeValueBox = SnapshotAsyncThrowingMakeValueBox(makeValue)
+    let resolvedConfiguration = resolvedConfiguration(from: configuration)
 
     try TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
-      let runtime = ResolvedSnapshotRuntimeState.current
-
-      try SyncSnapshotBridge.runThrowing {
-        let generator = SnapshotViewGenerator(
-          displayName: context.resolvedAssertionName(named: named),
+      try runOnMainActor(context: context) {
+        try runMainActorSnapshot(
+          context: context,
+          named: named,
           configuration: resolvedConfiguration,
-          makeValue: { value async throws in
-            try await makeValueBox.makeValue(value)
-          },
           fileID: fileID,
           filePath: filePath,
           line: line,
-          column: column
+          column: column,
+          makeValue: makeValue
         )
+      }
+    }
+  }
 
-        try await runtime.withAppliedValues {
-          try await assertSnapshot(with: generator)
-        }
+  private static func runLazyAsync<V: View, ConfigurationValue: Sendable>(
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping (ConfigurationValue) async -> V
+  ) async {
+    do {
+      try await runLazyAsyncThrowing(
+        configuration: configuration,
+        named: named,
+        function: function,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column,
+        makeValue: { value in await makeValue(value) }
+      )
+    }
+    catch {
+      recordIssue(
+        error,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+  }
+
+  private static func runLazyAsyncThrowing<V: View, ConfigurationValue: Sendable>(
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping (ConfigurationValue) async throws -> V
+  ) async throws {
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    let resolvedConfiguration = resolvedConfiguration(from: configuration)
+
+    try await TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      let valueBox = SnapshotValueBox(try await makeValue(resolvedConfiguration.value))
+
+      try runOnMainActor(context: context) {
+        try runMainActorSnapshot(
+          context: context,
+          named: named,
+          configuration: resolvedConfiguration,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column,
+          makeValue: { (_: ConfigurationValue) in valueBox.value }
+        )
       }
     }
   }
@@ -474,9 +486,7 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        makeValueBox.makeValue(value)
-      }
+      makeValue: { value in makeValueBox.makeValue(value) }
     )
   }
 
@@ -500,9 +510,7 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        try makeValueBox.makeValue(value)
-      }
+      makeValue: { value in try makeValueBox.makeValue(value) }
     )
   }
 
@@ -516,9 +524,7 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping (ConfigurationValue) async -> V
   ) async {
-    let makeValueBox = SnapshotAsyncMakeValueBox(makeValue)
-
-    runLazy(
+    await runLazyAsync(
       configuration: configuration,
       named: named,
       function: function,
@@ -526,9 +532,7 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        await makeValueBox.makeValue(value)
-      }
+      makeValue: { value in await makeValue(value) }
     )
   }
 
@@ -542,9 +546,7 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping (ConfigurationValue) async throws -> V
   ) async throws {
-    let makeValueBox = SnapshotAsyncThrowingMakeValueBox(makeValue)
-
-    try runLazyThrowing(
+    try await runLazyAsyncThrowing(
       configuration: configuration,
       named: named,
       function: function,
@@ -552,9 +554,7 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        try await makeValueBox.makeValue(value)
-      }
+      makeValue: { value in try await makeValue(value) }
     )
   }
 
@@ -576,9 +576,7 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        makeValue(value.0, value.1)
-      }
+      makeValue: { value in makeValue(value.0, value.1) }
     )
   }
 
@@ -600,9 +598,7 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        try makeValue(value.0, value.1)
-      }
+      makeValue: { value in try makeValue(value.0, value.1) }
     )
   }
 
@@ -624,9 +620,7 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        await makeValue(value.0, value.1)
-      }
+      makeValue: { value in await makeValue(value.0, value.1) }
     )
   }
 
@@ -648,9 +642,7 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        try await makeValue(value.0, value.1)
-      }
+      makeValue: { value in try await makeValue(value.0, value.1) }
     )
   }
 
@@ -673,9 +665,7 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        makeValue(value.0, value.1, value.2)
-      }
+      makeValue: { value in makeValue(value.0, value.1, value.2) }
     )
   }
 
@@ -698,9 +688,7 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        try makeValue(value.0, value.1, value.2)
-      }
+      makeValue: { value in try makeValue(value.0, value.1, value.2) }
     )
   }
 
@@ -723,9 +711,7 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        await makeValue(value.0, value.1, value.2)
-      }
+      makeValue: { value in await makeValue(value.0, value.1, value.2) }
     )
   }
 
@@ -748,13 +734,205 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: { value in
-        try await makeValue(value.0, value.1, value.2)
-      }
+      makeValue: { value in try await makeValue(value.0, value.1, value.2) }
     )
   }
 
   static func displayName(named: String?, baseName: String) -> String {
     SnapshotExecutionContext.resolvedAssertionName(named: named, baseName: baseName)
+  }
+
+  private static func resolvedConfiguration<ConfigurationValue: Sendable>(
+    from configuration: SnapshotConfiguration<ConfigurationValue>
+  ) -> SnapshotConfiguration<ConfigurationValue> {
+    SnapshotConfiguration(
+      name: configurationName(for: configuration),
+      value: configuration.value
+    )
+  }
+
+  private static func runOnMainActorRecordingIssues(
+    context: SnapshotExecutionContext?,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    operation: @escaping @MainActor () throws -> Void
+  ) {
+    let runtimeState = ResolvedSnapshotRuntimeState.current
+
+    do {
+      try runOnMainActor(
+        context: context,
+        runtimeState: runtimeState,
+        operation: operation
+      )
+    }
+    catch {
+      recordIssue(
+        error,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+  }
+
+  private static func runOnMainActor(
+    context: SnapshotExecutionContext?,
+    runtimeState: ResolvedSnapshotRuntimeState = .current,
+    operation: @escaping @MainActor () throws -> Void
+  ) throws {
+    if Thread.isMainThread {
+      try MainActor.assumeIsolated {
+        try runOnMainActorIsolated(
+          context: context,
+          runtimeState: runtimeState,
+          operation: operation
+        )
+      }
+      return
+    }
+
+    let box = SyncMainActorResultBox<Void>()
+    DispatchQueue.main.sync {
+      let result = Result {
+        try MainActor.assumeIsolated {
+          try runOnMainActorIsolated(
+            context: context,
+            runtimeState: runtimeState,
+            operation: operation
+          )
+        }
+      }
+
+      box.lock.withLock {
+        box.result = result
+      }
+    }
+
+    let result =
+      box.lock.withLock { box.result } ?? .failure(
+        SnapshotError(message: "Failed to execute snapshot assertion on the main thread.")
+      )
+    _ = try result.get()
+  }
+
+  @MainActor
+  private static func runOnMainActorIsolated(
+    context: SnapshotExecutionContext?,
+    runtimeState: ResolvedSnapshotRuntimeState,
+    operation: @escaping @MainActor () throws -> Void
+  ) throws {
+    if let context {
+      try TaskLocalSnapshotExecutionContext.$current.withValue(context) {
+        try runtimeState.withAppliedValues {
+          try operation()
+        }
+      }
+      return
+    }
+
+    try runtimeState.withAppliedValues {
+      try operation()
+    }
+  }
+
+  @MainActor
+  private static func runMainActorSnapshot<V: View, ConfigurationValue: Sendable>(
+    context: SnapshotExecutionContext,
+    named: String?,
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (ConfigurationValue) throws -> V
+  ) throws {
+    let generator = SnapshotViewGenerator(
+      displayName: context.resolvedAssertionName(named: named),
+      configuration: configuration,
+      makeValue: makeValue,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+
+    try runMainActorSnapshot(generator: generator)
+  }
+
+  @MainActor
+  private static func runMainActorSnapshot<ConfigurationValue: Sendable>(
+    context: SnapshotExecutionContext,
+    named: String?,
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (ConfigurationValue) throws -> SnapshotView
+  ) throws {
+    let generator = SnapshotViewGenerator(
+      displayName: context.resolvedAssertionName(named: named),
+      configuration: configuration,
+      makeValue: makeValue,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+
+    try runMainActorSnapshot(generator: generator)
+  }
+
+  @MainActor
+  private static func runMainActorSnapshot<ConfigurationValue: Sendable>(
+    context: SnapshotExecutionContext,
+    named: String?,
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (ConfigurationValue) throws -> SnapshotViewController
+  ) throws {
+    let generator = SnapshotViewGenerator(
+      displayName: context.resolvedAssertionName(named: named),
+      configuration: configuration,
+      makeValue: makeValue,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+
+    try runMainActorSnapshot(generator: generator)
+  }
+
+  @MainActor
+  private static func runMainActorSnapshot(
+    generator: some SnapshotViewGenerating
+  ) throws {
+    try assertSnapshotSync(with: generator)
+  }
+
+  private static func recordIssue(
+    _ error: Error,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) {
+    Issue.record(
+      error,
+      sourceLocation: .init(
+        fileID: fileID.description,
+        filePath: filePath.description,
+        line: Int(line),
+        column: Int(column)
+      )
+    )
   }
 }

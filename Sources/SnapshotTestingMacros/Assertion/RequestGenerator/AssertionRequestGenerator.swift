@@ -6,17 +6,21 @@ import SnapshotTesting
 struct AssertionRequestGenerator {
   let viewGenerator: any SnapshotViewGenerating
 
-  func generateRequests() async throws -> [any AssertionRequesting] {
-    let context = try await makeContext(with: viewGenerator)
+  func generateRequestsSync() throws -> [any AssertionRequesting] {
+    let context = try makeContext(with: viewGenerator)
 
     let requestGenerator = SizeAssertionRequestGenerator(context: context)
 
-    return try await requestGenerator.generateRequests()
+    return try requestGenerator.generateRequestsSync()
+  }
+
+  func generateRequests() async throws -> [any AssertionRequesting] {
+    try generateRequestsSync()
   }
 
   private func makeContext(
     with viewGenerator: some SnapshotViewGenerating
-  ) async throws -> AssertionRequestContext {
+  ) throws -> AssertionRequestContext {
     let traitConfiguration = AssertionRequestContext.TraitConfiguration(
       sizes: SizesSnapshotTrait.current,
       theme: ThemeSnapshotTrait.current,
@@ -32,7 +36,7 @@ struct AssertionRequestGenerator {
       name: viewGenerator.displayName,
       configurationName: configurationName,
       traitConfiguration: traitConfiguration,
-      makeSnapshotView: { try await viewGenerator.makeDecoratedView() },
+      makeSnapshotView: { try viewGenerator.makeDecoratedView() },
       snapshotDirectory: Self.makeSnapshotDirectory(
         filePath: viewGenerator.filePath,
         testFolderName: testFolderName

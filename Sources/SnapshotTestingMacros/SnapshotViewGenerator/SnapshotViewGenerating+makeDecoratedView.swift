@@ -3,8 +3,8 @@ import SnapshotSupport
 
 extension SnapshotViewGenerating {
 
-  func makeDecoratedView() async throws -> SnapshotViewController {
-    let payloadController = try await makeViewController(configuration.value)
+  func makeDecoratedView() throws -> SnapshotViewController {
+    let payloadController = try makeViewController(configuration.value)
 
     return decorate(payloadController)
   }
