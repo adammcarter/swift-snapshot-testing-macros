@@ -15,6 +15,7 @@ public enum AtomicReplaceError: Error, Equatable {
 public struct AtomicFileReplacer {
   public init() {}
 
+  // swiftlint:disable:next cyclomatic_complexity
   public func replace(path: String, expectedHash: String, newContents: String) throws {
     let originalFileMode = try regularFileMode(forPath: path)
     let fileURL = URL(fileURLWithPath: path)

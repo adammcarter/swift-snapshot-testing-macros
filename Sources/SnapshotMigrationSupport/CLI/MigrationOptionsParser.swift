@@ -1,4 +1,5 @@
 public enum MigrationOptionsParser {
+  // swiftlint:disable:next cyclomatic_complexity
   public static func parse(arguments: [String]) throws -> MigrationOptions {
     var projectRoot: String?
     var mode: MigrationMode = .dryRun

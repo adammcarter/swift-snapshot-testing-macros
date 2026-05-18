@@ -15,23 +15,18 @@ public struct ApplyLock {
   private let lockPath: String
   private let fileDescriptor: CInt
 
-  private init(lockPath: String, fileDescriptor: CInt) {
-    self.lockPath = lockPath
-    self.fileDescriptor = fileDescriptor
-  }
-
   public static func acquire(projectRoot: String, timeoutSeconds: Int) throws -> ApplyLock {
     let lockPath = URL(fileURLWithPath: projectRoot).appendingPathComponent(".snapshot-migration.lock").path
     let deadline = Date().addingTimeInterval(TimeInterval(max(0, timeoutSeconds)))
 
     while true {
-      let fd = open(lockPath, O_CREAT | O_EXCL | O_RDWR, mode_t(0o600))
-      if fd >= 0 {
+      let fileDescriptor = open(lockPath, O_CREAT | O_EXCL | O_RDWR, mode_t(0o600))
+      if fileDescriptor >= 0 {
         let ownerPID = "\(getpid())"
         _ = ownerPID.withCString { ptr in
-          write(fd, ptr, strlen(ptr))
+          write(fileDescriptor, ptr, strlen(ptr))
         }
-        return ApplyLock(lockPath: lockPath, fileDescriptor: fd)
+        return ApplyLock(lockPath: lockPath, fileDescriptor: fileDescriptor)
       }
 
       if errno != EEXIST {
