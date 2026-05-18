@@ -1,5 +1,11 @@
 import Foundation
 
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#endif
+
 public enum MigrationExitCode: Int {
   case success = 0
   case migrationFailure = 1
@@ -25,11 +31,17 @@ public struct MigrationRunner {
     try await runWithOutcome(options: options).exitCode
   }
 
+  // swiftlint:disable:next cyclomatic_complexity
   public func runWithOutcome(options: MigrationOptions) async throws -> MigrationRunOutcome {
+    let clock = ContinuousClock()
+    let totalTimingStart = try startPhase(clock: clock)
+
+    let scanTimingStart = try startPhase(clock: clock)
     let scan = try ProjectScanner().scan(
       projectRoot: options.projectRoot,
       maxFileSizeBytes: options.maxFileSizeBytes
     )
+    let scanTiming = try finishPhase(from: scanTimingStart, clock: clock)
 
     let runID = "run-\(UUID().uuidString)"
     let rewriter = SnapshotMigrationRewriter()
@@ -49,6 +61,7 @@ public struct MigrationRunner {
     var filesPreconditionFailed = 0
     var filesUnsafeNonRegular = 0
     var issueLines: [String] = []
+    let rewriteTimingStart = try startPhase(clock: clock)
 
     for file in scan.candidateFiles {
       let rewriteResult: RewriteResult
@@ -102,8 +115,12 @@ public struct MigrationRunner {
       )
       migratedDeclarations += 1
     }
+    let rewriteTiming = try finishPhase(from: rewriteTimingStart, clock: clock)
+
+    var applyTiming = MigrationPhaseTiming(wallSeconds: 0, cpuSeconds: 0)
 
     if options.mode == .apply && !hadMigrationFailures {
+      let applyTimingStart = try startPhase(clock: clock)
       var applyLock: ApplyLock?
       do {
         applyLock = try ApplyLock.acquire(
@@ -145,7 +162,6 @@ public struct MigrationRunner {
               reasonCode = "unsafe-nonregular-file"
             case .writeFailed:
               reasonCode = "atomic-write-failed"
-              break
             }
             issueLines.append("\(pendingApply.relativePath):1 <unknown> \(reasonCode) apply failed")
           } catch {
@@ -157,6 +173,7 @@ public struct MigrationRunner {
           }
         }
       }
+      applyTiming = try finishPhase(from: applyTimingStart, clock: clock)
     }
 
     if options.mode == .apply,
@@ -174,9 +191,10 @@ public struct MigrationRunner {
     } else {
       migrationPercentage = Int((Double(migratedDeclarations) / Double(candidateDeclarations) * 100.0).rounded(.down))
     }
+    let totalTiming = try finishPhase(from: totalTimingStart, clock: clock)
 
     let report = MigrationReport(
-      reportSchemaVersion: 1,
+      reportSchemaVersion: 2,
       runID: runID,
       projectRoot: options.projectRoot,
       filesScanned: scan.filesScanned,
@@ -191,7 +209,13 @@ public struct MigrationRunner {
       filesApplyFailed: filesApplyFailed,
       filesPreconditionFailed: filesPreconditionFailed,
       filesUnsafeNonRegular: filesUnsafeNonRegular,
-      issueLines: issueLines
+      issueLines: issueLines,
+      timings: .init(
+        total: totalTiming,
+        scan: scanTiming,
+        rewriteStage: rewriteTiming,
+        apply: applyTiming
+      )
     )
 
     var exitCode = report.resolveExitCode(failOnSkips: options.failOnSkips)
@@ -201,6 +225,46 @@ public struct MigrationRunner {
 
     return MigrationRunOutcome(report: report, exitCode: exitCode)
   }
+}
+
+private struct ProcessCPUSnapshot {
+  let seconds: Double
+
+  static func current() throws -> ProcessCPUSnapshot {
+    var usage = rusage()
+    guard getrusage(RUSAGE_SELF, &usage) == 0 else {
+      throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+    }
+
+    let userSeconds = Double(usage.ru_utime.tv_sec) + Double(usage.ru_utime.tv_usec) / 1_000_000
+    let systemSeconds = Double(usage.ru_stime.tv_sec) + Double(usage.ru_stime.tv_usec) / 1_000_000
+    return ProcessCPUSnapshot(seconds: userSeconds + systemSeconds)
+  }
+}
+
+private struct PhaseMeasurement {
+  let wallStart: ContinuousClock.Instant
+  let cpuStart: ProcessCPUSnapshot
+}
+
+private func startPhase(clock: ContinuousClock) throws -> PhaseMeasurement {
+  PhaseMeasurement(wallStart: clock.now, cpuStart: try .current())
+}
+
+private func finishPhase(
+  from start: PhaseMeasurement,
+  clock: ContinuousClock
+) throws -> MigrationPhaseTiming {
+  let wallDuration = start.wallStart.duration(to: clock.now)
+  let cpuEnd = try ProcessCPUSnapshot.current()
+  let wallSeconds =
+    Double(wallDuration.components.seconds)
+    + Double(wallDuration.components.attoseconds) / 1_000_000_000_000_000_000
+
+  return MigrationPhaseTiming(
+    wallSeconds: wallSeconds,
+    cpuSeconds: max(0, cpuEnd.seconds - start.cpuStart.seconds)
+  )
 }
 
 private struct PendingApply {
