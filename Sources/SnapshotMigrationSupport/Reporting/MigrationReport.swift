@@ -15,6 +15,7 @@ public struct MigrationReport: Codable, Equatable {
   public let filesPreconditionFailed: Int
   public let filesUnsafeNonRegular: Int
   public let issueLines: [String]
+  public let timings: MigrationTimings
 
   public init(
     reportSchemaVersion: Int,
@@ -32,7 +33,8 @@ public struct MigrationReport: Codable, Equatable {
     filesApplyFailed: Int,
     filesPreconditionFailed: Int,
     filesUnsafeNonRegular: Int,
-    issueLines: [String] = []
+    issueLines: [String] = [],
+    timings: MigrationTimings = .zero
   ) {
     self.reportSchemaVersion = reportSchemaVersion
     self.runID = runID
@@ -50,6 +52,7 @@ public struct MigrationReport: Codable, Equatable {
     self.filesPreconditionFailed = filesPreconditionFailed
     self.filesUnsafeNonRegular = filesUnsafeNonRegular
     self.issueLines = issueLines
+    self.timings = timings
   }
 
   public func resolveExitCode(failOnSkips: Bool) -> MigrationExitCode {

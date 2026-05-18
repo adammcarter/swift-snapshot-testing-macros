@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import SnapshotMigrationSupport
@@ -72,5 +73,38 @@ struct MigrationReportTests {
 
     #expect(report.resolveExitCode(failOnSkips: true) == .strictSkipFailure)
     #expect(report.resolveExitCode(failOnSkips: false) == .success)
+  }
+
+  @Test
+  func timingsRoundTripThroughCodableAndEquality() throws {
+    let report = MigrationReport(
+      reportSchemaVersion: 2,
+      runID: "timed",
+      projectRoot: "/tmp/project",
+      filesScanned: 4,
+      candidateFiles: 2,
+      candidateDeclarations: 2,
+      migratedDeclarations: 2,
+      skippedDeclarations: 0,
+      failedDeclarations: 0,
+      migrationPercentage: 100,
+      filesAttemptedApply: 2,
+      filesApplied: 2,
+      filesApplyFailed: 0,
+      filesPreconditionFailed: 0,
+      filesUnsafeNonRegular: 0,
+      issueLines: [],
+      timings: .init(
+        total: .init(wallSeconds: 1.0, cpuSeconds: 0.5),
+        scan: .init(wallSeconds: 0.1, cpuSeconds: 0.05),
+        rewriteStage: .init(wallSeconds: 0.8, cpuSeconds: 0.4),
+        apply: .init(wallSeconds: 0.1, cpuSeconds: 0.05)
+      )
+    )
+
+    let data = try JSONEncoder().encode(report)
+    let decoded = try JSONDecoder().decode(MigrationReport.self, from: data)
+
+    #expect(decoded == report)
   }
 }
