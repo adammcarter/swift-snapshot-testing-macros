@@ -129,7 +129,7 @@ Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo
 Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo --apply --json-report ./snapshot-migration-report.json
 ```
 
-The command defaults to dry-run mode. Add `--apply` to write migrated files.
+The command defaults to dry-run mode. Add `--apply` to write migrated files. Each run also reports total, scan, rewrite/stage, and apply timings in both the console summary and JSON report.
 
 Recommended rollout:
 

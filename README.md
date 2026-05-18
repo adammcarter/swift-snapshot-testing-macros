@@ -56,7 +56,7 @@ Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo
 Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo --apply --json-report ./snapshot-migration-report.json
 ```
 
-It defaults to dry-run mode and prints a summary of migrated, skipped, and failed declarations. Use `--apply` to write changes.
+It defaults to dry-run mode and prints a summary of migrated, skipped, and failed declarations. It also reports total, scan, rewrite/stage, and apply timings in both the console summary and JSON report. Use `--apply` to write changes.
 
 ## Development
 
