@@ -23,13 +23,19 @@ jobs:
         run: mise run lint
     
   swift-build-matrix:
-    name: Swift Test Matrix
+    name: Swift Test Matrix (${{ matrix.xcode }})
     needs: [format-and-lint]
-    runs-on: macos-15
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        xcode: ['16.3', '16.4', '26.0', '26.1', '26.2', '26.3', '26.4', '26.5']
-        
+        xcode: ['16.3', '16.4', '26.0', '26.1', '26.2', '26.3']
+        os: [macos-15]
+        include:
+          - xcode: '26.4'
+            os: macos-26
+          - xcode: '26.5'
+            os: macos-26
+
     steps:
       - name: Select Xcode version (${{ matrix.xcode }})
         uses: maxim-lobanov/setup-xcode@v1
