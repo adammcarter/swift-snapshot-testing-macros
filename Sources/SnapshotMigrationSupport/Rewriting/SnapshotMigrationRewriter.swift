@@ -417,8 +417,10 @@ public struct SnapshotMigrationRewriter {
     {
       terminalExpression = expression.trimmedDescription
     } else if let expression = terminalStatement.item.as(ExprSyntax.self) {
+      guard !containsTopLevelReturn(in: terminalStatement) else { return nil }
       terminalExpression = expression.trimmedDescription
     } else if let expressionStatement = terminalStatement.item.as(ExpressionStmtSyntax.self) {
+      guard !containsTopLevelReturn(in: terminalStatement) else { return nil }
       terminalExpression = expressionStatement.expression.trimmedDescription
     } else {
       return nil
