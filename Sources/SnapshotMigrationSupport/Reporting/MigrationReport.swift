@@ -1,4 +1,4 @@
-public struct MigrationReport: Codable, Equatable {
+public struct MigrationReport: Codable, Equatable, Sendable {
   public let reportSchemaVersion: Int
   public let runID: String
   public let projectRoot: String

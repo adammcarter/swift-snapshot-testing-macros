@@ -6,7 +6,7 @@ import Darwin
 import Glibc
 #endif
 
-public enum MigrationExitCode: Int {
+public enum MigrationExitCode: Int, Sendable {
   case success = 0
   case migrationFailure = 1
   case applySafetyFailure = 2
@@ -14,7 +14,7 @@ public enum MigrationExitCode: Int {
   case strictSkipFailure = 4
 }
 
-public struct MigrationRunOutcome {
+public struct MigrationRunOutcome: Sendable {
   public let report: MigrationReport
   public let exitCode: MigrationExitCode
 
