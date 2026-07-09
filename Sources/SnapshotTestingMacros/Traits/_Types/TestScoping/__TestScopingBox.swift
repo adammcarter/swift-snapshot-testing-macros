@@ -14,6 +14,8 @@ public struct __TestScopingBox: Testing.TestScoping {
     testCase _: Test.Case?,
     performing function: () async throws -> Void
   ) async throws {
-    try await snapshotTestScoping.provideScope(performing: function)
+    try await SnapshotAttemptToken.withAttemptScope {
+      try await snapshotTestScoping.provideScope(performing: function)
+    }
   }
 }

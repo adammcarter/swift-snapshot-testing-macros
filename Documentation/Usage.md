@@ -32,6 +32,20 @@ struct ProfileCardSnapshots {
 }
 ```
 
+### Repeated unnamed assertions
+
+When a test makes several unnamed `#expectSnapshot` calls, all calls within one execution of
+the test body share one naming scope as long as at least one snapshot trait (for example
+`.theme(...)` or `.sizes(...)`) is applied to the test or its suite: the first assertion uses
+the function's base name and later ones append deterministic `-2`, `-3`, … suffixes. This
+scope covers helper functions and child tasks spawned by the test body, and it resets for
+every new run of the test (including retries and repetitions), so artifact names stay stable
+across runs.
+
+Without any snapshot trait there is no shared naming scope and every unnamed assertion
+resolves the same base name — give each assertion a distinct `named:` argument or apply a
+snapshot trait.
+
 ## SwiftUI closure forms
 
 SwiftUI supports closure-backed snapshot generation when you want the assertion to own the value creation:

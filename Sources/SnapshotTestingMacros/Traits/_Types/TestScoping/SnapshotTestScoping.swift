@@ -15,11 +15,16 @@ public protocol SnapshotTestScoping: Testing.Trait, Testing.TestScoping {
 }
 
 extension SnapshotTestScoping {
+  /// Wraps every attempt of the test body in a fresh ``SnapshotAttemptToken`` scope so all
+  /// snapshot assertions within the attempt share one execution context, before delegating to
+  /// the trait's own scope.
   public func provideScope(
     for _: Test,
     testCase _: Test.Case?,
     performing function: () async throws -> Void
   ) async throws {
-    try await provideScope(performing: function)
+    try await SnapshotAttemptToken.withAttemptScope {
+      try await provideScope(performing: function)
+    }
   }
 }

@@ -1,40 +1,4 @@
-import Foundation
-import Testing
-
-private struct SnapshotExecutionContextCacheKey: Hashable, Sendable {
-  let testID: Test.ID?
-  let caseIdentity: String
-  let taskIdentity: UInt
-
-  init?(currentTest: Test?, currentCase: Test.Case?) {
-    guard let taskIdentity = Self.currentTaskIdentity() else {
-      return nil
-    }
-
-    self.testID = currentTest?.id
-    self.caseIdentity = currentCase.map(String.init(describing:)) ?? ""
-    self.taskIdentity = taskIdentity
-  }
-
-  private static func currentTaskIdentity() -> UInt? {
-    withUnsafeCurrentTask { task in
-      task.map { task in
-        withUnsafeBytes(of: task) { bytes in
-          bytes.load(as: UInt.self)
-        }
-      }
-    }
-  }
-}
-
-private final class SnapshotExecutionContextCache: @unchecked Sendable {
-  let lock = NSLock()
-  var contexts: [SnapshotExecutionContextCacheKey: SnapshotExecutionContext] = [:]
-}
-
 enum TaskLocalSnapshotExecutionContext {
-  private static let cache = SnapshotExecutionContextCache()
-
   @TaskLocal
   static var current: SnapshotExecutionContext?
 
@@ -46,25 +10,7 @@ enum TaskLocalSnapshotExecutionContext {
       return try work(current)
     }
 
-    let context: SnapshotExecutionContext
-    if let key = SnapshotExecutionContextCacheKey(
-      currentTest: Test.current,
-      currentCase: Test.Case.current
-    ) {
-      context = cache.lock.withLock {
-        if let existing = cache.contexts[key] {
-          return existing
-        }
-
-        let created = SnapshotExecutionContext(function: function)
-        cache.contexts[key] = created
-        return created
-      }
-    }
-    else {
-      context = SnapshotExecutionContext(function: function)
-    }
-
+    let context = resolveContext(function: function)
     return try $current.withValue(context) {
       try work(context)
     }
@@ -78,27 +24,34 @@ enum TaskLocalSnapshotExecutionContext {
       return try await work(current)
     }
 
-    let context: SnapshotExecutionContext
-    if let key = SnapshotExecutionContextCacheKey(
-      currentTest: Test.current,
-      currentCase: Test.Case.current
-    ) {
-      context = cache.lock.withLock {
-        if let existing = cache.contexts[key] {
-          return existing
-        }
-
-        let created = SnapshotExecutionContext(function: function)
-        cache.contexts[key] = created
-        return created
-      }
-    }
-    else {
-      context = SnapshotExecutionContext(function: function)
-    }
-
+    let context = resolveContext(function: function)
     return try await $current.withValue(context) {
       try await work(context)
     }
+  }
+
+  /// Resolves the execution context for one assertion.
+  ///
+  /// When a ``SnapshotTestScoping`` trait wrapped the current attempt, the context lives on
+  /// the attempt's ``SnapshotAttemptToken``: every assertion in the attempt — including ones
+  /// made from child tasks, which inherit the task-local token — shares it, and a new attempt
+  /// gets a fresh token and therefore a fresh context.
+  ///
+  /// Without a token (a bare `@Test` without any snapshot trait) every assertion gets a fresh
+  /// context. Contexts are deliberately never cached here: they used to be cached under the
+  /// raw current-task pointer bits, but the allocator reuses a finished task's allocation for
+  /// the next task almost immediately, so new attempts and sequential child tasks frequently
+  /// resolved a stale context whose `usedNames` were already populated and unnamed artifact
+  /// names silently drifted to "-2"/"-3" suffixes. The residual limitation of the fresh-per-
+  /// assertion fallback is narrow: a trait-less test that makes several *unnamed*
+  /// `#expectSnapshot` calls resolves the same base name for each of them instead of suffixing
+  /// deterministically — applying any snapshot trait (which binds the attempt token) or
+  /// distinct `named:` arguments restores deterministic naming.
+  private static func resolveContext(function: StaticString) -> SnapshotExecutionContext {
+    if let token = SnapshotAttemptToken.current {
+      return token.executionContext(function: function)
+    }
+
+    return SnapshotExecutionContext(function: function)
   }
 }
