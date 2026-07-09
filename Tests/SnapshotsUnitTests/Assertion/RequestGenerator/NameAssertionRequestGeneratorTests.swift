@@ -9,7 +9,7 @@ import Testing
 @Suite
 struct NameAssertionRequestGeneratorTests {
   @Test(arguments: themeCases)
-  func `builds test name from context name size and theme`(
+  func buildsTestNameFromContextNameSizeAndTheme(
     theme: ThemeSnapshotTrait.Theme,
     expectedThemeName: String
   ) async throws {
@@ -24,7 +24,7 @@ struct NameAssertionRequestGeneratorTests {
   }
 
   @Test(arguments: themeCases)
-  func `prefixes test name with configuration when present`(
+  func prefixesTestNameWithConfigurationWhenPresent(
     theme: ThemeSnapshotTrait.Theme,
     expectedThemeName: String
   ) async throws {
@@ -39,7 +39,7 @@ struct NameAssertionRequestGeneratorTests {
   }
 
   @Test
-  func `uses slash delimited display names as folder plus file when no configuration is present`() async throws {
+  func usesSlashDelimitedDisplayNamesAsFolderPlusFileWhenNoConfigurationIsPresent() async throws {
     let request = try await makeRequest(
       contextName: "dealer is verified and has reply/view",
       sizeTestName: "test_name_description_1",
@@ -51,7 +51,7 @@ struct NameAssertionRequestGeneratorTests {
   }
 
   @Test
-  func `passes metadata through to final request`() async throws {
+  func passesMetadataThroughToFinalRequest() async throws {
     let request = try await makeRequest(
       contextName: "base",
       sizeTestName: "test_name_description_1",

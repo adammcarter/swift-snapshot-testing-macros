@@ -9,7 +9,7 @@ import Testing
 @Suite
 struct AssertionRequestPipelineTests {
   @Test
-  func `generates requests synchronously for the full generator pipeline`() throws {
+  func generatesRequestsSynchronouslyForTheFullGeneratorPipeline() throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [
@@ -47,7 +47,7 @@ struct AssertionRequestPipelineTests {
   }
 
   @Test
-  func `generates requests for an end to end pipeline of generators`() async throws {
+  func generatesRequestsForAnEndToEndPipelineOfGenerators() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [

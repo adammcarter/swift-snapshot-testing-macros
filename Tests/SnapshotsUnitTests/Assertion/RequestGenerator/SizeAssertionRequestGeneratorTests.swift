@@ -9,7 +9,7 @@ import Testing
 @Suite
 struct SizeAssertionRequestGeneratorTests {
   @Test
-  func `generates all themes for two sizes`() async throws {
+  func generatesAllThemesForTwoSizes() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [
@@ -49,7 +49,7 @@ struct SizeAssertionRequestGeneratorTests {
   }
 
   @Test
-  func `throws no sizes available when sizes are empty`() async throws {
+  func throwsNoSizesAvailableWhenSizesAreEmpty() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [],
@@ -71,7 +71,7 @@ struct SizeAssertionRequestGeneratorTests {
   }
 
   @Test
-  func `throws zero size for fixed zero by zero`() async throws {
+  func throwsZeroSizeForFixedZeroByZero() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [
@@ -101,7 +101,7 @@ struct SizeAssertionRequestGeneratorTests {
   }
 
   @Test
-  func `throws zero width for fixed zero width`() async throws {
+  func throwsZeroWidthForFixedZeroWidth() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [
@@ -131,7 +131,7 @@ struct SizeAssertionRequestGeneratorTests {
   }
 
   @Test
-  func `throws zero height for fixed zero height`() async throws {
+  func throwsZeroHeightForFixedZeroHeight() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [
@@ -161,7 +161,7 @@ struct SizeAssertionRequestGeneratorTests {
   }
 
   @Test
-  func `uses context sizes and ignores task local sizes`() async throws {
+  func usesContextSizesAndIgnoresTaskLocalSizes() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [

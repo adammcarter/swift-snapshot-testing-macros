@@ -9,7 +9,7 @@ import Testing
 @Suite
 struct StrategyAssertionRequestGeneratorTests {
   @Test(arguments: configuredStrategyCases)
-  func `returns request for configured strategy`(entry: ConfiguredStrategyCase) async throws {
+  func returnsRequestForConfiguredStrategy(entry: ConfiguredStrategyCase) async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [],
@@ -43,7 +43,7 @@ struct StrategyAssertionRequestGeneratorTests {
   }
 
   @Test
-  func `ignores task local strategy when configured strategy is set`() async throws {
+  func ignoresTaskLocalStrategyWhenConfiguredStrategyIsSet() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [],

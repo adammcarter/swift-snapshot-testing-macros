@@ -7,7 +7,7 @@ import Testing
 @Suite
 struct AssertionRequestGeneratorTests {
   @Test
-  func `builds snapshot directory without test folder`() {
+  func buildsSnapshotDirectoryWithoutTestFolder() {
     let directory = AssertionRequestGenerator.makeSnapshotDirectory(
       filePath: "/tmp/SnapshotTests.swift",
       testFolderName: nil
@@ -17,7 +17,7 @@ struct AssertionRequestGeneratorTests {
   }
 
   @Test
-  func `builds snapshot directory with test folder`() {
+  func buildsSnapshotDirectoryWithTestFolder() {
     let directory = AssertionRequestGenerator.makeSnapshotDirectory(
       filePath: "/tmp/SnapshotTests.swift",
       testFolderName: "myView"
