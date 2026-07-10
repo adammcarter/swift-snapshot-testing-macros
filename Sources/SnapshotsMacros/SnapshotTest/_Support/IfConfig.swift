@@ -72,12 +72,16 @@ extension MemberBlockItemListSyntax {
       $0.decl.as(FunctionDeclSyntax.self)
     }
     .filter(\.isSupportedForSnapshots)
-    .compactMap { snapshotTestFunctionDecl in
-      let test = SnapshotSuite.TestBlock.Test(
-        suiteMacroArguments: suiteMacroArguments,
-        snapshotTestFunctionDecl: snapshotTestFunctionDecl,
-        macroContext: macroContext
-      )
+    .compactMap { snapshotTestFunctionDecl -> CodeBlockItemSyntax? in
+      guard
+        let test = SnapshotSuite.TestBlock.Test(
+          suiteMacroArguments: suiteMacroArguments,
+          snapshotTestFunctionDecl: snapshotTestFunctionDecl,
+          macroContext: macroContext
+        )
+      else {
+        return nil
+      }
 
       var expression = test.expression
       expression.leadingTrivia = .newline

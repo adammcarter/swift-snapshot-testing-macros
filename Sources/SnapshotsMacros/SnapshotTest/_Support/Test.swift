@@ -81,13 +81,18 @@ extension SnapshotSuite.TestBlock {
       configurationsExpr != nil || configurationValuesExpr != nil
     }
 
-    init(
+    init?(
       suiteMacroArguments: SnapshotMacroArguments,
       snapshotTestFunctionDecl: FunctionDeclSyntax,
       macroContext: SnapshotSuiteMacroContext
     ) {
       let suiteDeclaration = Declaration(declaration: macroContext.declaration)
 
+      /*
+       Generating `Suite().test()` for a suite that cannot be initialised with the arguments
+       the macro passes is a guaranteed compile error inside generated code. Diagnose it as an
+       error and generate nothing for this function.
+       */
       if suiteDeclaration.isInitializable == false,
         snapshotTestFunctionDecl.isStatic == false
       {
@@ -95,6 +100,8 @@ extension SnapshotSuite.TestBlock {
           functionDecl: snapshotTestFunctionDecl,
           context: macroContext.context
         )
+
+        return nil
       }
 
       /*
@@ -121,6 +128,19 @@ extension SnapshotSuite.TestBlock {
         functionDecl: snapshotTestFunctionDecl,
         suiteArguments: suiteMacroArguments
       )
+
+      /*
+       A parameterised function without configurations would call `makeGenerator(configuration:
+       .none)` where the container expects `SnapshotConfiguration<(Params)>` — a type mismatch
+       in generated code. The peer macro diagnoses this as an error; generate nothing here so
+       the only compiler output is that diagnostic.
+       */
+      if snapshotTestFunctionDecl.signature.parameterClause.parameters.isEmpty == false,
+        testMacroArguments.configurationsExpression == nil,
+        testMacroArguments.configurationValuesExpression == nil
+      {
+        return nil
+      }
 
       self.configurationsExpr = testMacroArguments.configurationsExpression
       self.configurationValuesExpr = testMacroArguments.configurationValuesExpression
@@ -230,7 +250,7 @@ private func addNonInstantiableFunctionDiagnostic(
   }
 
   context.diagnose(
-    DiagnosticFactory.generalMessage(
+    DiagnosticFactory.generalErrorMessage(
       message: "Cannot create a test for instance functions on types that cannot be initialised.",
       node: functionDecl,
       fixIts: [

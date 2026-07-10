@@ -112,12 +112,12 @@ extension SnapshotSuiteTests.NoParameters {
 
         #if canImport(UIKit)
           @SnapshotTest
-          func makeHostingController(input: String) -> UIViewController {
+          func makeHostingController() -> UIViewController {
             UIHostingController(rootView: Text("hosting controller"))
           }
 
           @SnapshotTest
-          func makeViewController(input: String) -> UIViewController {
+          func makeViewController() -> UIViewController {
             SampleViewController()
           }
         #endif
@@ -150,10 +150,10 @@ extension SnapshotSuiteTests.NoParameters {
           }
 
         #if canImport(UIKit)
-          func makeHostingController(input: String) -> UIViewController {
+          func makeHostingController() -> UIViewController {
             UIHostingController(rootView: Text("hosting controller"))
           }
-          func makeViewController(input: String) -> UIViewController {
+          func makeViewController() -> UIViewController {
             SampleViewController()
           }
         #endif

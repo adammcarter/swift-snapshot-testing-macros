@@ -38,27 +38,8 @@ extension SnapshotSuiteTests {
            ✏️ Add a function to make a NSViewController.
         struct SnapshotTests {
           @SnapshotTest
-          func makeAnotherView(input: String) -> String {
-            "another view"
-          }
-        }
-        """
-      } fixes: {
-        """
-        @MainActor
-        @Suite
-        struct SnapshotTests {
-          @SnapshotTest
-          func makeAnotherView(input: String) -> String {
-            "another view"
-          }
-        }
-        """
-      } expansion: {
-        """
-        @MainActor
-        @Suite
-        struct SnapshotTests {
+          ┬────────────
+          ╰─ 🛑 '@SnapshotTest' does not support the return type 'String'. Supported return types: NSView, NSViewController, UIView, UIViewController, some View.
           func makeAnotherView(input: String) -> String {
             "another view"
           }
@@ -101,37 +82,12 @@ extension SnapshotSuiteTests {
            ✏️ Add a function to make a NSViewController.
         struct SnapshotTests {
           @SnapshotTest(
+          ╰─ 🛑 '@SnapshotTest' does not support the return type 'String'. Supported return types: NSView, NSViewController, UIView, UIViewController, some View.
             configurations: [
               SnapshotConfiguration(name: "Config1", value: "1"),
               SnapshotConfiguration(name: "Config2", value: "2"),
             ]
           )
-          func makeAnotherView(input: String) -> String {
-            Text("another view")
-          }
-        }
-        """
-      } fixes: {
-        """
-        @MainActor
-        @Suite
-        struct SnapshotTests {
-          @SnapshotTest(
-            configurations: [
-              SnapshotConfiguration(name: "Config1", value: "1"),
-              SnapshotConfiguration(name: "Config2", value: "2"),
-            ]
-          )
-          func makeAnotherView(input: String) -> String {
-            Text("another view")
-          }
-        }
-        """
-      } expansion: {
-        """
-        @MainActor
-        @Suite
-        struct SnapshotTests {
           func makeAnotherView(input: String) -> String {
             Text("another view")
           }
@@ -402,9 +358,18 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         @SnapshotSuite
+        ┬─────────────
+        ╰─ ⚠️ Missing valid snapshot suite tests.
+           ✏️ Remove the @SnapshotSuite attribute.
+           ✏️ Add a function to make a SwiftUI view.
+           ✏️ Add a function to make a UIView.
+           ✏️ Add a function to make a UIViewController.
+           ✏️ Add a function to make a NSView.
+           ✏️ Add a function to make a NSViewController.
+           ✏️ Add @SnapshotTest annotations to viable functions.
         enum MyEnum {
           @SnapshotTest
-          ╰─ ⚠️ Cannot create a test for instance functions on types that cannot be initialised.
+          ╰─ 🛑 Cannot create a test for instance functions on types that cannot be initialised.
              ✏️ Make function static
           func makeView() -> some View {
             Text("")
