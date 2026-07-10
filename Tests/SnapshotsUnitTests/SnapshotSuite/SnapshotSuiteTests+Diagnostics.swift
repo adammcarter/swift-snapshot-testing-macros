@@ -39,9 +39,26 @@ extension SnapshotSuiteTests {
         struct SnapshotTests {
           @SnapshotTest
           ┬────────────
-          ╰─ 🛑 '@SnapshotTest' does not support the return type 'String'. Supported return types: NSView, NSViewController, UIView, UIViewController, some View.
+          ╰─ ⚠️ '@SnapshotTest' does not support the return type 'String'; no snapshot test will be generated. Supported return types: NSView, NSViewController, UIView, UIViewController, some View.
           func makeAnotherView(input: String) -> String {
             "another view"
+          }
+        }
+        """
+      } expansion: {
+        """
+        @MainActor
+        @Suite
+        struct SnapshotTests {
+          func makeAnotherView(input: String) -> String {
+            "another view"
+          }
+
+          @MainActor
+          @Suite(.pointfreeSnapshots)
+          struct SnapshotTests_GeneratedSnapshotSuite {
+
+
           }
         }
         """
@@ -82,7 +99,7 @@ extension SnapshotSuiteTests {
            ✏️ Add a function to make a NSViewController.
         struct SnapshotTests {
           @SnapshotTest(
-          ╰─ 🛑 '@SnapshotTest' does not support the return type 'String'. Supported return types: NSView, NSViewController, UIView, UIViewController, some View.
+          ╰─ ⚠️ '@SnapshotTest' does not support the return type 'String'; no snapshot test will be generated. Supported return types: NSView, NSViewController, UIView, UIViewController, some View.
             configurations: [
               SnapshotConfiguration(name: "Config1", value: "1"),
               SnapshotConfiguration(name: "Config2", value: "2"),
@@ -90,6 +107,23 @@ extension SnapshotSuiteTests {
           )
           func makeAnotherView(input: String) -> String {
             Text("another view")
+          }
+        }
+        """
+      } expansion: {
+        """
+        @MainActor
+        @Suite
+        struct SnapshotTests {
+          func makeAnotherView(input: String) -> String {
+            Text("another view")
+          }
+
+          @MainActor
+          @Suite(.pointfreeSnapshots)
+          struct SnapshotTests_GeneratedSnapshotSuite {
+
+
           }
         }
         """

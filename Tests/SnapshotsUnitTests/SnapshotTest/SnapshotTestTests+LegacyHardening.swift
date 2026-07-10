@@ -211,10 +211,17 @@ extension SnapshotTestTests {
       }
     }
 
-    // MARK: Finding 7 — unsupported return types are rejected
+    // MARK: Finding 7 — unsupported return types warn and skip (do not hard-error)
+    //
+    // The round-1 hardening turned every unsupported return type into a hard error, which
+    // regressed legitimate view spellings (`Text`, `AnyView`, `some SwiftUI.View`, view
+    // typealiases) that previously compiled as a dead-but-valid no-op. Because a view-shaped
+    // typealias or concrete SwiftUI view cannot be told apart from a genuinely non-view type at
+    // expansion time, the diagnostic is a warning-and-skip rather than an error: no test is
+    // generated, but an in-progress migration still builds.
 
     @Test
-    func unsupportedReturnTypeIsRejected() {
+    func unsupportedReturnTypeWarnsAndSkips() {
       assertMacro {
         """
         @MainActor
@@ -240,7 +247,7 @@ extension SnapshotTestTests {
         struct SnapshotTests {
           @SnapshotTest
           ┬────────────
-          ╰─ 🛑 '@SnapshotTest' does not support the return type 'Text'. Supported return types: NSView, NSViewController, UIView, UIViewController, some View.
+          ╰─ ⚠️ '@SnapshotTest' does not support the return type 'Text'; no snapshot test will be generated. Supported return types: NSView, NSViewController, UIView, UIViewController, some View.
           func makeText() -> Text {
             Text("view")
           }
@@ -248,6 +255,49 @@ extension SnapshotTestTests {
           @SnapshotTest
           func makeValidView() -> some View {
             Text("valid")
+          }
+        }
+        """
+      } expansion: {
+        """
+        @MainActor
+        @Suite
+        struct SnapshotTests {
+          func makeText() -> Text {
+            Text("view")
+          }
+          func makeValidView() -> some View {
+            Text("valid")
+          }
+
+          enum __generator_container_makeValidView {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
+                displayName: "makeValidView",
+                configuration: configuration,
+                makeValue: {
+                  SnapshotTests().makeValidView()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 10,
+                column: 3
+              )
+            }
+          }
+
+          @MainActor
+          @Suite(.pointfreeSnapshots)
+          struct SnapshotTests_GeneratedSnapshotSuite {
+
+            @MainActor
+            @Test()
+            func makeValidView_snapshotTest() async throws {
+              let generator = __generator_container_makeValidView.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
           }
         }
         """

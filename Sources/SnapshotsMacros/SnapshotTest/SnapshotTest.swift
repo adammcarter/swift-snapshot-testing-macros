@@ -105,10 +105,18 @@ struct SnapshotTest {
       let supportedReturnTypes =
         Constants.Configuration.supportedReturnTypes.sorted().joined(separator: ", ")
 
+      /*
+       Warn and skip rather than hard-error. The supported set only recognises the exact spelling
+       `some View`, but SwiftUI's runtime generator accepts any `View` — `Text`, `AnyView`,
+       `some SwiftUI.View`, view typealiases — all of which previously compiled as a dead-but-valid
+       no-op. A view-shaped concrete type or typealias cannot be told apart from a genuinely
+       unsupported one at expansion time, so a hard error would break in-progress migrations that
+       still build. A warning surfaces the skipped test without breaking the build.
+       */
       macroContext.context.diagnose(
-        DiagnosticFactory.generalErrorMessage(
+        DiagnosticFactory.generalMessage(
           message:
-            "'@SnapshotTest' does not support the return type '\(returnType)'. Supported return types: \(supportedReturnTypes).",
+            "'@SnapshotTest' does not support the return type '\(returnType)'; no snapshot test will be generated. Supported return types: \(supportedReturnTypes).",
           node: macroContext.node
         )
       )
