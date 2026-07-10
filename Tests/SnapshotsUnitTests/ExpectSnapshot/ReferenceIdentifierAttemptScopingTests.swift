@@ -25,22 +25,26 @@ struct ReferenceIdentifierAttemptScopingTests {
 
     // First attempt: no reference exists yet, so record-missing writes it and records a
     // "recorded new snapshot" issue.
-    try await trait.provideScope(for: test, testCase: Test.Case.current) { @MainActor in
-      Self.assertOnAttemptContext(
-        content: "stable content",
-        directory: directory,
-        expectingRecordedReference: true
-      )
+    try await trait.provideScope(for: test, testCase: Test.Case.current) { @Sendable in
+      await MainActor.run {
+        Self.assertOnAttemptContext(
+          content: "stable content",
+          directory: directory,
+          expectingRecordedReference: true
+        )
+      }
     }
 
     // Second attempt: the identifier must reset to `.1`, find the recorded reference, and
     // match without recording any issue.
-    try await trait.provideScope(for: test, testCase: Test.Case.current) { @MainActor in
-      Self.assertOnAttemptContext(
-        content: "stable content",
-        directory: directory,
-        expectingRecordedReference: false
-      )
+    try await trait.provideScope(for: test, testCase: Test.Case.current) { @Sendable in
+      await MainActor.run {
+        Self.assertOnAttemptContext(
+          content: "stable content",
+          directory: directory,
+          expectingRecordedReference: false
+        )
+      }
     }
 
     #expect(try Self.referenceFileNames(in: directory) == ["sharedName.1.txt"])
@@ -56,32 +60,36 @@ struct ReferenceIdentifierAttemptScopingTests {
     let directory = try Self.makeScratchDirectory()
     defer { try? FileManager.default.removeItem(at: directory) }
 
-    try await trait.provideScope(for: test, testCase: Test.Case.current) { @MainActor in
-      Self.assertOnAttemptContext(
-        content: "first assertion content",
-        directory: directory,
-        expectingRecordedReference: true
-      )
-      Self.assertOnAttemptContext(
-        content: "second assertion content",
-        directory: directory,
-        expectingRecordedReference: true
-      )
+    try await trait.provideScope(for: test, testCase: Test.Case.current) { @Sendable in
+      await MainActor.run {
+        Self.assertOnAttemptContext(
+          content: "first assertion content",
+          directory: directory,
+          expectingRecordedReference: true
+        )
+        Self.assertOnAttemptContext(
+          content: "second assertion content",
+          directory: directory,
+          expectingRecordedReference: true
+        )
+      }
     }
 
     // A new attempt in the same order must land on the recorded `.1`/`.2` pair — no drifting
     // to `.3`/`.4`, no order-dependent shuffling.
-    try await trait.provideScope(for: test, testCase: Test.Case.current) { @MainActor in
-      Self.assertOnAttemptContext(
-        content: "first assertion content",
-        directory: directory,
-        expectingRecordedReference: false
-      )
-      Self.assertOnAttemptContext(
-        content: "second assertion content",
-        directory: directory,
-        expectingRecordedReference: false
-      )
+    try await trait.provideScope(for: test, testCase: Test.Case.current) { @Sendable in
+      await MainActor.run {
+        Self.assertOnAttemptContext(
+          content: "first assertion content",
+          directory: directory,
+          expectingRecordedReference: false
+        )
+        Self.assertOnAttemptContext(
+          content: "second assertion content",
+          directory: directory,
+          expectingRecordedReference: false
+        )
+      }
     }
 
     #expect(try Self.referenceFileNames(in: directory) == ["sharedName.1.txt", "sharedName.2.txt"])
