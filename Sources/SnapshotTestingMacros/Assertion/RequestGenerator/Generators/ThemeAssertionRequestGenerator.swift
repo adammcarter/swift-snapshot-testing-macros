@@ -40,9 +40,11 @@ struct ThemeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
     #if canImport(UIKit)
     UIWindow().traitCollection.displayScale
     #elseif canImport(AppKit)
-    NSScreen.main.flatMap {
-      Double($0.backingScaleFactor)
-    } ?? 1.0
+    // AppKit has no deterministic device scale to inherit: `NSScreen.main`'s backing scale
+    // depends on the machine running the tests, which would make committed references differ
+    // between Retina and non-Retina machines. An unspecified scale therefore renders at one
+    // pixel per point; pass `scale:` explicitly for @2x/@3x output.
+    1.0
     #endif
   }()
 }

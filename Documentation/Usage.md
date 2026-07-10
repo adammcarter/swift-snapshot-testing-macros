@@ -134,6 +134,20 @@ That keeps the call site native while still creating the platform view on the ma
 
 In v1, UIKit and AppKit support the direct-value overloads only. Closure forms, `SnapshotConfiguration`, and `argument:` helpers remain SwiftUI-only.
 
+### macOS rendering semantics
+
+On macOS, image snapshots are rendered by re-hosting the view in an offscreen window at each
+request's size, applying the theme's `NSAppearance` and any `.backgroundColor(...)` decoration,
+and running a full Auto Layout pass before drawing — mirroring how the UIKit path re-hosts per
+request. The bitmap is drawn in the sRGB color space at the request's scale:
+
+- `.sizes(..., scale:)` and device scales are honoured exactly (`scale: 2.0` produces @2x pixels).
+- An unspecified scale renders at one pixel per point. Unlike iOS, macOS has no deterministic
+  device scale to inherit — following the screen's backing scale would make committed references
+  differ between Retina and non-Retina machines.
+- `WKWebView`-specific capture (pointfree's `takeSnapshot` special case) does not apply to the
+  macOS image strategy; web views render like any other view via `cacheDisplay`.
+
 ## Legacy macros
 
 `@SnapshotSuite` and `@SnapshotTest` are deprecated. See [MIGRATION.md](../MIGRATION.md) for before-and-after examples.

@@ -50,7 +50,7 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
         #elseif canImport(AppKit)
         request = AssertionRequest(
           view: try context.makeSnapshotView(),
-          snapshotting: makeThemedImageSnapshotting(),
+          snapshotting: makeImageSnapshotting(),
           snapshotDirectory: context.snapshotDirectory,
           testName: testName,
           fileID: context.fileID,
@@ -65,26 +65,36 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
   }
 
   #if canImport(AppKit)
-  /// Wraps the image strategy so the theme's `NSAppearance` is applied to the snapshot view
-  /// hierarchy immediately before rendering, making dynamic colors resolve per theme. This mirrors
-  /// the UIKit path, where `userInterfaceStyle` is passed through the snapshotting strategy's
-  /// trait collection and resolved at render time.
+  /// Builds an image strategy that performs the full render pass — offscreen window hosting at
+  /// the request size, the theme's `NSAppearance`, the decorator background, an Auto Layout
+  /// pass, and the request's display scale — via ``AppKitImageRenderer``. This mirrors the UIKit
+  /// path, where the size is re-hosted per request and `userInterfaceStyle`/`displayScale` are
+  /// passed through the snapshotting strategy's trait collection and resolved at render time.
   ///
-  /// The appearance must be applied at render time rather than when the request is generated:
-  /// the snapshot value can be a single cached instance shared by every request in the theme
+  /// Everything must be applied at render time rather than when the request is generated: the
+  /// snapshot value can be a single cached instance shared by every request in the size/theme
   /// fan-out, and all requests are generated before any of them renders — so a generation-time
-  /// mutation would let the last-generated theme win for every artifact.
-  private func makeThemedImageSnapshotting() -> Snapshotting<SnapshotViewController, NSImage> {
+  /// mutation would let the last-generated permutation win for every artifact.
+  private func makeImageSnapshotting() -> Snapshotting<SnapshotViewController, NSImage> {
+    let size = size
     let theme = theme
+    let displayScale = displayScale
+    // Captured now, while the decorator trait's task-local is still bound; the render itself
+    // runs outside that scope. Re-applying the color per render (under the themed appearance)
+    // lets dynamic colors resolve differently for the light and dark artifacts.
+    let backgroundColor = __SnapshotViewDecoratorConfiguration.value?.backgroundColor
 
-    return Snapshotting<SnapshotViewController, NSImage>
-      .image(size: size)
+    return Snapshotting<NSImage, NSImage>.image
       .pullback { viewController in
         MainActor.assumeIsolated {
-          viewController.view.appearance = theme
+          AppKitImageRenderer.render(
+            viewController: viewController,
+            size: size,
+            displayScale: displayScale,
+            appearance: theme,
+            backgroundColor: backgroundColor
+          )
         }
-
-        return viewController
       }
   }
   #endif
