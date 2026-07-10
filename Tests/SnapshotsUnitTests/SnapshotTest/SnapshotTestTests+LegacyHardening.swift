@@ -660,7 +660,7 @@ extension SnapshotTestTests {
             @MainActor
             @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse(["a"]))
             func makeView_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: configuration)
+              let generator = __generator_container_makeView_d95795ce.makeGenerator(configuration: configuration)
 
               try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
@@ -758,13 +758,111 @@ extension SnapshotTestTests {
             @MainActor
             @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse(["a"]))
             func makeView_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: configuration)
+              let generator = __generator_container_makeView_d95795ce.makeGenerator(configuration: configuration)
 
               try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }
           }
         }
         """
+      }
+    }
+
+    // MARK: Finding 13 (carry-over) — overloaded @SnapshotTest functions get distinct containers
+    //
+    // The generator container name was `__generator_container_` + the bare function name, so two
+    // `@SnapshotTest` overloads differing only in parameters both emitted
+    // `enum __generator_container_makeView` in the same scope — "invalid redeclaration". A stable
+    // parameter-signature hash now disambiguates the parameterised overload's container on both
+    // the peer and suite sides while zero-parameter functions keep their historic bare name.
+
+    @Test
+    func overloadedFunctionsGetDistinctContainerNames() {
+      assertMacro {
+        """
+        @MainActor
+        @Suite
+        @SnapshotSuite
+        struct SnapshotTests {
+          @SnapshotTest(configurationValues: [1])
+          func makeView(number: Int) -> some View {
+            Text("\\(number)")
+          }
+
+          @SnapshotTest(configurationValues: ["a"])
+          func makeView(text: String) -> some View {
+            Text(text)
+          }
+        }
+        """
+      } expansion: {
+        #"""
+        @MainActor
+        @Suite
+        struct SnapshotTests {
+          func makeView(number: Int) -> some View {
+            Text("\(number)")
+          }
+
+          enum __generator_container_makeView_a619c405 {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(Int)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(Int)>(
+                displayName: "makeView",
+                configuration: configuration,
+                makeValue: {
+                  SnapshotTests().makeView(number: $0)
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 5,
+                column: 3
+              )
+            }
+          }
+          func makeView(text: String) -> some View {
+            Text(text)
+          }
+
+          enum __generator_container_makeView_5de7fc9b {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(String)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(String)>(
+                displayName: "makeView",
+                configuration: configuration,
+                makeValue: {
+                  SnapshotTests().makeView(text: $0)
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 10,
+                column: 3
+              )
+            }
+          }
+
+          @MainActor
+          @Suite(.pointfreeSnapshots)
+          struct SnapshotTests_GeneratedSnapshotSuite {
+
+            @MainActor
+            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([1]))
+            func makeView_snapshotTest(configuration: SnapshotConfiguration<(Int)>) async throws {
+              let generator = __generator_container_makeView_a619c405.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
+
+            @MainActor
+            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse(["a"]))
+            func makeView_snapshotTest(configuration: SnapshotConfiguration<(String)>) async throws {
+              let generator = __generator_container_makeView_5de7fc9b.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
+          }
+        }
+        """#
       }
     }
 
