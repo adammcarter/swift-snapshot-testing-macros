@@ -52,6 +52,8 @@ public struct MigrationRunner {
     var hadApplyFailures = false
     var pendingApplies: [PendingApply] = []
 
+    var candidateFiles = 0
+    var candidateDeclarations = 0
     var migratedDeclarations = 0
     var skippedDeclarations = 0
     var failedDeclarations = 0
@@ -80,22 +82,51 @@ public struct MigrationRunner {
       do {
         rewriteResult = try rewriter.rewrite(source: file.contents)
       } catch {
+        candidateFiles += 1
         hadMigrationFailures = true
         failedDeclarations += 1
         issueLines.append("\(file.relativePath):1 <unknown> syntax-parse-failed unable to rewrite declaration")
         continue
       }
 
-      if !rewriteResult.reasons.isEmpty {
-        skippedDeclarations += 1
-        for reason in rewriteResult.reasons {
-          issueLines.append("\(file.relativePath):\(reason.line) <unknown> \(reason.code) \(reason.message)")
+      let declarations = rewriteResult.declarations
+
+      // The scanner matches raw text, so `@SnapshotTest` inside a comment or string literal
+      // still marks the file as a candidate. When parsing finds no legacy declarations and
+      // the rewrite changes nothing, the file has no migratable surface: it stays counted
+      // as scanned, contributes zero declarations, and must not register as a skip.
+      guard !declarations.isEmpty || rewriteResult.changed else { continue }
+
+      candidateFiles += 1
+      candidateDeclarations += declarations.count
+
+      let skippedInFile = declarations.filter { $0.resolution == .skipped }
+      if !skippedInFile.isEmpty {
+        // File-level applies stay all-or-nothing: one skipped declaration blocks the whole
+        // file, but each declaration still gets its own count and reason line.
+        skippedDeclarations += declarations.count
+        for declaration in declarations {
+          switch declaration.resolution {
+          case .skipped:
+            for reason in declaration.reasons {
+              issueLines.append(
+                "\(file.relativePath):\(reason.line) \(declaration.name) \(reason.code) \(reason.message)"
+              )
+            }
+          case .migratable:
+            let siblingNames = skippedInFile.map(\.name).joined(separator: ", ")
+            issueLines.append(
+              "\(file.relativePath):\(declaration.line) \(declaration.name) blocked-by-sibling-skip "
+                + "declaration is migratable but was not applied because sibling declaration(s) "
+                + "\(siblingNames) could not be migrated"
+            )
+          }
         }
         continue
       }
 
       guard rewriteResult.changed else {
-        skippedDeclarations += 1
+        skippedDeclarations += declarations.count
         continue
       }
 
@@ -111,7 +142,7 @@ public struct MigrationRunner {
           )
         } catch {
           hadMigrationFailures = true
-          failedDeclarations += 1
+          failedDeclarations += max(1, declarations.count)
           issueLines.append("\(file.relativePath):1 <unknown> temp-storage-cap-exceeded unable to stage rewritten output")
           continue
         }
@@ -122,10 +153,11 @@ public struct MigrationRunner {
           absolutePath: file.absolutePath,
           relativePath: file.relativePath,
           expectedHash: SHA256Hasher.hash(file.contents),
-          rewrittenContents: rewriteResult.output
+          rewrittenContents: rewriteResult.output,
+          declarationCount: declarations.count
         )
       )
-      migratedDeclarations += 1
+      migratedDeclarations += declarations.count
     }
     let rewriteTiming = try finishPhase(from: rewriteTimingStart, clock: clock)
 
@@ -162,8 +194,8 @@ public struct MigrationRunner {
           } catch let error as AtomicReplaceError {
             hadApplyFailures = true
             filesApplyFailed += 1
-            migratedDeclarations = max(0, migratedDeclarations - 1)
-            failedDeclarations += 1
+            migratedDeclarations = max(0, migratedDeclarations - pendingApply.declarationCount)
+            failedDeclarations += pendingApply.declarationCount
             let reasonCode: String
             switch error {
             case .preconditionFailed:
@@ -179,8 +211,8 @@ public struct MigrationRunner {
           } catch {
             hadApplyFailures = true
             filesApplyFailed += 1
-            migratedDeclarations = max(0, migratedDeclarations - 1)
-            failedDeclarations += 1
+            migratedDeclarations = max(0, migratedDeclarations - pendingApply.declarationCount)
+            failedDeclarations += pendingApply.declarationCount
             issueLines.append("\(pendingApply.relativePath):1 <unknown> atomic-write-failed apply failed")
           }
         }
@@ -196,7 +228,6 @@ public struct MigrationRunner {
       stagingStore?.remove()
     }
 
-    let candidateDeclarations = scan.candidateFiles.count
     let migrationPercentage: Int
     if candidateDeclarations == 0 {
       migrationPercentage = 100
@@ -210,7 +241,7 @@ public struct MigrationRunner {
       runID: runID,
       projectRoot: options.projectRoot,
       filesScanned: scan.filesScanned,
-      candidateFiles: scan.candidateFiles.count,
+      candidateFiles: candidateFiles,
       candidateDeclarations: candidateDeclarations,
       migratedDeclarations: migratedDeclarations,
       skippedDeclarations: skippedDeclarations,
@@ -286,4 +317,7 @@ private struct PendingApply {
   let relativePath: String
   let expectedHash: String
   let rewrittenContents: String
+  /// Number of legacy declarations migrated by this file's rewrite, so apply failures
+  /// move the exact per-declaration counts from migrated to failed.
+  let declarationCount: Int
 }

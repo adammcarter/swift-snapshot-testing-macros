@@ -16,15 +16,50 @@ public struct RewriteReason: Equatable, Codable {
   }
 }
 
+/// The rewrite outcome of a single legacy snapshot declaration found in a file.
+///
+/// Files can hold any number of declarations; the runner aggregates these outcomes so the
+/// report counts declarations, not files. A qualified attribute (`@Module.SnapshotTest`)
+/// is reported as a skipped declaration whose name is unknown.
+public struct RewriteDeclarationOutcome: Equatable {
+  public enum Resolution: Equatable {
+    /// The declaration produced safe edits and can be migrated.
+    case migratable
+    /// The declaration cannot be migrated automatically; `reasons` explains why.
+    case skipped
+  }
+
+  public let name: String
+  public let line: Int
+  public let resolution: Resolution
+  public let reasons: [RewriteReason]
+
+  public init(name: String, line: Int, resolution: Resolution, reasons: [RewriteReason]) {
+    self.name = name
+    self.line = line
+    self.resolution = resolution
+    self.reasons = reasons
+  }
+}
+
 public struct RewriteResult: Equatable {
   public let output: String
   public let reasons: [RewriteReason]
   public let changed: Bool
+  /// Per-declaration outcomes for every legacy snapshot declaration found in the file.
+  /// Empty when the scan matched only comments or string literals (no real declarations).
+  public let declarations: [RewriteDeclarationOutcome]
 
-  public init(output: String, reasons: [RewriteReason], changed: Bool) {
+  public init(
+    output: String,
+    reasons: [RewriteReason],
+    changed: Bool,
+    declarations: [RewriteDeclarationOutcome] = []
+  ) {
     self.output = output
     self.reasons = reasons
     self.changed = changed
+    self.declarations = declarations
   }
 }
 
@@ -39,34 +74,54 @@ public struct SnapshotMigrationRewriter {
     let converter = SourceLocationConverter(fileName: "", tree: tree)
     var reasons: [RewriteReason] = []
     var edits: [TextEdit] = collector.suiteAttributeEdits
+    var declarations: [RewriteDeclarationOutcome] = []
 
     for qualifiedAttribute in collector.qualifiedSnapshotAttributes {
-      reasons.append(
-        makeReason(
-          code: "qualified-attribute-unsupported",
-          message: "Module-qualified @\(qualifiedAttribute.name) attributes are not supported "
-            + "for automatic migration; migrate this declaration manually.",
-          utf8Offset: qualifiedAttribute.utf8Offset,
-          converter: converter,
-          source: source
+      let reason = makeReason(
+        code: "qualified-attribute-unsupported",
+        message: "Module-qualified @\(qualifiedAttribute.name) attributes are not supported "
+          + "for automatic migration; migrate this declaration manually.",
+        utf8Offset: qualifiedAttribute.utf8Offset,
+        converter: converter,
+        source: source
+      )
+      reasons.append(reason)
+      declarations.append(
+        RewriteDeclarationOutcome(
+          name: "<unknown>",
+          line: reason.line,
+          resolution: .skipped,
+          reasons: [reason]
         )
       )
     }
 
     for legacyFunction in collector.legacyFunctions {
+      let functionName = legacyFunction.function.name.text
+      let functionPosition = legacyFunction.function.positionAfterSkippingLeadingTrivia
+      let functionLine = converter.location(for: functionPosition).line
+
       if let parseIssue = legacyFunction.parseIssue {
-        reasons.append(
-          makeReason(
-            code: parseIssue.code,
-            message: parseIssue.message,
-            utf8Offset: legacyFunction.snapshotAttributeNameStartUTF8Offset,
-            converter: converter,
-            source: source
+        let reason = makeReason(
+          code: parseIssue.code,
+          message: parseIssue.message,
+          utf8Offset: legacyFunction.snapshotAttributeNameStartUTF8Offset,
+          converter: converter,
+          source: source
+        )
+        reasons.append(reason)
+        declarations.append(
+          RewriteDeclarationOutcome(
+            name: functionName,
+            line: functionLine,
+            resolution: .skipped,
+            reasons: [reason]
           )
         )
         continue
       }
 
+      let reasonCountBeforeFunction = reasons.count
       let functionEdits: [TextEdit]?
       if let parameterizedArgument = legacyFunction.parameterizedArgument {
         functionEdits = rewriteParameterizedFunction(
@@ -88,10 +143,24 @@ public struct SnapshotMigrationRewriter {
       if let functionEdits {
         edits.append(contentsOf: functionEdits)
       }
+
+      declarations.append(
+        RewriteDeclarationOutcome(
+          name: functionName,
+          line: functionLine,
+          resolution: functionEdits == nil ? .skipped : .migratable,
+          reasons: Array(reasons[reasonCountBeforeFunction...])
+        )
+      )
     }
 
     let output = apply(edits: edits, to: source)
-    return RewriteResult(output: output, reasons: reasons, changed: output != source)
+    return RewriteResult(
+      output: output,
+      reasons: reasons,
+      changed: output != source,
+      declarations: declarations
+    )
   }
 
   private func rewriteNonParameterizedFunction(
