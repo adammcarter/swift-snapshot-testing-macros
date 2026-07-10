@@ -88,6 +88,47 @@ struct FrameBasedViewSizingTests {
     #expect(bitmap.pixelsHigh == Int(intrinsicSize.height.rounded()))
   }
 
+  /// A frame-based root that sizes itself by `frame` but lays its own subviews out with internal
+  /// Auto Layout constraints (a common migration shape) must still have its frame size preserved:
+  /// those internal constraints appear in the root's `constraints`, but none of them constrains
+  /// the root's own width/height, so the root carries no external sizing and would otherwise
+  /// collapse under `.minimum` measurement.
+  @Test
+  func frameBasedRootWithInternalConstraintsMeasuresAtItsFrameSize() throws {
+    let payload = SnapshotViewController()
+    payload.view = InternallyConstrainedCardView()
+
+    let request = try firstImageRequest { payload }
+    let bitmap = try renderedBitmap(request: request)
+
+    #expect(bitmap.pixelsWide == 300)
+    #expect(bitmap.pixelsHigh == 200)
+    // The root fills red; the internally-centered 40x40 child fills blue at the middle.
+    try expectColor(in: bitmap, atX: 2, y: 2, isApproximately: .srgbRed)
+    try expectColor(in: bitmap, atX: 150, y: 100, isApproximately: .srgbBlue)
+  }
+
+  /// The padded case is the silent one: without frame preservation the decorator container
+  /// measured as insets-only with a zero-sized payload ghost inside, recording green forever.
+  @Test
+  func paddedFrameBasedRootWithInternalConstraintsIsNotEmpty() throws {
+    let payload = SnapshotViewController()
+    payload.view = InternallyConstrainedCardView()
+
+    let container = payload.wrappingInContainerViewController(
+      insets: .init(top: 16, leading: 16, bottom: 16, trailing: 16)
+    )
+
+    let request = try firstImageRequest { container }
+    let bitmap = try renderedBitmap(request: request)
+
+    #expect(bitmap.pixelsWide == 332)
+    #expect(bitmap.pixelsHigh == 232)
+    // The payload must actually be visible inside the padding, not a zero-sized ghost.
+    try expectColor(in: bitmap, atX: 20, y: 20, isApproximately: .srgbRed)
+    try expectColor(in: bitmap, atX: 166, y: 116, isApproximately: .srgbBlue)
+  }
+
   /// A genuinely zero-sized frame-based payload must still fail loudly rather than record.
   @Test
   func zeroFrameViewStillThrowsZeroSize() throws {
@@ -171,6 +212,39 @@ struct FrameBasedViewSizingTests {
 
 extension NSColor {
   fileprivate static let srgbRed = NSColor(srgbRed: 1, green: 0, blue: 0, alpha: 1)
+  fileprivate static let srgbBlue = NSColor(srgbRed: 0, green: 0, blue: 1, alpha: 1)
+}
+
+/// A frame-based root — sized `300x200` purely by its initial `frame`, with no intrinsic content
+/// size and no constraint on its own width/height — that nonetheless lays a centered 40x40 child
+/// out with internal Auto Layout constraints. Those `centerX`/`centerY` constraints live in the
+/// root's `constraints`, so a guard keyed on `constraints.isEmpty` misclassifies it as
+/// constraint-sized and skips frame preservation.
+private final class InternallyConstrainedCardView: NSView {
+  init() {
+    super.init(frame: .init(x: 0, y: 0, width: 300, height: 200))
+
+    let inner = FillView(fill: .srgbBlue, width: 40, height: 40)
+    inner.translatesAutoresizingMaskIntoConstraints = false
+    addSubview(inner)
+
+    NSLayoutConstraint.activate([
+      inner.centerXAnchor.constraint(equalTo: centerXAnchor),
+      inner.centerYAnchor.constraint(equalTo: centerYAnchor),
+      inner.widthAnchor.constraint(equalToConstant: 40),
+      inner.heightAnchor.constraint(equalToConstant: 40),
+    ])
+  }
+
+  @available(*, unavailable)
+  required init?(coder _: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  override func draw(_: NSRect) {
+    NSColor.srgbRed.setFill()
+    bounds.fill()
+  }
 }
 
 /// A frame-based view: sized purely by its initial `frame`, with no constraints of its own and
