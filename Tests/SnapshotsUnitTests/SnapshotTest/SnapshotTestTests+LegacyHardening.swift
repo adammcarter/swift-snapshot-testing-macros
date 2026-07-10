@@ -795,6 +795,25 @@ extension SnapshotTestTests {
           }
         }
         """
+      } diagnostics: {
+        #"""
+        @MainActor
+        @Suite
+        @SnapshotSuite
+        struct SnapshotTests {
+          @SnapshotTest(configurationValues: [1])
+          ╰─ ⚠️ Multiple '@SnapshotTest' functions resolve to the same display name 'makeView'; they will share one reference snapshot. Give each an explicit, distinct display name.
+          func makeView(number: Int) -> some View {
+            Text("\(number)")
+          }
+
+          @SnapshotTest(configurationValues: ["a"])
+          ╰─ ⚠️ Multiple '@SnapshotTest' functions resolve to the same display name 'makeView'; they will share one reference snapshot. Give each an explicit, distinct display name.
+          func makeView(text: String) -> some View {
+            Text(text)
+          }
+        }
+        """#
       } expansion: {
         #"""
         @MainActor

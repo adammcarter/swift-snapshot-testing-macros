@@ -244,6 +244,58 @@ private func testDisplayName(for functionDecl: FunctionDeclSyntax) -> String? {
   return makeDisplayName(from: attribute)
 }
 
+/// The display name the peer actually bakes for a function, *after* the fallback override — the
+/// value that decides which reference artifact the test resolves to.
+private func effectiveDisplayName(
+  for functionDecl: FunctionDeclSyntax,
+  macroContext: SnapshotSuiteMacroContext
+) -> String {
+  if let override = makeDisplayNameOverride(
+    snapshotTestFunctionDecl: functionDecl,
+    macroContext: macroContext
+  ) {
+    return override
+  }
+
+  return testDisplayName(for: functionDecl)
+    ?? makeDisplayName(from: macroContext.node)
+    ?? functionDecl.name.identifierDisplayName
+}
+
+/// Two `@SnapshotTest` functions that resolve to the same effective display name share a single
+/// reference artifact — persistent false failures, or silent overwrites in record mode. The
+/// fallback override only disambiguates the suite-name fallback; user-induced duplicates (two
+/// explicit `@SnapshotTest("Same")`, or overloads that share the fallback) stay undetected. Warn
+/// on every colliding function so the shared-artifact hazard is visible.
+func diagnoseDuplicateDisplayNames(macroContext: SnapshotSuiteMacroContext) {
+  let functions =
+    macroContext
+    .declaration
+    .memberBlock
+    .members
+    .compactMap { $0.decl.as(FunctionDeclSyntax.self) }
+    .filter(\.isSupportedForSnapshots)
+
+  var functionsByDisplayName: [String: [FunctionDeclSyntax]] = [:]
+
+  for function in functions {
+    let displayName = effectiveDisplayName(for: function, macroContext: macroContext)
+    functionsByDisplayName[displayName, default: []].append(function)
+  }
+
+  for (displayName, colliding) in functionsByDisplayName where colliding.count >= 2 {
+    for function in colliding {
+      macroContext.context.diagnose(
+        DiagnosticFactory.generalMessage(
+          message:
+            "Multiple '@SnapshotTest' functions resolve to the same display name '\(displayName)'; they will share one reference snapshot. Give each an explicit, distinct display name.",
+          node: function
+        )
+      )
+    }
+  }
+}
+
 /// Counts the tests that would fall back to the suite display name. `#if` blocks contribute
 /// their largest clause: at most one clause compiles at a time, so that is the highest number
 /// of fallback tests that can coexist.

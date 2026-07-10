@@ -194,6 +194,118 @@ extension SnapshotSuiteTests.Parameters {
         """
       }
     }
+
+    /// Two tests given the *same explicit* display name still collide on one reference artifact —
+    /// the fallback disambiguation does not cover user-induced duplicates. Warn on every colliding
+    /// function so the shared-artifact hazard is visible.
+    @Test
+    func testDuplicateExplicitDisplayNamesAreWarned() {
+      assertMacro {
+        """
+        @MainActor
+        @Suite
+        @SnapshotSuite
+        struct MySuite {
+          @SnapshotTest("Same")
+          func makeFirstView() -> some View {
+            Text("first")
+          }
+
+          @SnapshotTest("Same")
+          func makeSecondView() -> some View {
+            Text("second")
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MainActor
+        @Suite
+        @SnapshotSuite
+        struct MySuite {
+          @SnapshotTest("Same")
+          ╰─ ⚠️ Multiple '@SnapshotTest' functions resolve to the same display name 'Same'; they will share one reference snapshot. Give each an explicit, distinct display name.
+          func makeFirstView() -> some View {
+            Text("first")
+          }
+
+          @SnapshotTest("Same")
+          ╰─ ⚠️ Multiple '@SnapshotTest' functions resolve to the same display name 'Same'; they will share one reference snapshot. Give each an explicit, distinct display name.
+          func makeSecondView() -> some View {
+            Text("second")
+          }
+        }
+        """
+      } expansion: {
+        """
+        @MainActor
+        @Suite
+        struct MySuite {
+          func makeFirstView() -> some View {
+            Text("first")
+          }
+
+          enum __generator_container_makeFirstView {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
+                displayName: "Same",
+                configuration: configuration,
+                makeValue: {
+                  MySuite().makeFirstView()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 5,
+                column: 3
+              )
+            }
+          }
+          func makeSecondView() -> some View {
+            Text("second")
+          }
+
+          enum __generator_container_makeSecondView {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
+                displayName: "Same",
+                configuration: configuration,
+                makeValue: {
+                  MySuite().makeSecondView()
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 10,
+                column: 3
+              )
+            }
+          }
+
+          @MainActor
+          @Suite(.pointfreeSnapshots)
+          struct MySuite_GeneratedSnapshotSuite {
+
+            @MainActor
+            @Test()
+            func makeFirstView_snapshotTest() async throws {
+              let generator = __generator_container_makeFirstView.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
+
+            @MainActor
+            @Test()
+            func makeSecondView_snapshotTest() async throws {
+              let generator = __generator_container_makeSecondView.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
+          }
+        }
+        """
+      }
+    }
   }
 }
 #endif
