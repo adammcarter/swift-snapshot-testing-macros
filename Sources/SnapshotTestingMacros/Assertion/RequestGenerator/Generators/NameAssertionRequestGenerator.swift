@@ -10,15 +10,27 @@ struct NameAssertionRequestGenerator: AssertionRequestGenerating {
   let displayScale: Double
 
   private var resolvedContext: AssertionRequestContext {
-    guard context.configurationName == nil,
-          let pathName = normalizedPathName(from: context.name)
-    else {
+    guard let pathName = normalizedPathName(from: context.name) else {
       return context
     }
 
-    let snapshotDirectory = URL(fileURLWithPath: context.snapshotDirectory, isDirectory: true)
-      .appendingPathComponent(pathName.folder, isDirectory: true)
-      .path
+    /*
+     The slash-as-subfolder convention applies to configured (parameterized) tests too. Their
+     snapshot directory already nests the full slash-aware test folder path (derived from the
+     display name in `AssertionRequestGenerator`), so only the name is rewritten to the final
+     path segment here — appending the folder again would duplicate it. Either way the raw `/`
+     must not leak into the test name, where it would reach the reference file name and
+     pointfree's counter key.
+     */
+    let snapshotDirectory =
+      if context.configurationName == nil {
+        URL(fileURLWithPath: context.snapshotDirectory, isDirectory: true)
+          .appendingPathComponent(pathName.folder, isDirectory: true)
+          .path
+      }
+      else {
+        context.snapshotDirectory
+      }
 
     return AssertionRequestContext(
       name: pathName.file,

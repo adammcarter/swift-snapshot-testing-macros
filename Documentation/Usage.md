@@ -32,6 +32,14 @@ struct ProfileCardSnapshots {
 }
 ```
 
+### Slash-delimited names create subfolders
+
+A `/` in a snapshot display name means "subfolder": `named: "Menu/Item"` stores the reference
+inside a `Menu/` folder under the test file's snapshot folder, with `Item` as the artifact
+name. The convention applies identically to parameterized tests —
+`#expectSnapshot(configuration, named: "Menu/Item")` nests `Menu/Item/` and names each case's
+artifact `<case>_Item_<size>_<theme>` inside it.
+
 ### Repeated unnamed assertions
 
 When a test makes several unnamed `#expectSnapshot` calls, all calls within one execution of
