@@ -138,6 +138,63 @@ struct MigrationRunnerIntegrationTests {
   }
 
   @Test
+  func applyBlockedByMigrationFailureZeroesStagedDeclarationCountLikeLockFailure() async throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    // The scanner processes candidates in sorted path order and the staging cap latches once
+    // exceeded, so the first (small) file stages cleanly — incrementing `migratedDeclarations` —
+    // while the second (large) file's rewritten output blows the cap, its staging throws, and
+    // `hadMigrationFailures` is set. The apply phase is then skipped entirely. Staged-but-unwritten
+    // work must be accounted like the apply-lock-failure path (moved to failed, not left as
+    // `migrated`) so the report never claims work that never reached disk.
+    try fixture.write(
+      path: "Tests/A_Small.swift",
+      contents: """
+      @SnapshotTest("Small")
+      func small() -> some View {
+        Text("A")
+      }
+      """
+    )
+    let hugeComment = "// " + String(repeating: "padding ", count: 400)
+    try fixture.write(
+      path: "Tests/Z_Large.swift",
+      contents: """
+      \(hugeComment)
+      @SnapshotTest("Large")
+      func large() -> some View {
+        Text("B")
+      }
+      """
+    )
+
+    let options = MigrationOptions(
+      projectRoot: fixture.root,
+      mode: .apply,
+      jsonReportPath: nil,
+      keepTemp: false,
+      failOnSkips: false,
+      maxFileSizeBytes: 2_000_000,
+      // Fits the small file's rewritten output but not the large file's padded output.
+      maxStagedBytes: 1_000,
+      applyLockTimeoutSeconds: 0
+    )
+
+    let outcome = try await MigrationRunner().runWithOutcome(options: options)
+    let tempRoot = "/tmp/snapshot-migration/\(outcome.report.runID)"
+    defer { try? FileManager.default.removeItem(atPath: tempRoot) }
+
+    #expect(outcome.exitCode == .migrationFailure)
+    // Nothing was applied, so no declaration may be reported as migrated.
+    #expect(outcome.report.filesApplied == 0)
+    #expect(outcome.report.migratedDeclarations == 0)
+    // The staged-but-unwritten declaration is counted as failed, matching the lock-failure path.
+    #expect(outcome.report.failedDeclarations == 2)
+    #expect(outcome.report.migrationPercentage == 0)
+  }
+
+  @Test
   func lockContentionWithNoPendingAppliesStillExitsApplySafetyFailure() async throws {
     let fixture = try TempProject.make()
     defer { fixture.cleanup() }

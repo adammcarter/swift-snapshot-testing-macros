@@ -254,6 +254,14 @@ public struct MigrationRunner {
         }
       }
       applyTiming = try finishPhase(from: applyTimingStart, clock: clock)
+    } else if options.mode == .apply {
+      // Apply was requested but skipped because an earlier file failed to migrate/stage. The
+      // staged rewrites never reached disk, so — mirroring the apply-lock-failure path (which
+      // zeroes `migratedDeclarations` into `failedDeclarations`) — staged-but-unwritten work is
+      // accounted as failed, not migrated. Without this, the report would claim
+      // `migratedDeclarations > 0` with `filesApplied == 0`.
+      failedDeclarations += migratedDeclarations
+      migratedDeclarations = 0
     }
 
     // Staged copies are the only durable record of the rewritten output. Keep them
