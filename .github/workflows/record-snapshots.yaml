@@ -1,42 +1,40 @@
 name: Record Snapshot References
 
-# Manually-dispatched rebaseline helper.
+# Rebaseline helper.
 #
 # Snapshot references must match the rendering of the environment that verifies them.
-# The macOS unit-test job renders with the CI runner's OS/Xcode, which can differ from any
-# local machine (font metrics, display scale). This workflow deletes the requested reference
-# directories, re-runs the suite twice on the CI runner itself (first run records the missing
-# references, second run must pass against them), and uploads the recorded references as an
-# artifact to download and commit.
+# CI verifies with pinned runner OS / Xcode / simulator runtimes that can differ from any
+# local machine (font metrics, display scale, UIKit dump formats). This workflow deletes the
+# per-scheme reference directories, re-runs each suite twice on the CI runner itself (first
+# run records the missing references, second run must pass against them), and uploads the
+# recorded references as an artifact to download and commit.
+#
+# workflow_dispatch only works once the workflow exists on the default branch, so this also
+# triggers on pushes to record/** branches and runs from the pushed ref itself.
 
-# workflow_dispatch only works once the workflow exists on the default branch, so this
-# also triggers on pushes to record/** branches and runs from the pushed ref itself.
 on:
   push:
     branches:
       - 'record/**'
   workflow_dispatch:
-    inputs:
-      scheme:
-        description: Scheme to record
-        required: true
-        default: SnapshotsUnitTests
-        type: choice
-        options:
-          - SnapshotsUnitTests
-      reference_paths:
-        description: Space-separated __Snapshots__ directories to delete and re-record
-        required: true
-        default: Tests/SnapshotsUnitTests/ExpectSnapshot/__Snapshots__
-
-env:
-  RECORD_SCHEME: ${{ inputs.scheme || 'SnapshotsUnitTests' }}
-  RECORD_PATHS: ${{ inputs.reference_paths || 'Tests/SnapshotsUnitTests/ExpectSnapshot/__Snapshots__' }}
 
 jobs:
   record:
-    name: Record
+    name: Record (${{ matrix.scheme }})
     runs-on: macos-26
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scheme: SnapshotsUnitTests
+            destination: platform=macOS
+            reference_paths: Tests/SnapshotsUnitTests/ExpectSnapshot/__Snapshots__
+          - scheme: SnapshotsIntegrationTests
+            destination: platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64
+            reference_paths: Tests/SnapshotsIntegrationTests/ExpectSnapshot/__Snapshots__ Tests/SnapshotsIntegrationTests/SnapshotTest/__Snapshots__ Tests/SnapshotsIntegrationTests/SnapshotSuite/__Snapshots__
+          - scheme: SnapshotsIntegrationRepetitionTests
+            destination: platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64
+            reference_paths: Tests/SnapshotsIntegrationRepetitionTests/__Snapshots__
 
     steps:
       - name: Select Xcode version (26.3)
@@ -47,25 +45,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Disable prebuilts
+        run: |
+          defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
+          defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
+
       - name: Delete stale references
-        run: rm -rf $RECORD_PATHS
+        run: rm -rf ${{ matrix.reference_paths }}
 
       - name: Record run (writes missing references, expected to fail)
         continue-on-error: true
         run: |
           xcodebuild test \
-            -scheme $RECORD_SCHEME \
-            -destination 'platform=macOS'
+            -scheme ${{ matrix.scheme }} \
+            -destination '${{ matrix.destination }}'
 
       - name: Verify run (must pass against recorded references)
         run: |
           xcodebuild test \
-            -scheme $RECORD_SCHEME \
-            -destination 'platform=macOS'
+            -scheme ${{ matrix.scheme }} \
+            -destination '${{ matrix.destination }}'
 
       - name: Upload recorded references
         uses: actions/upload-artifact@v4
         with:
-          name: recorded-references
+          name: recorded-references-${{ matrix.scheme }}
           path: Tests/**/__Snapshots__/**
           if-no-files-found: error
