@@ -26,6 +26,11 @@ enum AppKitImageRenderer {
     let view = viewController.view
     let initialFrame = view.frame
     let initialAutoresizingMask = view.autoresizingMask
+    // The render overrides the caller's appearance (to the theme) and forces layer-backing on
+    // (so `apply(_:to:)` can paint the decorator background); capture both so the snapshot does
+    // not permanently mutate a view the caller may reuse in a real layout.
+    let initialAppearance = view.appearance
+    let initialWantsLayer = view.wantsLayer
 
     let window = makeOffscreenWindow(size: size, appearance: appearance)
     view.appearance = appearance
@@ -39,6 +44,10 @@ enum AppKitImageRenderer {
     view.removeFromSuperview()
     view.autoresizingMask = initialAutoresizingMask
     view.frame = initialFrame
+    view.appearance = initialAppearance
+    // Restoring `wantsLayer` to its original `false` also discards the layer the render created
+    // and the background color painted into it.
+    view.wantsLayer = initialWantsLayer
 
     return image
   }

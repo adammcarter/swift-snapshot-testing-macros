@@ -178,6 +178,33 @@ struct AppKitImageRenderingTests {
     }
   }
 
+  /// The render pass overrides the caller's `appearance` (to the theme) and forces its backing
+  /// layer on (to paint the decorator background). Both must be restored afterward so a snapshot
+  /// does not permanently mutate a view instance the caller may reuse in a real layout.
+  @Test
+  func renderRestoresCallerViewAppearanceAndLayerBacking() throws {
+    let view = NSView()
+    #expect(view.appearance == nil)
+    #expect(view.wantsLayer == false)
+
+    let controller = SnapshotViewController()
+    controller.view = view
+
+    let configuration = __SnapshotViewDecoratorConfiguration(
+      backgroundColor: .srgbRed,
+      padding: nil
+    )
+    let request = try __SnapshotViewDecoratorConfiguration.$value.withValue(configuration) {
+      try makeImageRequest(size: CGSize(width: 32, height: 32), displayScale: 1, theme: .dark) {
+        controller
+      }
+    }
+    _ = try renderedBitmap(request: request)
+
+    #expect(view.appearance == nil)
+    #expect(view.wantsLayer == false)
+  }
+
   // MARK: - Request construction
 
   private func makeImageRequest(
