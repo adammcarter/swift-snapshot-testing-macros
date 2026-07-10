@@ -148,6 +148,12 @@ extension SnapshotSuite.TestBlock {
         )
       }
 
+      // `inout`/variadic parameters are diagnosed as unsupported by the peer macro; skip here so
+      // the suite does not reference a container the peer never generated.
+      if snapshotTestFunctionDecl.signature.hasUnsupportedParameterShape {
+        return nil
+      }
+
       let testMacroArguments = makeTestMacroArguments(
         functionDecl: snapshotTestFunctionDecl,
         suiteArguments: suiteMacroArguments

@@ -139,6 +139,22 @@ struct SnapshotTest {
      .none)` call whose generic argument is the parameter tuple — a guaranteed type mismatch in
      generated code. Reject it here with an actionable message instead.
      */
+    /*
+     `inout` and variadic parameters cannot be represented as a tuple element in the generated
+     `SnapshotConfiguration<(…)>` generic — they produce a parse/type error in generated code.
+     Reject them with an actionable message.
+     */
+    if snapshotTestFunctionDecl.signature.hasUnsupportedParameterShape {
+      macroContext.context.diagnose(
+        DiagnosticFactory.generalErrorMessage(
+          message:
+            "'@SnapshotTest' does not support 'inout' or variadic parameters.",
+          node: macroContext.node
+        )
+      )
+      return nil
+    }
+
     let macroArguments = SnapshotMacroArguments(node: macroContext.node)
 
     if snapshotTestFunctionDecl.signature.parameterClause.parameters.isEmpty == false,

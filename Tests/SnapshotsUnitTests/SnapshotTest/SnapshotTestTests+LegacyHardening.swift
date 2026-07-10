@@ -866,6 +866,113 @@ extension SnapshotTestTests {
       }
     }
 
+    // MARK: Finding 14 (carry-over) — parameter-only type attributes are stripped from the tuple
+    //
+    // The configuration generic tuple copied each parameter's type verbatim, so an `@escaping`
+    // (or `@autoclosure`) closure parameter produced `SnapshotConfiguration<(@escaping () -> Void)>`
+    // — `@escaping` is illegal in generic-argument/tuple-element position, a parse error in
+    // generated code. Parameter-only type attributes are now stripped when building the tuple.
+
+    @Test
+    func escapingParameterAttributeIsStrippedFromConfigurationTuple() {
+      assertMacro {
+        """
+        @MainActor
+        @Suite
+        @SnapshotSuite
+        struct SnapshotTests {
+          @SnapshotTest(configurationValues: [{ }])
+          func makeView(action: @escaping () -> Void) -> some View {
+            Text("view")
+          }
+        }
+        """
+      } expansion: {
+        """
+        @MainActor
+        @Suite
+        struct SnapshotTests {
+          func makeView(action: @escaping () -> Void) -> some View {
+            Text("view")
+          }
+
+          enum __generator_container_makeView_f366f243 {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(() -> Void)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(() -> Void)>(
+                displayName: "makeView",
+                configuration: configuration,
+                makeValue: {
+                  SnapshotTests().makeView(action: $0)
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 5,
+                column: 3
+              )
+            }
+          }
+
+          @MainActor
+          @Suite(.pointfreeSnapshots)
+          struct SnapshotTests_GeneratedSnapshotSuite {
+
+            @MainActor
+            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse([{
+                }]))
+            func makeView_snapshotTest(configuration: SnapshotConfiguration<(() -> Void)>) async throws {
+              let generator = __generator_container_makeView_f366f243.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
+          }
+        }
+        """
+      }
+    }
+
+    // MARK: Finding 14 (carry-over) — inout/variadic parameters are diagnosed as unsupported
+
+    @Test
+    func inoutParameterIsRejected() {
+      assertMacro {
+        """
+        @MainActor
+        @Suite
+        @SnapshotSuite
+        struct SnapshotTests {
+          @SnapshotTest(configurationValues: [1])
+          func makeView(count: inout Int) -> some View {
+            Text("view")
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @MainActor
+        @Suite
+        @SnapshotSuite
+        ┬─────────────
+        ╰─ ⚠️ Missing valid snapshot suite tests.
+           ✏️ Remove the @SnapshotSuite attribute.
+           ✏️ Add a function to make a SwiftUI view.
+           ✏️ Add a function to make a UIView.
+           ✏️ Add a function to make a UIViewController.
+           ✏️ Add a function to make a NSView.
+           ✏️ Add a function to make a NSViewController.
+           ✏️ Add @SnapshotTest annotations to viable functions.
+        struct SnapshotTests {
+          @SnapshotTest(configurationValues: [1])
+          ┬──────────────────────────────────────
+          ╰─ 🛑 '@SnapshotTest' does not support 'inout' or variadic parameters.
+          func makeView(count: inout Int) -> some View {
+            Text("view")
+          }
+        }
+        """
+      }
+    }
+
     // MARK: Finding 10 — @SnapshotSuite on an extension is rejected
 
     @Test
