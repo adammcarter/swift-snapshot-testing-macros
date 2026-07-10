@@ -395,8 +395,8 @@ extension SnapshotTestTests {
             self.value = value
           }
 
-          @SnapshotTeststatic
-          func makeView() -> some View {
+          @SnapshotTest
+          static func makeView() -> some View {
             Text("\(value)")
           }
         }
@@ -411,9 +411,7 @@ extension SnapshotTestTests {
           init(value: Int) {
             self.value = value
           }
-
-          @SnapshotTeststatic
-          func makeView() -> some View {
+          static func makeView() -> some View {
             Text("\(value)")
           }
 
@@ -421,7 +419,13 @@ extension SnapshotTestTests {
           @Suite(.pointfreeSnapshots)
           struct SnapshotTests_GeneratedSnapshotSuite {
 
+            @MainActor
+            @Test()
+            func makeView_snapshotTest() async throws {
+              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
 
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
           }
         }
         """#
@@ -477,8 +481,8 @@ extension SnapshotTestTests {
         struct SnapshotTests {
           let value: Int
 
-          @SnapshotTeststatic
-          func makeView() -> some View {
+          @SnapshotTest
+          static func makeView() -> some View {
             Text("\(value)")
           }
         }
@@ -489,9 +493,7 @@ extension SnapshotTestTests {
         @Suite
         struct SnapshotTests {
           let value: Int
-
-          @SnapshotTeststatic
-          func makeView() -> some View {
+          static func makeView() -> some View {
             Text("\(value)")
           }
 
@@ -499,7 +501,13 @@ extension SnapshotTestTests {
           @Suite(.pointfreeSnapshots)
           struct SnapshotTests_GeneratedSnapshotSuite {
 
+            @MainActor
+            @Test()
+            func makeView_snapshotTest() async throws {
+              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
 
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
           }
         }
         """#
@@ -575,8 +583,8 @@ extension SnapshotTestTests {
             self.configuration = configuration
           }
 
-          @SnapshotTest(configurationValues: ["a"])static
-          func makeView(input: String) -> some View {
+          @SnapshotTest(configurationValues: ["a"])
+          static func makeView(input: String) -> some View {
             Text(input)
           }
         }
@@ -591,9 +599,7 @@ extension SnapshotTestTests {
           init(configuration: SnapshotConfiguration<String>) {
             self.configuration = configuration
           }
-
-          static
-          func makeView(input: String) -> some View {
+          static func makeView(input: String) -> some View {
             Text(input)
           }
 
@@ -675,8 +681,8 @@ extension SnapshotTestTests {
             self.configuration = configuration
           }
 
-          @SnapshotTest(configurationValues: ["a"])static
-          func makeView(input: String) -> some View {
+          @SnapshotTest(configurationValues: ["a"])
+          static func makeView(input: String) -> some View {
             Text(input)
           }
         }
@@ -691,9 +697,7 @@ extension SnapshotTestTests {
           init(configuration: SnapshotTestingMacros.SnapshotConfiguration<String>) {
             self.configuration = configuration
           }
-
-          static
-          func makeView(input: String) -> some View {
+          static func makeView(input: String) -> some View {
             Text(input)
           }
 

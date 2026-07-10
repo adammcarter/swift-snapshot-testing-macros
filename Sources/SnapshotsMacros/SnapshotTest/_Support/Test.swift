@@ -265,10 +265,27 @@ private func addNonInstantiableFunctionDiagnostic(
 ) {
   let oldNode = functionDecl
   let newNode = with(oldNode) {
+    /*
+     The whitespace (newline + indent) separating the attributes from `func` lives on the
+     leading trivia of whichever token comes first — the first modifier if one exists,
+     otherwise `func`. Hand that trivia to the inserted `static` and leave a single space in the
+     vacated slot; otherwise the trivia-less modifier fuses onto the attribute as the unknown
+     attribute `@SnapshotTeststatic`.
+     */
+    let leadingTrivia: Trivia
+    if let firstModifier = $0.modifiers.first {
+      leadingTrivia = firstModifier.leadingTrivia
+      $0.modifiers[$0.modifiers.startIndex].leadingTrivia = .space
+    }
+    else {
+      leadingTrivia = $0.funcKeyword.leadingTrivia
+      $0.funcKeyword.leadingTrivia = .space
+    }
+
     $0
       .modifiers
       .insert(
-        DeclModifierSyntax(name: .keyword(.static)),
+        DeclModifierSyntax(name: .keyword(.static, leadingTrivia: leadingTrivia)),
         at: $0.modifiers.startIndex
       )
   }

@@ -382,8 +382,8 @@ extension SnapshotSuiteTests {
         @Suite
         @SnapshotSuite
         enum MyEnum {
-          @SnapshotTeststatic
-          func makeView() -> some View {
+          @SnapshotTest
+          static func makeView() -> some View {
             Text("")
           }
         }
@@ -393,8 +393,7 @@ extension SnapshotSuiteTests {
         @MainActor
         @Suite
         enum MyEnum {
-          @SnapshotTeststatic
-          func makeView() -> some View {
+          static func makeView() -> some View {
             Text("")
           }
 
@@ -402,7 +401,13 @@ extension SnapshotSuiteTests {
           @Suite(.pointfreeSnapshots)
           struct MyEnum_GeneratedSnapshotSuite {
 
+            @MainActor
+            @Test()
+            func makeView_snapshotTest() async throws {
+              let generator = __generator_container_makeView.makeGenerator(configuration: .none)
 
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
           }
         }
         """
