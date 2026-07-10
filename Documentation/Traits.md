@@ -52,6 +52,10 @@ An explicit `scale:` appends a `-<scale>x` suffix (`scale: 2` gives `fixed-320x4
 size variants differing only by scale never collide on one reference file. Non-integral
 values fold their decimal point to a hyphen (`100.5` becomes `100-5`).
 
+Fixed lengths and explicit scales are validated when the assertion runs: a `.fixed` length
+or `scale:` that is zero, negative, or non-finite fails the test with a clear sizing error
+in every width/height combination — it is never silently treated as "unconstrained".
+
 The `.strategy(.recursiveDescription)` text strategy participates in the same size/theme
 fan-out as `.image`: each reference is laid out at the request's computed size with the
 request's theme applied before the hierarchy is dumped, so the size and theme components in

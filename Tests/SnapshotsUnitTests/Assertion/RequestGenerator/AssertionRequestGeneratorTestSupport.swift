@@ -29,6 +29,7 @@ enum AssertionRequestGeneratorTestSupport {
   static func makeTraitSize(
     width: SizesSnapshotTrait.Length = .fixed(120),
     height: SizesSnapshotTrait.Length = .fixed(80),
+    scale: Double? = nil,
     displayName: String = "display_name_1",
     debugDescription: String = "debug_description_1",
     testNameDescription: String = "test_name_description_1"
@@ -36,6 +37,7 @@ enum AssertionRequestGeneratorTestSupport {
     .init(
       width: width,
       height: height,
+      scale: scale,
       displayName: displayName,
       debugDescription: debugDescription,
       testNameDescription: testNameDescription
