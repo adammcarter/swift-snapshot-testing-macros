@@ -34,12 +34,17 @@ private func makeIsInitializable(declaration: some DeclSyntaxProtocol) -> Bool {
     return false
   }
 
-  guard let initializerDecl = initializer(in: declaration) else {
+  let explicitInitializers = initializers(in: declaration)
+
+  guard explicitInitializers.isEmpty == false else {
     return (declaration as? DeclGroupSyntax)
       .map(storedInstancePropertiesAllHaveValues(in:)) ?? false
   }
 
-  return isCallableWithoutArguments(initializerDecl)
+  // `Suite()` resolves against *any* zero-argument initialiser, so the suite is initialisable
+  // as long as at least one explicit initialiser is callable with no arguments — regardless of
+  // member order or how many argument-taking initialisers are also declared.
+  return explicitInitializers.contains(where: isCallableWithoutArguments)
 }
 
 private func isCallableWithoutArguments(_ initializerDecl: InitializerDeclSyntax) -> Bool {
@@ -94,19 +99,28 @@ private func isStoredBinding(_ binding: PatternBindingSyntax) -> Bool {
 }
 
 private func makeIsAsync(declaration: some DeclSyntaxProtocol) -> Bool {
-  initializer(in: declaration)?.signature.isAsync == true
+  zeroArgumentInitializer(in: declaration)?.signature.isAsync == true
 }
 
 private func makeIsThrows(declaration: some DeclSyntaxProtocol) -> Bool {
-  initializer(in: declaration)?.signature.isThrows == true
+  zeroArgumentInitializer(in: declaration)?.signature.isThrows == true
 }
 
-private func initializer(in declaration: some DeclSyntaxProtocol) -> InitializerDeclSyntax? {
-  (declaration as? DeclGroupSyntax)?
-    .memberBlock
-    .members
-    .lazy
-    .compactMap { $0.decl.as(InitializerDeclSyntax.self) }
-    .first
-    ?? declaration.as(InitializerDeclSyntax.self)
+/// The zero-argument initialiser `Suite()` actually resolves to — the effect specifiers that
+/// matter for the generated call come from *this* initialiser, not merely the first declared
+/// one. When several are callable with no arguments (an invalid overload the compiler will
+/// reject anyway), the first in member order is used.
+private func zeroArgumentInitializer(in declaration: some DeclSyntaxProtocol) -> InitializerDeclSyntax? {
+  initializers(in: declaration).first(where: isCallableWithoutArguments)
+}
+
+private func initializers(in declaration: some DeclSyntaxProtocol) -> [InitializerDeclSyntax] {
+  if let declGroup = declaration as? DeclGroupSyntax {
+    return declGroup
+      .memberBlock
+      .members
+      .compactMap { $0.decl.as(InitializerDeclSyntax.self) }
+  }
+
+  return declaration.as(InitializerDeclSyntax.self).map { [$0] } ?? []
 }
