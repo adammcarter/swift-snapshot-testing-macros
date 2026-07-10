@@ -75,8 +75,8 @@ enum ExpectSnapshotAdapter {
   ) async throws {
     _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
 
-    run(
-      try await makeValue(),
+    try await runValueOnMainActor(
+      SnapshotValueBox(try await makeValue()),
       named: named,
       function: function,
       fileID: fileID,
@@ -97,15 +97,53 @@ enum ExpectSnapshotAdapter {
   ) async {
     _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
 
-    run(
-      await makeValue(),
-      named: named,
-      function: function,
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column
-    )
+    do {
+      try await runValueOnMainActor(
+        SnapshotValueBox(await makeValue()),
+        named: named,
+        function: function,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+    catch {
+      recordIssue(
+        error,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+  }
+
+  /// Shared tail of the plain async overloads: bridge to the main actor structurally so the
+  /// assertion runs on the test's task instead of a parked cooperative-pool thread.
+  private static func runValueOnMainActor<V: View>(
+    _ valueBox: SnapshotValueBox<V>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) async throws {
+    try await TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      try await runOnMainActorAsync(context: context) {
+        try runMainActorSnapshot(
+          context: context,
+          named: named,
+          configuration: .none,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column,
+          makeValue: { (_: Void) in valueBox.value }
+        )
+      }
+    }
   }
 
   static func run<V: View>(
@@ -451,7 +489,7 @@ enum ExpectSnapshotAdapter {
     try await TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
       let valueBox = SnapshotValueBox(try await makeValue(resolvedConfiguration.value))
 
-      try runOnMainActor(context: context) {
+      try await runOnMainActorAsync(context: context) {
         try runMainActorSnapshot(
           context: context,
           named: named,
@@ -827,7 +865,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    operation: @escaping @MainActor () throws -> Void
+    operation: @escaping @MainActor () throws -> [SnapshotFailure]
   ) {
     let runtimeState = ResolvedSnapshotRuntimeState.current
 
@@ -849,62 +887,97 @@ enum ExpectSnapshotAdapter {
     }
   }
 
+  /// Runs `operation` on the main actor and records the snapshot failures it produced after
+  /// returning to the caller's side of the hop.
+  ///
+  /// Off the main thread the hop is `DispatchQueue.main.sync` — a plain queue callout with no
+  /// Swift task, where Swift Testing's task-locals (`Test.current`, `Test.Case.current`, the
+  /// `withKnownIssue` matcher) all read nil. Failures must therefore never be recorded inside
+  /// the hop: they ride back through the result box as values and are recorded here, on the
+  /// test's task, so every issue is attributed to the invoking test.
   private static func runOnMainActor(
     context: SnapshotExecutionContext?,
     runtimeState: ResolvedSnapshotRuntimeState = .current,
-    operation: @escaping @MainActor () throws -> Void
+    operation: @escaping @MainActor () throws -> [SnapshotFailure]
   ) throws {
+    let failures: [SnapshotFailure]
+
     if Thread.isMainThread {
-      try MainActor.assumeIsolated {
+      failures = try MainActor.assumeIsolated {
         try runOnMainActorIsolated(
           context: context,
           runtimeState: runtimeState,
           operation: operation
         )
       }
-      return
     }
+    else {
+      let box = SyncMainActorResultBox<[SnapshotFailure]>()
+      DispatchQueue.main.sync {
+        let result = Result {
+          try MainActor.assumeIsolated {
+            try runOnMainActorIsolated(
+              context: context,
+              runtimeState: runtimeState,
+              operation: operation
+            )
+          }
+        }
 
-    let box = SyncMainActorResultBox<Void>()
-    DispatchQueue.main.sync {
-      let result = Result {
-        try MainActor.assumeIsolated {
-          try runOnMainActorIsolated(
-            context: context,
-            runtimeState: runtimeState,
-            operation: operation
-          )
+        box.lock.withLock {
+          box.result = result
         }
       }
 
-      box.lock.withLock {
-        box.result = result
-      }
+      let result =
+        box.lock.withLock { box.result } ?? .failure(
+          SnapshotError(message: "Failed to execute snapshot assertion on the main thread.")
+        )
+      failures = try result.get()
     }
 
-    let result =
-      box.lock.withLock { box.result } ?? .failure(
-        SnapshotError(message: "Failed to execute snapshot assertion on the main thread.")
-      )
-    _ = try result.get()
+    for failure in failures {
+      failure.record()
+    }
+  }
+
+  /// Runs `operation` on the main actor via a structured hop for the async overloads.
+  ///
+  /// `await` suspends the caller and resumes on the main actor *as the same task*: the test's
+  /// task-locals survive into the render and verification, no cooperative-pool thread is
+  /// parked inside `DispatchQueue.main.sync`, and the failures are recorded back on the
+  /// test's task after the hop returns.
+  private static func runOnMainActorAsync(
+    context: SnapshotExecutionContext?,
+    runtimeState: ResolvedSnapshotRuntimeState = .current,
+    operation: @escaping @MainActor () throws -> [SnapshotFailure]
+  ) async throws {
+    let failures = try await runOnMainActorIsolated(
+      context: context,
+      runtimeState: runtimeState,
+      operation: operation
+    )
+
+    for failure in failures {
+      failure.record()
+    }
   }
 
   @MainActor
   private static func runOnMainActorIsolated(
     context: SnapshotExecutionContext?,
     runtimeState: ResolvedSnapshotRuntimeState,
-    operation: @escaping @MainActor () throws -> Void
-  ) throws {
+    operation: @escaping @MainActor () throws -> [SnapshotFailure]
+  ) throws -> [SnapshotFailure] {
     if let context {
-      try TaskLocalSnapshotExecutionContext.$current.withValue(context) {
+      return try TaskLocalSnapshotExecutionContext.$current.withValue(context) {
         try runtimeState.withAppliedValues {
           try operation()
         }
       }
-      return
     }
 
-    try runtimeState.withAppliedValues {
+    return try runtimeState.withAppliedValues {
       try operation()
     }
   }
@@ -919,7 +992,7 @@ enum ExpectSnapshotAdapter {
     line: UInt,
     column: UInt,
     makeValue: @escaping @MainActor (ConfigurationValue) throws -> V
-  ) throws {
+  ) throws -> [SnapshotFailure] {
     let generator = SnapshotViewGenerator(
       displayName: context.resolvedAssertionName(named: named),
       configuration: configuration,
@@ -930,7 +1003,7 @@ enum ExpectSnapshotAdapter {
       column: column
     )
 
-    try runMainActorSnapshot(generator: generator)
+    return try runMainActorSnapshot(generator: generator)
   }
 
   @MainActor
@@ -943,7 +1016,7 @@ enum ExpectSnapshotAdapter {
     line: UInt,
     column: UInt,
     makeValue: @escaping @MainActor (ConfigurationValue) throws -> SnapshotView
-  ) throws {
+  ) throws -> [SnapshotFailure] {
     let generator = SnapshotViewGenerator(
       displayName: context.resolvedAssertionName(named: named),
       configuration: configuration,
@@ -954,7 +1027,7 @@ enum ExpectSnapshotAdapter {
       column: column
     )
 
-    try runMainActorSnapshot(generator: generator)
+    return try runMainActorSnapshot(generator: generator)
   }
 
   @MainActor
@@ -967,7 +1040,7 @@ enum ExpectSnapshotAdapter {
     line: UInt,
     column: UInt,
     makeValue: @escaping @MainActor (ConfigurationValue) throws -> SnapshotViewController
-  ) throws {
+  ) throws -> [SnapshotFailure] {
     let generator = SnapshotViewGenerator(
       displayName: context.resolvedAssertionName(named: named),
       configuration: configuration,
@@ -978,14 +1051,14 @@ enum ExpectSnapshotAdapter {
       column: column
     )
 
-    try runMainActorSnapshot(generator: generator)
+    return try runMainActorSnapshot(generator: generator)
   }
 
   @MainActor
   private static func runMainActorSnapshot(
     generator: some SnapshotViewGenerating
-  ) throws {
-    try assertSnapshotSync(with: generator)
+  ) throws -> [SnapshotFailure] {
+    try collectSnapshotFailuresSync(with: generator)
   }
 
   private static func recordIssue(

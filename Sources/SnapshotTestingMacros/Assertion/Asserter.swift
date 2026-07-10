@@ -4,33 +4,40 @@ import SnapshotTesting
 /// Top level asserter - allows us to change the base and internals without updating the top level call site
 struct Asserter {
 
+  /// Runs the requests and records any failures immediately on the current task.
+  ///
+  /// Only correct when the caller is already on the task that owns the assertion — the legacy
+  /// `@SnapshotSuite` path, whose generated `@MainActor @Test` functions stay on the test's
+  /// task. The native `#expectSnapshot` adapter hops to the main actor first and must use
+  /// ``collectFailuresSync(from:)`` instead, recording on the calling side of the hop.
   @MainActor
   func assertSnapshotsSync(from requests: [any AssertionRequesting]) {
+    for failure in collectFailuresSync(from: requests) {
+      failure.record()
+    }
+  }
+
+  /// Runs the requests and returns the failures instead of recording them, so callers on the
+  /// far side of a main-actor hop can carry them back to the test's task — where
+  /// `Test.current` and the `withKnownIssue` matcher are intact — before recording.
+  @MainActor
+  func collectFailuresSync(from requests: [any AssertionRequesting]) -> [SnapshotFailure] {
+    var failures = [SnapshotFailure]()
+
     SnapshotTesting.withSnapshotTesting(
       record: RecordSnapshotTrait.current,
       diffTool: DiffToolSnapshotTrait.current
     ) {
-      Self.performAssertions(
-        using: IssueRecordingAsserter(base: PointfreeAsserter()),
-        requests: requests
-      )
-    }
-  }
+      let asserter = FailureCollectingAsserter(base: PointfreeAsserter()) { failure in
+        failures.append(failure)
+      }
 
-  func assertSnapshots(from requests: [any AssertionRequesting]) async throws {
-    await MainActor.run {
-      assertSnapshotsSync(from: requests)
+      for request in requests {
+        asserter.assertSnapshot(request)
+      }
     }
-  }
 
-  @MainActor
-  private static func performAssertions(
-    using asserter: IssueRecordingAsserter,
-    requests: [any AssertionRequesting]
-  ) {
-    for request in requests {
-      asserter.assertSnapshot(request)
-    }
+    return failures
   }
 }
 
@@ -42,92 +49,42 @@ protocol SnapshotAsserting {
   func assertSnapshot(_ request: any AssertionRequesting) throws
 }
 
-// MARK: - IssueRecordingAsserter
+// MARK: - FailureCollectingAsserter
 
-#if canImport(Testing)
-import Testing
-#endif
-
-/// Record issues on throw
-struct IssueRecordingAsserter: SnapshotAsserting {
+/// Converts errors thrown by the base asserter into ``SnapshotFailure`` values handed to
+/// `handleFailure`, continuing with subsequent requests instead of rethrowing.
+struct FailureCollectingAsserter: SnapshotAsserting {
   let base: any SnapshotAsserting
-  var recordIssue: ((_ message: String?, _ error: Error?, _ fileID: StaticString, _ filePath: StaticString, _ line: UInt, _ column: UInt) -> Void)?
+  let handleFailure: (SnapshotFailure) -> Void
 
   func assertSnapshot(_ request: any AssertionRequesting) {
     do {
       try base.assertSnapshot(request)
     }
     catch let error as SnapshotError {
-      if let recordIssue {
-        recordIssue(error.message, nil, request.fileID, request.filePath, request.line, request.column)
-      }
-      else {
-        recordIssue(
+      handleFailure(
+        SnapshotFailure(
           message: error.message,
+          error: nil,
           fileID: request.fileID,
           filePath: request.filePath,
           line: request.line,
           column: request.column
         )
-      }
+      )
     }
     catch {
-      if let recordIssue {
-        recordIssue(nil, error, request.fileID, request.filePath, request.line, request.column)
-      }
-      else {
-        recordIssue(
+      handleFailure(
+        SnapshotFailure(
+          message: nil,
           error: error,
           fileID: request.fileID,
           filePath: request.filePath,
           line: request.line,
           column: request.column
         )
-      }
-    }
-  }
-
-  private func recordIssue(
-    error: Error? = nil,
-    message: @autoclosure (() -> String?) = nil,
-    fileID: StaticString,
-    filePath: StaticString,
-    line: UInt,
-    column: UInt
-  ) {
-    #if canImport(Testing)
-    let comment = message().flatMap(Comment.init(rawValue:))
-    let sourceLocation = SourceLocation(
-      fileID: fileID.description,
-      filePath: filePath.description,
-      line: Int(line),
-      column: Int(column)
-    )
-
-    if Test.current != nil {
-      if let error {
-        Issue.record(
-          error,
-          comment,
-          sourceLocation: sourceLocation
-        )
-      }
-      else {
-        Issue.record(
-          comment,
-          sourceLocation: sourceLocation
-        )
-      }
-    }
-    else {
-      Issue.record(
-        comment,
-        sourceLocation: sourceLocation
       )
     }
-    #else
-    XCTFail(message(), file: filePath, line: line)
-    #endif
   }
 }
 

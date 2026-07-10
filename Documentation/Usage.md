@@ -89,6 +89,24 @@ struct ClosureSnapshots {
 }
 ```
 
+## Failure reporting and concurrency
+
+`#expectSnapshot` renders and verifies on the main actor, but every failure is recorded on
+the test's own task: a mismatch fails the test that made the assertion (never an orphaned
+run-level issue), works under parallel execution, and can be matched with `withKnownIssue`:
+
+```swift
+@Test(.theme(.light))
+func knownMismatch() {
+  withKnownIssue {
+    #expectSnapshot(ProfileCard())
+  }
+}
+```
+
+The `async` overloads bridge to the main actor structurally (`await`), staying on the test's
+task for the render — they do not block the calling thread while the snapshot runs.
+
 ## UIKit and AppKit direct values
 
 UIKit and AppKit support the direct-value overloads in the native API:

@@ -10,7 +10,7 @@ struct FailureReportingTests {
     let request = MockRequest(testName: "logged-out_profileCard_dark")
     var capturedMessage: String?
 
-    let asserter = IssueRecordingAsserter(
+    let asserter = FailureCollectingAsserter(
       base: MockAsserter(
         errorToThrow: SnapshotError(
           message: """
@@ -19,11 +19,10 @@ struct FailureReportingTests {
             ksdiff "/tmp/reference.png" "/tmp/failure.png"
             """
         )
-      ),
-      recordIssue: { message, _, _, filePath, line, column in
-        capturedMessage = "\(message ?? "") @ \(filePath):\(line):\(column)"
-      }
-    )
+      )
+    ) { failure in
+      capturedMessage = "\(failure.message ?? "") @ \(failure.filePath):\(failure.line):\(failure.column)"
+    }
 
     asserter.assertSnapshot(request)
 
