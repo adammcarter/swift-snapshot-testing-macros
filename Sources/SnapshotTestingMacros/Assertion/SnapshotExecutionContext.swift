@@ -4,6 +4,7 @@ private final class SnapshotExecutionContextNameState: @unchecked Sendable {
   let lock = NSLock()
   var usedNames = Set<String>()
   var referenceCounts = [String: Int]()
+  var occurrenceCounts = [String: Int]()
 }
 
 final class SnapshotExecutionContext: Sendable {
@@ -64,6 +65,21 @@ final class SnapshotExecutionContext: Sendable {
       let next = (nameState.referenceCounts[key] ?? 0) + 1
       nameState.referenceCounts[key] = next
       return String(next)
+    }
+  }
+
+  /// Counts how many times `key` has occurred within this attempt, starting at `1`.
+  ///
+  /// Used by the derived-configuration-name collision guard
+  /// (``SnapshotConfigurationNameCollisions``) to tell "the same call site executed again in
+  /// this attempt" (a loop — disambiguated by display-name dedupe, never a collision) apart
+  /// from "the same call site executed in another attempt" (a parameterized case — a
+  /// collision when the derived name matches but the value doesn't).
+  func nextOccurrenceIndex(forKey key: String) -> Int {
+    nameState.lock.withLock {
+      let next = (nameState.occurrenceCounts[key] ?? 0) + 1
+      nameState.occurrenceCounts[key] = next
+      return next
     }
   }
 }

@@ -2,6 +2,14 @@ import Testing
 
 @testable import SnapshotTestingMacros
 
+private enum TupleLayout: Sendable {
+  case compact
+}
+
+private enum TupleUserState: Sendable {
+  case loggedIn
+}
+
 struct ExpectSnapshotConfigurationTests {
   @Test
   func namedConfigurationUsesItsNameForTheSnapshotFolder() {
@@ -22,5 +30,35 @@ struct ExpectSnapshotConfigurationTests {
     let configuration = SnapshotConfiguration(name: nil, value: "!!!")
 
     #expect(ExpectSnapshotAdapter.configurationName(for: configuration) == "snapshot")
+  }
+
+  @Test
+  func unnamedTuple2ConfigurationDerivesPerElementNamesWithoutTypeQualification() {
+    let configuration = SnapshotConfiguration(
+      name: nil,
+      value: (TupleLayout.compact, TupleUserState.loggedIn)
+    )
+
+    #expect(ExpectSnapshotAdapter.configurationName(for: configuration) == "compact-loggedIn")
+  }
+
+  @Test
+  func unnamedTuple3ConfigurationDerivesPerElementNamesWithoutTypeQualification() {
+    let configuration = SnapshotConfiguration(
+      name: nil,
+      value: (TupleLayout.compact, TupleUserState.loggedIn, 2)
+    )
+
+    #expect(ExpectSnapshotAdapter.configurationName(for: configuration) == "compact-loggedIn-2")
+  }
+
+  @Test
+  func namedTupleConfigurationKeepsItsExplicitName() {
+    let configuration = SnapshotConfiguration(
+      name: "explicit",
+      value: (TupleLayout.compact, TupleUserState.loggedIn)
+    )
+
+    #expect(ExpectSnapshotAdapter.configurationName(for: configuration) == "explicit")
   }
 }

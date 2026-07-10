@@ -346,6 +346,237 @@ struct ExpectSnapshotMacroTests {
   }
 
   @Test
+  func expandsDirectValueWithTrailingLineComment() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          #expectSnapshot(
+            Text("test") // hero variant
+          )
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          SnapshotTestingMacros.__expectSnapshot(
+            Text("test"),
+            named: nil,
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
+  func expandsNamedArgumentWithTrailingLineComment() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          #expectSnapshot(
+            Text("test"),
+            named: "custom" // reference note
+          )
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          SnapshotTestingMacros.__expectSnapshot(
+            Text("test"),
+            named: "custom",
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
+  func expandsArgumentValueWithTrailingLineComment() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      enum CountState: Int, Sendable {
+        case zero
+      }
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let state = CountState.zero
+          #expectSnapshot(
+            argument: state // current case
+          ) { state in
+            Text("\\(state.rawValue)")
+          }
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      enum CountState: Int, Sendable {
+        case zero
+      }
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let state = CountState.zero
+          SnapshotTestingMacros.__expectSnapshot(
+            argument: state,
+            named: nil,
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: { state in
+                Text("\\(state.rawValue)")
+              }
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
+  func expandsFunctionReferenceMakeValueAfterConfiguration() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let configuration = SnapshotConfiguration(name: nil, value: "test")
+          #expectSnapshot(configuration, makeView)
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let configuration = SnapshotConfiguration(name: nil, value: "test")
+          SnapshotTestingMacros.__expectSnapshot(
+            configuration,
+            named: nil,
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: makeView
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
+  func expandsFunctionReferenceMakeValueAfterArgument() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      enum CountState: Int, Sendable {
+        case zero
+      }
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let state = CountState.zero
+          #expectSnapshot(argument: state, makeView)
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      enum CountState: Int, Sendable {
+        case zero
+      }
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          let state = CountState.zero
+          SnapshotTestingMacros.__expectSnapshot(
+            argument: state,
+            named: nil,
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: makeView
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
   func recoversWhenDirectValueIsMissing() {
     assertMacro {
       """

@@ -10,10 +10,6 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
     let unlabeledArguments = node.arguments.filter { $0.label == nil }
     let argumentValue = node.arguments.first { $0.label?.text == "argument" }?.expression
     let trailingClosure = node.trailingClosure
-    let firstUnlabeledClosure =
-      unlabeledArguments
-      .compactMap { $0.expression.as(ClosureExprSyntax.self) }
-      .first
     let value: ExprSyntax? =
       if let argumentValue {
         argumentValue
@@ -33,14 +29,17 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
       else {
         unlabeledArguments[...]
       }
-    let makeValueClosure =
-      trailingClosure
-      ?? firstUnlabeledClosure
-      ?? makeValueArguments
-      .compactMap { $0.expression.as(ClosureExprSyntax.self) }
-      .first
+    /*
+     Every remaining unlabeled argument is the value builder regardless of its syntax kind:
+     the macro declarations accept any expression of function type (a closure literal, a
+     function reference like `makeHeader`, or a stored closure), so classifying on
+     `ClosureExprSyntax` alone would silently drop non-literal builders from the expansion.
+     */
+    let makeValueExpression: ExprSyntax? =
+      trailingClosure.map { ExprSyntax($0) }
+      ?? makeValueArguments.first?.expression
 
-    guard value != nil || makeValueClosure != nil else {
+    guard value != nil || makeValueExpression != nil else {
       context.diagnose(
         DiagnosticFactory.generalErrorMessage(
           message: "#expectSnapshot requires an unlabeled value argument or closure.",
@@ -51,20 +50,26 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
       return "()"
     }
 
-    let named = node.arguments.first { $0.label?.text == "named" }?.expression ?? "nil"
+    /*
+     Interpolated nodes are `.trimmed` before splicing: `SyntaxProtocol.description` includes
+     trailing trivia, and a same-line `// comment` after an argument (comment without a
+     newline, so it rides on the expression's last token) would otherwise be spliced directly
+     before the template's `,`, commenting out the rest of the generated line.
+     */
+    let named = node.arguments.first { $0.label?.text == "named" }?.expression.trimmed ?? "nil"
     let makeValue =
-      makeValueClosure.map {
+      makeValueExpression.map {
         """
         ,
-          makeValue: \($0)
+          makeValue: \($0.trimmed)
         """
       } ?? ""
     let valueArgument: String? =
       if let value, argumentValue == nil {
-        "\(value)"
+        "\(value.trimmed)"
       }
       else if let value {
-        "argument: \(value)"
+        "argument: \(value.trimmed)"
       }
       else {
         nil

@@ -37,6 +37,15 @@ import Foundation
 ///   }
 /// }
 /// ```
+///
+/// When `name` is `nil` a name is derived from the value's description, normalized to a
+/// file system-safe form (`"v1.0"` becomes `"v1-0"`). Tuple values are named per element and
+/// joined with `-` (`(Layout.compact, UserState.loggedIn)` becomes `"compact-loggedIn"`), so
+/// derived names never embed module or type qualification. Because normalization is lossy,
+/// two distinct values in one `@Test(arguments:)` can derive the same name — e.g. `"v1.0"`
+/// and `"v1 0"`; that collision is detected at runtime, recorded as an issue on the affected
+/// test, and the colliding assertion is skipped rather than silently sharing the other
+/// case's reference file. Give each configuration a distinct explicit `name` to resolve it.
 public struct SnapshotConfiguration<T: Sendable>: Sendable {
   /// The name of the configuration.
   public let name: String?

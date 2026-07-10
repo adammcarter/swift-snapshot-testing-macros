@@ -218,8 +218,11 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping (Argument) -> V
   ) {
+    // `name: nil` routes the argument through the shared derivation in
+    // `resolvedConfiguration(from:context:...)`, which also guards derived names against
+    // lossy-normalization collisions across test cases.
     let configuration = SnapshotConfiguration(
-      name: DerivedSnapshotNames.argumentName(from: argument),
+      name: nil,
       value: argument
     )
 
@@ -245,8 +248,11 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping (Argument) throws -> V
   ) throws {
+    // `name: nil` routes the argument through the shared derivation in
+    // `resolvedConfiguration(from:context:...)`, which also guards derived names against
+    // lossy-normalization collisions across test cases.
     let configuration = SnapshotConfiguration(
-      name: DerivedSnapshotNames.argumentName(from: argument),
+      name: nil,
       value: argument
     )
 
@@ -272,8 +278,11 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping (Argument) async -> V
   ) async {
+    // `name: nil` routes the argument through the shared derivation in
+    // `resolvedConfiguration(from:context:...)`, which also guards derived names against
+    // lossy-normalization collisions across test cases.
     let configuration = SnapshotConfiguration(
-      name: DerivedSnapshotNames.argumentName(from: argument),
+      name: nil,
       value: argument
     )
 
@@ -299,8 +308,11 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping (Argument) async throws -> V
   ) async throws {
+    // `name: nil` routes the argument through the shared derivation in
+    // `resolvedConfiguration(from:context:...)`, which also guards derived names against
+    // lossy-normalization collisions across test cases.
     let configuration = SnapshotConfiguration(
-      name: DerivedSnapshotNames.argumentName(from: argument),
+      name: nil,
       value: argument
     )
 
@@ -467,9 +479,20 @@ enum ExpectSnapshotAdapter {
     else {
       return
     }
-    let resolvedConfiguration = resolvedConfiguration(from: configuration)
-
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      guard
+        let resolvedConfiguration = resolvedConfiguration(
+          from: configuration,
+          context: context,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      else {
+        return
+      }
+
       runOnMainActorRecordingIssues(
         context: context,
         fileID: fileID,
@@ -512,9 +535,20 @@ enum ExpectSnapshotAdapter {
     else {
       return
     }
-    let resolvedConfiguration = resolvedConfiguration(from: configuration)
-
     try TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      guard
+        let resolvedConfiguration = resolvedConfiguration(
+          from: configuration,
+          context: context,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      else {
+        return
+      }
+
       try runOnMainActor(context: context) {
         try runMainActorSnapshot(
           context: context,
@@ -584,9 +618,20 @@ enum ExpectSnapshotAdapter {
     else {
       return
     }
-    let resolvedConfiguration = resolvedConfiguration(from: configuration)
-
     try await TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      guard
+        let resolvedConfiguration = resolvedConfiguration(
+          from: configuration,
+          context: context,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      else {
+        return
+      }
+
       let valueBox = SnapshotValueBox(try await makeValue(resolvedConfiguration.value))
 
       try await runOnMainActorAsync(context: context) {
@@ -717,9 +762,20 @@ enum ExpectSnapshotAdapter {
     else {
       return
     }
-    let resolvedConfiguration = resolvedConfiguration(from: configuration)
-
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      guard
+        let resolvedConfiguration = resolvedConfiguration(
+          from: configuration,
+          context: context,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      else {
+        return
+      }
+
       runOnMainActorRecordingIssues(
         context: context,
         fileID: fileID,
@@ -762,9 +818,20 @@ enum ExpectSnapshotAdapter {
     else {
       return
     }
-    let resolvedConfiguration = resolvedConfiguration(from: configuration)
-
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      guard
+        let resolvedConfiguration = resolvedConfiguration(
+          from: configuration,
+          context: context,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      else {
+        return
+      }
+
       runOnMainActorRecordingIssues(
         context: context,
         fileID: fileID,
@@ -970,13 +1037,62 @@ enum ExpectSnapshotAdapter {
     SnapshotExecutionContext.resolvedAssertionName(named: named, baseName: baseName)
   }
 
-  private static func resolvedConfiguration<ConfigurationValue: Sendable>(
-    from configuration: SnapshotConfiguration<ConfigurationValue>
-  ) -> SnapshotConfiguration<ConfigurationValue> {
-    SnapshotConfiguration(
-      name: configurationName(for: configuration),
-      value: configuration.value
+  /// Resolves the configuration's reference name, deriving one from the value when no
+  /// explicit name was given.
+  ///
+  /// Derivation is guarded against lossy-normalization collisions: when this call site
+  /// already derived the same name from a differently-described value — two cases of one
+  /// parameterized test whose values fold to one name, silently sharing a single reference
+  /// file — an issue is recorded on the current test and `nil` is returned so the caller
+  /// skips the assertion instead of comparing against (or overwriting) the other case's
+  /// reference. Explicit names are the user's deliberate choice and are never guarded.
+  static func resolvedConfiguration<ConfigurationValue: Sendable>(
+    from configuration: SnapshotConfiguration<ConfigurationValue>,
+    context: SnapshotExecutionContext,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) -> SnapshotConfiguration<ConfigurationValue>? {
+    if configuration.name != nil {
+      return configuration
+    }
+
+    let derivedName = DerivedSnapshotNames.argumentName(from: configuration.value)
+    let valueDescription = String(describing: configuration.value)
+    let callSite = "\(filePath):\(line):\(column)"
+    let occurrence = context.nextOccurrenceIndex(forKey: "\(callSite)|\(derivedName)")
+
+    let conflictingDescription = SnapshotConfigurationNameCollisions.shared.conflictingValueDescription(
+      callSite: callSite,
+      derivedName: derivedName,
+      occurrence: occurrence,
+      valueDescription: valueDescription
     )
+
+    if let conflictingDescription {
+      Issue.record(
+        Comment(
+          rawValue: """
+            Snapshot configuration name collision: values described as \
+            '\(conflictingDescription)' and '\(valueDescription)' both derive the snapshot \
+            name '\(derivedName)' at this call site, so their test cases would share one \
+            reference file. Give each configuration a distinct explicit name via \
+            SnapshotConfiguration(name:value:). The assertion was skipped.
+            """
+        ),
+        sourceLocation: .init(
+          fileID: fileID.description,
+          filePath: filePath.description,
+          line: Int(line),
+          column: Int(column)
+        )
+      )
+
+      return nil
+    }
+
+    return SnapshotConfiguration(name: derivedName, value: configuration.value)
   }
 
   private static func runOnMainActorRecordingIssues(
