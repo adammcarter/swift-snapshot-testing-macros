@@ -491,18 +491,7 @@ public struct SnapshotMigrationRewriter {
     let statements = Array(body.statements)
     guard let terminalStatement = statements.last else { return nil }
 
-    let terminalExpression: String
-    if let returnStatement = terminalStatement.item.as(ReturnStmtSyntax.self),
-       let expression = returnStatement.expression
-    {
-      terminalExpression = expression.trimmedDescription
-    } else if let expression = terminalStatement.item.as(ExprSyntax.self) {
-      guard !containsTopLevelReturn(in: terminalStatement) else { return nil }
-      terminalExpression = expression.trimmedDescription
-    } else if let expressionStatement = terminalStatement.item.as(ExpressionStmtSyntax.self) {
-      guard !containsTopLevelReturn(in: terminalStatement) else { return nil }
-      terminalExpression = expressionStatement.expression.trimmedDescription
-    } else {
+    guard let terminalExpression = terminalExpressionText(for: terminalStatement) else {
       return nil
     }
 
@@ -513,16 +502,121 @@ public struct SnapshotMigrationRewriter {
       preludeStatements.append(preludeStatement)
     }
 
+    // Comments attached above the terminal statement would otherwise vanish with the
+    // `return` keyword; re-emit them directly above the rewritten terminal line.
+    if let terminalComments = leadingCommentLines(for: terminalStatement) {
+      preludeStatements.append(terminalComments)
+    }
+
     return BodyRewriteParts(
       preludeStatements: preludeStatements,
       terminalExpression: terminalExpression
     )
   }
 
+  private func terminalExpressionText(for terminalStatement: CodeBlockItemSyntax) -> String? {
+    if let returnStatement = terminalStatement.item.as(ReturnStmtSyntax.self),
+       let expression = returnStatement.expression
+    {
+      return expression.trimmedDescription
+    }
+    if let expression = terminalStatement.item.as(ExprSyntax.self) {
+      guard !containsTopLevelReturn(in: terminalStatement) else { return nil }
+      return expression.trimmedDescription
+    }
+    if let expressionStatement = terminalStatement.item.as(ExpressionStmtSyntax.self) {
+      guard !containsTopLevelReturn(in: terminalStatement) else { return nil }
+      return expressionStatement.expression.trimmedDescription
+    }
+    return nil
+  }
+
   private func statementText(for statement: CodeBlockItemSyntax) -> String? {
-    let text = statement.item.description.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !text.isEmpty else { return nil }
+    let lines = normalizedLines(
+      from: statement.description,
+      baseIndentation: baseIndentation(of: statement)
+    )
+    let text = lines.joined(separator: "\n")
+    guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
     return text
+  }
+
+  /// The comment lines (and their blank-line structure) attached above a statement, dedented
+  /// so the renderer can re-indent them without duplicating whitespace. `nil` when the
+  /// statement carries no comment trivia.
+  private func leadingCommentLines(for statement: CodeBlockItemSyntax) -> String? {
+    guard statement.leadingTrivia.contains(where: isCommentPiece) else { return nil }
+
+    var lines = normalizedLines(
+      from: statement.leadingTrivia.description,
+      baseIndentation: baseIndentation(of: statement)
+    )
+    // The final trivia line is the statement's own indentation, not a comment line.
+    if let last = lines.last, last.isEmpty {
+      lines.removeLast()
+    }
+    guard !lines.isEmpty else { return nil }
+    return lines.joined(separator: "\n")
+  }
+
+  /// Splits raw source text into lines, drops the remnant of the previous line's terminating
+  /// newline, strips the statement's own indentation from each line (preserving deeper
+  /// relative indentation), and trims trailing whitespace.
+  private func normalizedLines(from text: String, baseIndentation: String) -> [String] {
+    var lines = text
+      .split(separator: "\n", omittingEmptySubsequences: false)
+      .map(String.init)
+
+    if lines.count > 1,
+       let first = lines.first,
+       first.trimmingCharacters(in: .whitespaces).isEmpty
+    {
+      lines.removeFirst()
+    }
+
+    return lines.map { line in
+      trimmingTrailingWhitespace(removingIndentation(line, upTo: baseIndentation))
+    }
+  }
+
+  /// The whitespace column the statement starts at: the last leading-trivia line, which is
+  /// the indentation between the preceding newline and the statement's first token.
+  private func baseIndentation(of statement: CodeBlockItemSyntax) -> String {
+    let leadingText = statement.leadingTrivia.description
+    guard
+      let lastLine = leadingText.split(separator: "\n", omittingEmptySubsequences: false).last,
+      lastLine.allSatisfy({ $0 == " " || $0 == "\t" })
+    else {
+      return ""
+    }
+    return String(lastLine)
+  }
+
+  private func removingIndentation(_ line: String, upTo indentation: String) -> String {
+    var remaining = Substring(line)
+    var budget = indentation.count
+    while budget > 0, let first = remaining.first, first == " " || first == "\t" {
+      remaining.removeFirst()
+      budget -= 1
+    }
+    return String(remaining)
+  }
+
+  private func trimmingTrailingWhitespace(_ line: String) -> String {
+    var trimmed = Substring(line)
+    while let last = trimmed.last, last == " " || last == "\t" {
+      trimmed.removeLast()
+    }
+    return String(trimmed)
+  }
+
+  private func isCommentPiece(_ piece: TriviaPiece) -> Bool {
+    switch piece {
+    case .lineComment, .blockComment, .docLineComment, .docBlockComment:
+      return true
+    default:
+      return false
+    }
   }
 
   private func containsTopLevelReturn(in statement: CodeBlockItemSyntax) -> Bool {
@@ -962,7 +1056,7 @@ public struct SnapshotMigrationRewriter {
   private func renderMultiline(_ statement: String, indentation: String) -> String {
     statement
       .split(separator: "\n", omittingEmptySubsequences: false)
-      .map { "\(indentation)\($0)" }
+      .map { $0.isEmpty ? "" : "\(indentation)\($0)" }
       .joined(separator: "\n")
   }
 
