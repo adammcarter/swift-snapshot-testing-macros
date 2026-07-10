@@ -2,6 +2,12 @@
 
 Use Swift Testing parameterisation with either `SnapshotConfiguration` or ordinary test arguments.
 
+Every case must provide stable snapshot identity. Use `SnapshotConfiguration` or pass the case
+through `argument:`. A bare `#expectSnapshot(value)` records an issue and skips rendering even
+when it has `named:`: the Apple-shipped Testing module does not expose case argument values
+through a supported API, so the runtime cannot prove that assertion labels are distinct without
+fragile private-layout reflection.
+
 ## `SnapshotConfiguration`
 
 `SnapshotConfiguration` carries both the on-disk configuration name and the value passed into the snapshot builder.
@@ -71,3 +77,7 @@ Just like the configuration form, `named:` changes only the assertion name. The 
 ## Platform scope
 
 In v1, `SnapshotConfiguration` and `argument:` are SwiftUI-only convenience forms. UIKit and AppKit callers should build the platform view or controller first and use the direct-value `#expectSnapshot(...)` overload instead.
+
+For parameterised UIKit and AppKit tests, use the `SnapshotConfiguration` closure form shown in
+the migration guide. `named:` may label that configured assertion but is not case identity by
+itself.

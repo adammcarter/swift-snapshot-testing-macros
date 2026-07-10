@@ -11,7 +11,7 @@ import Testing
 struct ExpectSnapshotDisplayNameTests {
   @Test("Profile card")
   func profileCard() {
-    #expectSnapshot(Text("Display name stays in test output only"))
+    #expectSnapshot(Text("Display name stays in test output only"), named: "profileCard")
   }
 }
 #endif

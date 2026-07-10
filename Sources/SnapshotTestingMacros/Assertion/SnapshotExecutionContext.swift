@@ -10,44 +10,32 @@ private final class SnapshotExecutionContextNameState: @unchecked Sendable {
 final class SnapshotExecutionContext: Sendable {
   let baseName: String
 
-  /// A stable per-case discriminator for the parameterized `@Test(arguments:)` case that owns
-  /// this attempt, or `nil` for a non-parameterized test. When present, it is folded into the
-  /// unnamed base name so distinct cases resolve distinct reference files (see
-  /// ``SnapshotCaseDiscriminator``).
-  let caseDiscriminator: String?
+  /// Whether this context belongs to a parameterized Swift Testing case.
+  let isParameterizedCase: Bool
 
-  /// The un-normalized description of the case's argument value(s), or `nil` for a
-  /// non-parameterized test. ``caseDiscriminator`` is a lossy normalization, so two distinct
-  /// values can fold to one discriminator; this raw form lets the collision guard tell them
-  /// apart in ``conflictingCaseDescription(forResolvedName:callSite:)``.
-  let caseDescription: String?
+  /// Stable source identity used only when no trait-provided attempt token owns the context.
+  /// The call site replaces unsafe task-pointer/process-global ownership for bare native tests.
+  private let fallbackSourceLocationIdentity: String?
 
   private let nameState = SnapshotExecutionContextNameState()
 
-  convenience init(function: StaticString, caseDiscriminator: String? = nil) {
-    self.init(
-      function: function,
-      caseIdentity: caseDiscriminator.map {
-        SnapshotCaseIdentity(discriminator: $0, rawDescription: $0)
-      }
-    )
-  }
-
-  init(function: StaticString, caseIdentity: SnapshotCaseIdentity?) {
+  init(
+    function: StaticString,
+    isParameterizedCase: Bool = false,
+    fallbackSourceLocationIdentity: String? = nil
+  ) {
     let raw = String(describing: function)
     let candidate = raw.split(separator: "(").first.map(String.init) ?? raw
     self.baseName = candidate.isEmpty ? "snapshot" : candidate
-    self.caseDiscriminator = caseIdentity?.discriminator
-    self.caseDescription = caseIdentity?.rawDescription
+    self.isParameterizedCase = isParameterizedCase
+    self.fallbackSourceLocationIdentity = fallbackSourceLocationIdentity
   }
 
   /// Resolves the display name for one assertion, deduplicating repeats within this attempt.
   ///
-  /// An unnamed assertion (`override == nil`) folds in the attempt's ``caseDiscriminator`` when
-  /// one is present and `disambiguatesUnnamedCase` is `true`, so each parameterized case gets a
-  /// distinct reference name. `disambiguatesUnnamedCase` is `false` on the
-  /// `argument:`/configuration path, whose configuration name already distinguishes the case —
-  /// folding there would needlessly churn those references. A named assertion is the user's
+  /// An unnamed assertion outside a trait-provided attempt scope folds in its source call-site
+  /// discriminator, so two assertions in one bare native test cannot silently share a reference.
+  /// Scoped attempts keep their established ordered naming. A named assertion is the user's
   /// deliberate choice and is never rewritten.
   func resolvedAssertionName(
     named override: String?,
@@ -57,8 +45,8 @@ final class SnapshotExecutionContext: Sendable {
     if let override {
       requestedName = override
     }
-    else if disambiguatesUnnamedCase, let caseDiscriminator {
-      requestedName = "\(baseName)-\(caseDiscriminator)"
+    else if disambiguatesUnnamedCase, let fallbackSourceLocationIdentity {
+      requestedName = "\(baseName)-\(fallbackSourceLocationIdentity)"
     }
     else {
       requestedName = baseName
@@ -128,34 +116,4 @@ final class SnapshotExecutionContext: Sendable {
     }
   }
 
-  /// Detects when a *different* parameterized case already resolved `resolvedName` from a
-  /// differently-described value — the same lossy-normalization collision the `argument:` path
-  /// guards, but for the unnamed per-case discriminator path.
-  ///
-  /// Folding the discriminator into the name is lossy (`"v1.0"` and `"v1 0"` both fold to
-  /// `"v1-0"`), so two distinct cases can resolve one reference file: one is compared against
-  /// the other's reference and re-recording overwrites it. Each case runs in its own attempt and
-  /// context, so per-attempt name dedupe cannot see the clash; the process-global
-  /// ``SnapshotConfigurationNameCollisions`` registry does. Returns the conflicting value's
-  /// description when this resolved name was already claimed by a different value at `callSite`,
-  /// or `nil` otherwise (including a non-parameterized context, and repetitions of the same
-  /// case, whose description matches).
-  ///
-  /// The result is returned rather than recorded here so the caller records it on the test's own
-  /// task — recording inside the adapter's main-actor hop would lose test attribution.
-  func conflictingCaseDescription(forResolvedName resolvedName: String, callSite: String) -> String? {
-    guard let caseDescription else {
-      return nil
-    }
-
-    let scopedCallSite = "case-discriminator|\(callSite)"
-    let occurrence = nextOccurrenceIndex(forKey: "\(scopedCallSite)|\(resolvedName)")
-
-    return SnapshotConfigurationNameCollisions.shared.conflictingValueDescription(
-      callSite: scopedCallSite,
-      derivedName: resolvedName,
-      occurrence: occurrence,
-      valueDescription: caseDescription
-    )
-  }
 }

@@ -6,12 +6,15 @@ import UIKit
 struct ExpectSnapshotUIKitTests {
   @Test
   func uiView() {
-    #expectSnapshot(makeLabel("UIKit direct value"))
+    #expectSnapshot(makeLabel("UIKit direct value"), named: "uiView")
   }
 
   @Test
   func uiViewController() {
-    #expectSnapshot(makeController(labeled: "UIKit controller direct value"))
+    #expectSnapshot(
+      makeController(labeled: "UIKit controller direct value"),
+      named: "uiViewController"
+    )
   }
 }
 #endif

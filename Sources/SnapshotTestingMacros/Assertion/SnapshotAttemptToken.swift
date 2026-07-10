@@ -11,7 +11,8 @@ import Testing
 ///   functions and from child tasks spawned by the test body, which inherit the task-local —
 ///   resolve the same token and therefore share one execution context, keeping unnamed
 ///   artifact suffixes ("-2", "-3", …) and `.N` reference-file identifiers stable and
-///   deterministic.
+///   deterministic in execution order. Concurrent unnamed assertions have no deterministic
+///   execution order and must provide explicit assertion or configuration identity.
 /// - A new attempt (test retry or repetition) enters the trait's scope again and receives a
 ///   fresh token, so its first unnamed assertion resolves the unsuffixed base name and the
 ///   `.1` reference identifier again.
@@ -27,13 +28,12 @@ final class SnapshotAttemptToken: @unchecked Sendable {
   private let lock = NSLock()
   private var context: SnapshotExecutionContext?
 
-  /// The stable per-case identity for the parameterized case this attempt belongs to, or `nil`
-  /// for a non-parameterized test. Captured once when the token is bound, so every assertion in
-  /// the attempt shares it.
-  private let caseIdentity: SnapshotCaseIdentity?
+  /// Whether this attempt belongs to a parameterized case. Swift Testing exposes this fact
+  /// publicly even though its shipped Apple module does not expose case argument values.
+  private let isParameterizedCase: Bool
 
-  init(caseIdentity: SnapshotCaseIdentity? = nil) {
-    self.caseIdentity = caseIdentity
+  init(isParameterizedCase: Bool = false) {
+    self.isParameterizedCase = isParameterizedCase
   }
 
   /// Returns the attempt's execution context, creating it on first use.
@@ -43,7 +43,10 @@ final class SnapshotAttemptToken: @unchecked Sendable {
         return context
       }
 
-      let created = SnapshotExecutionContext(function: function, caseIdentity: caseIdentity)
+      let created = SnapshotExecutionContext(
+        function: function,
+        isParameterizedCase: isParameterizedCase
+      )
       context = created
       return created
     }
@@ -55,9 +58,9 @@ final class SnapshotAttemptToken: @unchecked Sendable {
   /// same test) belong to the same attempt, so an already-bound token is kept rather than
   /// replaced: every assertion in the attempt shares one execution context.
   ///
-  /// `testCase` is the parameterized-case identity the Swift Testing runner passes to
-  /// `provideScope`; its argument value(s) become the per-case discriminator that keeps unnamed
-  /// assertions in distinct cases from colliding on one reference file.
+  /// `testCase` is the current case Swift Testing passes to `provideScope`. Only its public
+  /// `isParameterized` fact is retained; unnamed bare assertions in parameterized tests must use
+  /// an explicit identity because the shipped Apple module exposes no supported argument values.
   static func withAttemptScope<T>(
     for testCase: Test.Case?,
     perform work: () async throws -> T
@@ -66,7 +69,7 @@ final class SnapshotAttemptToken: @unchecked Sendable {
       return try await work()
     }
 
-    let token = SnapshotAttemptToken(caseIdentity: SnapshotCaseDiscriminator.identity(for: testCase))
+    let token = SnapshotAttemptToken(isParameterizedCase: testCase?.isParameterized == true)
     return try await $current.withValue(token) {
       try await work()
     }

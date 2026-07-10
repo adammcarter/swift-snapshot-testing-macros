@@ -1,5 +1,20 @@
 # Audit round 3: naming-reflection
 
+## Resolution
+
+Resolved on `snapshot-helpers` by removing `SnapshotCaseDiscriminator` and all reflection of
+Swift Testing's private `Test.Case._kind` layout. Dynamic compilation against the Apple-shipped
+Testing module confirmed that neither `Test.Case.arguments` nor `Test.Case.Snapshot` is exposed,
+including under the upstream SPI import names. The supported contract is therefore fail-closed:
+a bare assertion in a parameterised case records an actionable issue and does not render;
+`argument:` and `SnapshotConfiguration` provide case identity, while `named:` may only label an
+assertion whose case identity is already configured.
+
+This removes both findings at their shared root. There is no lossy inferred discriminator left to
+collide, and a toolchain layout change can no longer silently disable case identity.
+
+---
+
 Focused follow-up on the TRAIN-3 parameterized-case naming fix (commit 6ba1ccf) in the
 naming-reflection lane. The per-case discriminator work correctly disambiguates most
 parameterized cases, and its determinism, tuple handling, and configuration-suppression

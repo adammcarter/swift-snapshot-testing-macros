@@ -50,15 +50,32 @@ scope covers helper functions and child tasks spawned by the test body, and it r
 every new run of the test (including retries and repetitions), so artifact names stay stable
 across runs.
 
+The `-2`, `-3`, … mapping follows execution order. Concurrent unnamed assertions have no
+deterministic execution order, so give them explicit `named:` values or configuration identity.
+
 The trailing `.N` reference-file identifier (as in `profileCard_min-size_light.1.png`) is
 part of the same scope: assertions that resolve the same reference path within one run count
 up deterministically in assertion order, and every new run restarts at `.1` — so repeated
 in-process test iterations and parallel tests always resolve the same reference files instead
 of depending on a process-wide counter.
 
-Without any snapshot trait there is no shared naming scope and every unnamed assertion
-resolves the same base name and the same `.1` reference file — give each assertion a distinct
-`named:` argument or apply a snapshot trait.
+Without any snapshot trait there is no safe attempt-lifetime owner for an ordered counter.
+Each unnamed assertion therefore uses a deterministic source-location suffix, so distinct
+call sites cannot silently share one reference and the same call site stays stable across
+runs. Moving an assertion changes that suffix; use `named:` when the on-disk name must survive
+source movement. A loop that executes one call site for several values still needs an explicit
+`named:` value per iteration or a snapshot trait to provide an ordered attempt scope.
+
+### Unnamed snapshots in parameterised tests
+
+Swift Testing publicly exposes whether a case is parameterised, but the Apple-shipped module
+does not expose its argument values. A bare unnamed `#expectSnapshot(value)` therefore cannot
+derive a supported, collision-free case identity. It records an issue and skips rendering
+instead of letting cases share one reference.
+
+Pass the case through `#expectSnapshot(argument:)` or `SnapshotConfiguration`. `named:` may
+still label that configured assertion, but cannot establish case identity by itself. See
+[Parameterised tests](Parameterised.md).
 
 ## SwiftUI closure forms
 

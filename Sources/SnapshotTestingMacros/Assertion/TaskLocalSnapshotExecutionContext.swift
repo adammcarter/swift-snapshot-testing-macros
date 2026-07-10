@@ -4,13 +4,21 @@ enum TaskLocalSnapshotExecutionContext {
 
   static func withCurrent<T>(
     function: StaticString,
+    line: UInt = #line,
+    column: UInt = #column,
+    isParameterizedCase: Bool = false,
     perform work: (SnapshotExecutionContext) throws -> T
   ) rethrows -> T {
     if let current {
       return try work(current)
     }
 
-    let context = resolveContext(function: function)
+    let context = resolveContext(
+      function: function,
+      line: line,
+      column: column,
+      isParameterizedCase: isParameterizedCase
+    )
     return try $current.withValue(context) {
       try work(context)
     }
@@ -18,13 +26,21 @@ enum TaskLocalSnapshotExecutionContext {
 
   static func withCurrent<T>(
     function: StaticString,
+    line: UInt = #line,
+    column: UInt = #column,
+    isParameterizedCase: Bool = false,
     perform work: (SnapshotExecutionContext) async throws -> T
   ) async rethrows -> T {
     if let current {
       return try await work(current)
     }
 
-    let context = resolveContext(function: function)
+    let context = resolveContext(
+      function: function,
+      line: line,
+      column: column,
+      isParameterizedCase: isParameterizedCase
+    )
     return try await $current.withValue(context) {
       try await work(context)
     }
@@ -38,21 +54,30 @@ enum TaskLocalSnapshotExecutionContext {
   /// gets a fresh token and therefore a fresh context.
   ///
   /// Without a token (a bare `@Test` without any snapshot trait) every assertion gets a fresh
-  /// context. Contexts are deliberately never cached here: they used to be cached under the
+  /// context whose source call site is its stable identity. Contexts are deliberately never
+  /// cached here: they used to be cached under the
   /// raw current-task pointer bits, but the allocator reuses a finished task's allocation for
   /// the next task almost immediately, so new attempts and sequential child tasks frequently
   /// resolved a stale context whose `usedNames` were already populated and unnamed artifact
   /// names silently drifted to "-2"/"-3" suffixes. The residual limitation of the fresh-per-
-  /// assertion fallback is narrow: a trait-less test that makes several *unnamed*
-  /// `#expectSnapshot` calls resolves the same base name — and, since each fresh context also
-  /// restarts the `.N` reference identifier, the same reference file — for each of them
-  /// instead of suffixing deterministically. Applying any snapshot trait (which binds the
-  /// attempt token) or distinct `named:` arguments restores deterministic naming.
-  private static func resolveContext(function: StaticString) -> SnapshotExecutionContext {
+  /// assertion fallback therefore uses the exact line and column inside the source file that
+  /// already owns the snapshot directory, not unsafe execution identity: distinct source
+  /// assertions resolve distinct references, while repetitions of one source assertion resolve
+  /// the same reference across runs.
+  private static func resolveContext(
+    function: StaticString,
+    line: UInt,
+    column: UInt,
+    isParameterizedCase: Bool
+  ) -> SnapshotExecutionContext {
     if let token = SnapshotAttemptToken.current {
       return token.executionContext(function: function)
     }
 
-    return SnapshotExecutionContext(function: function)
+    return SnapshotExecutionContext(
+      function: function,
+      isParameterizedCase: isParameterizedCase,
+      fallbackSourceLocationIdentity: "L\(line)C\(column)"
+    )
   }
 }

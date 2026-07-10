@@ -1,5 +1,18 @@
 # Audit round 3: integration-regression
 
+## Resolution of finding 1
+
+Resolved on `snapshot-helpers` by deleting the private-reflection discriminator path rather than
+adding another guard around its lossy output. Bare parameterised snapshots now fail closed before
+rendering, while `argument:` and `SnapshotConfiguration` provide supported case identity.
+Assertion labels alone are also rejected because the runtime cannot prove they differ across
+cases. As a result, there is no second inferred naming path that can bypass
+`SnapshotConfigurationNameCollisions`.
+
+Finding 2 is an independent AppKit allocation improvement and is not changed by this naming fix.
+
+---
+
 Reviewed the cross-lane integration of the merged train-3 fixes (4454fc9..ae20b04),
 focusing on how the naming lane's `provideScope`/`testCase` signature change composes
 with the legacy trait boxes and the render pipeline. The signature change is clean:

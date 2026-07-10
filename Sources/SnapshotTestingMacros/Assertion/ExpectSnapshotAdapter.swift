@@ -879,7 +879,12 @@ enum ExpectSnapshotAdapter {
       return
     }
 
-    try TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+    try TaskLocalSnapshotExecutionContext.withCurrent(
+      function: function,
+      line: line,
+      column: column,
+      isParameterizedCase: Test.Case.current?.isParameterized == true
+    ) { context in
       guard
         let configuration = resolveConfiguration(
           from: source,
@@ -969,7 +974,12 @@ enum ExpectSnapshotAdapter {
       return
     }
 
-    try await TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+    try await TaskLocalSnapshotExecutionContext.withCurrent(
+      function: function,
+      line: line,
+      column: column,
+      isParameterizedCase: Test.Case.current?.isParameterized == true
+    ) { context in
       guard
         let configuration = resolveConfiguration(
           from: source,
@@ -1105,32 +1115,20 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeViewController: @escaping @MainActor (ConfigurationValue) throws -> SnapshotViewController
   ) throws -> [SnapshotFailure] {
-    // An `argument:`/configuration assertion already distinguishes each parameterized case by
-    // its configuration name, so the per-case discriminator is suppressed there to keep those
-    // reference names unchanged; unnamed, non-configuration assertions fold it in.
+    // An `argument:`/configuration assertion supplies case identity through its configuration.
+    // The shipped Apple Testing module exposes only whether a case is parameterized, not its
+    // argument values, so a bare assertion cannot safely invent or validate per-case identity.
+    // `named:` labels the assertion but cannot prove that every case chose a distinct value.
+    // Fail closed before rendering whenever the configuration carries no case identity.
     let disambiguatesUnnamedCase = configuration.name == nil
-    let displayName = context.resolvedAssertionName(
-      named: named,
-      disambiguatesUnnamedCase: disambiguatesUnnamedCase
-    )
-
-    // Guard the folded discriminator name against lossy-normalization collisions across cases,
-    // the same way the `argument:` path guards its derived configuration names. The conflict is
-    // returned as a failure (not recorded here) so it surfaces on the test's task past the hop.
-    if named == nil, disambiguatesUnnamedCase,
-      let conflictingDescription = context.conflictingCaseDescription(
-        forResolvedName: displayName,
-        callSite: "\(filePath):\(line):\(column)"
-      )
-    {
+    if disambiguatesUnnamedCase, context.isParameterizedCase {
       return [
         SnapshotFailure(
           message: """
-            Snapshot reference name collision: this parameterized test's cases described as \
-            '\(conflictingDescription)' and '\(context.caseDescription ?? "")' both derive the \
-            snapshot name '\(displayName)', so they would share one reference file. Give the \
-            assertion an explicit distinct name via #expectSnapshot(..., named:) per case, or \
-            switch to the argument:/SnapshotConfiguration form. The assertion was skipped.
+            #expectSnapshot in a parameterized test has no stable case identity. Pass the case \
+            value through #expectSnapshot(argument:) or SnapshotConfiguration. The named: \
+            argument labels an assertion but cannot prove that every case uses a distinct value. \
+            The assertion was skipped instead of sharing a reference file with another case.
             """,
           error: nil,
           fileID: fileID,
@@ -1140,6 +1138,11 @@ enum ExpectSnapshotAdapter {
         )
       ]
     }
+
+    let displayName = context.resolvedAssertionName(
+      named: named,
+      disambiguatesUnnamedCase: disambiguatesUnnamedCase
+    )
 
     let generator = SnapshotViewGenerator(
       displayName: displayName,

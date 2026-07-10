@@ -28,6 +28,15 @@ The legacy `@SnapshotSuite` and `@SnapshotTest` macros are still available for m
   missing reference fails the test and is never written). Migrate `record: false` call sites
   to `.record(.missing)` when you need to keep bootstrapping missing references; keep
   `.record(false)` when a missing reference should be a hard failure.
+- A bare `#expectSnapshot(value)` inside `@Test(arguments:)` is rejected at runtime and skipped
+  before rendering, even when it has `named:`. Swift Testing exposes that the case is
+  parameterised but the Apple-shipped module does not expose supported argument values, so the
+  runtime cannot prove an assertion label is distinct without private reflection. Use `argument:`
+  or `SnapshotConfiguration`; `named:` may still label that configured assertion.
+- A trait-less unnamed assertion now includes a stable source-location suffix in its reference
+  name. Rename or re-record existing references once, or provide `named:` to preserve an explicit
+  on-disk name. Applying any snapshot trait retains the established attempt-scoped base-name,
+  `-2`, `-3`, ... ordering.
 
 ## Basic before and after
 

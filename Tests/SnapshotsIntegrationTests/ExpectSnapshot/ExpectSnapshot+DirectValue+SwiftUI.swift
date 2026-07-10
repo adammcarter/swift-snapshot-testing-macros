@@ -11,7 +11,7 @@ import Testing
 struct ExpectSnapshotDirectValueSwiftUITests {
   @Test
   func swiftUiView() {
-    #expectSnapshot(Text("Some SwiftUI text"))
+    #expectSnapshot(Text("Some SwiftUI text"), named: "swiftUiView")
   }
 
   @Test

@@ -1455,13 +1455,7 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
       // Every duplicate `@Suite` is bare: delete them all and let the `@SnapshotSuite` rename
       // supply the surviving `@Suite`, keeping the legacy attribute's arguments intact.
       for attribute in suiteAttributes {
-        suiteAttributeEdits.append(
-          TextEdit(
-            startUTF8Offset: attribute.positionAfterSkippingLeadingTrivia.utf8Offset,
-            endUTF8Offset: attribute.endPositionBeforeTrailingTrivia.utf8Offset,
-            replacement: ""
-          )
-        )
+        suiteAttributeEdits.append(attributeRemovalEdit(for: attribute))
       }
       return
     }
@@ -1470,13 +1464,7 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
     // delete would silently destroy. Keep that attribute, delete the legacy `@SnapshotSuite`
     // instead, and fold the legacy snapshot traits into the surviving argument list.
     for bareSuite in suiteAttributes where bareSuite.arguments == nil {
-      suiteAttributeEdits.append(
-        TextEdit(
-          startUTF8Offset: bareSuite.positionAfterSkippingLeadingTrivia.utf8Offset,
-          endUTF8Offset: bareSuite.endPositionBeforeTrailingTrivia.utf8Offset,
-          replacement: ""
-        )
-      )
+      suiteAttributeEdits.append(attributeRemovalEdit(for: bareSuite))
     }
 
     for snapshotSuite in snapshotSuiteAttributes {

@@ -131,10 +131,40 @@ struct SnapshotContextAttemptScopingTests {
     #expect(first !== second)
   }
 
+  /// Without a trait-provided attempt token, assertion order has no safe lifetime owner.
+  /// Distinct source call sites therefore provide the stable identity that prevents two unnamed
+  /// assertions in one native test from resolving one reference.
+  @Test
+  func traitlessUnnamedAssertionsAtDistinctCallSitesResolveDistinctNames() {
+    let first = TaskLocalSnapshotExecutionContext.withCurrent(function: "profileCard()") {
+      $0.resolvedAssertionName(named: nil)
+    }
+    let second = TaskLocalSnapshotExecutionContext.withCurrent(function: "profileCard()") {
+      $0.resolvedAssertionName(named: nil)
+    }
+
+    #expect(first != second)
+  }
+
+  /// The source identity is part of the on-disk reference contract. Line and column are reversible
+  /// and collision-free within the source file whose path already owns the snapshot directory.
+  @Test
+  func callSiteIdentityUsesTheExactSourceLocation() {
+    let name = TaskLocalSnapshotExecutionContext.withCurrent(
+      function: "profileCard()",
+      line: 10,
+      column: 5
+    ) {
+      $0.resolvedAssertionName(named: nil)
+    }
+
+    #expect(name == "profileCard-L10C5")
+  }
+
   /// (R3) Without any snapshot trait there is no attempt scope, and contexts must never be
-  /// served from a cache keyed by recycled raw task pointers: a long run of short-lived
-  /// sequential tasks — whose task allocations the allocator aggressively recycles — must
-  /// each resolve the unsuffixed base name.
+  /// served from a cache keyed by recycled raw task pointers. A long run of short-lived
+  /// sequential tasks at one source assertion must always resolve the same call-site-qualified
+  /// name, regardless of task allocation reuse.
   @Test
   func sequentialTasksWithoutASnapshotTraitNeverResolveADriftedName() async {
     var names = [String]()
@@ -149,10 +179,7 @@ struct SnapshotContextAttemptScopingTests {
       names.append(name)
     }
 
-    let drifted = names.filter { $0 != "probe" }
-    #expect(
-      drifted.isEmpty,
-      "stale contexts were reused across \(drifted.count) tasks; drifted names: \(Set(drifted).sorted())"
-    )
+    #expect(Set(names).count == 1)
+    #expect(names.first?.hasPrefix("probe-L") == true)
   }
 }

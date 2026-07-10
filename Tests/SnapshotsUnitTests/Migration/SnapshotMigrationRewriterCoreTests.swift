@@ -96,6 +96,35 @@ struct SnapshotMigrationRewriterCoreTests {
   }
 
   @Test
+  func dedupingSuiteAttributesKeepsAdjacentAttributeLinesTogether() throws {
+    let input = """
+    @MainActor
+    @Suite
+    @SnapshotSuite(.theme(.light))
+    struct BasicSnapshots {
+      @SnapshotTest
+      func card() -> some View {
+        ProfileCard()
+      }
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(
+      result.output.contains(
+        """
+        @MainActor
+        @Suite(.theme(.light))
+        struct BasicSnapshots
+        """
+      )
+    )
+    #expect(!result.output.contains("@MainActor\n\n@Suite"))
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
   func preservesExistingSuiteArgumentsWhenDedupingAgainstSnapshotSuite() throws {
     let input = """
     @Suite("Profile cards", .serialized)
