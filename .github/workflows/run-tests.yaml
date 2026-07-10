@@ -7,6 +7,12 @@ on:
   pull_request:
     branches: [main]
 
+# Only the newest run per ref matters; a new push cancels the previous run in
+# progress so the queue never backs up behind superseded commits.
+concurrency:
+  group: run-tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   format-and-lint:
     name: Format and Lint
