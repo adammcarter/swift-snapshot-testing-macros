@@ -132,7 +132,6 @@ let package = Package(
       ],
       exclude: [
         "ExpectSnapshot/__Snapshots__",
-        "SnapshotSuite/__Snapshots__",
         "SnapshotTest/__Snapshots__",
       ]
     ),
