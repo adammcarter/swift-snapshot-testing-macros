@@ -205,6 +205,39 @@ struct AppKitImageRenderingTests {
     #expect(view.wantsLayer == false)
   }
 
+  /// A constraint-managed (`translatesAutoresizingMaskIntoConstraints == false`) root is pinned
+  /// to the offscreen window's content view on every render. When one shared controller is reused
+  /// across a size fan-out it is hosted repeatedly, so each render must solve against its own
+  /// requested bounds without stale window-edge constraints from a prior render surviving on the
+  /// shared root.
+  @Test
+  func constraintManagedRootRendersEachSizeAcrossRepeatedRenders() throws {
+    let root = FillView(fill: .srgbRed)
+    root.translatesAutoresizingMaskIntoConstraints = false
+
+    let controller = SnapshotViewController()
+    controller.view = root
+
+    let firstRequest = try makeImageRequest(size: CGSize(width: 40, height: 40), displayScale: 1) {
+      controller
+    }
+    let secondRequest = try makeImageRequest(size: CGSize(width: 80, height: 20), displayScale: 1) {
+      controller
+    }
+
+    let firstBitmap = try renderedBitmap(request: firstRequest)
+    let secondBitmap = try renderedBitmap(request: secondRequest)
+
+    #expect(firstBitmap.pixelsWide == 40)
+    #expect(firstBitmap.pixelsHigh == 40)
+    try expectColor(in: firstBitmap, atX: 20, y: 20, isApproximately: .srgbRed)
+
+    #expect(secondBitmap.pixelsWide == 80)
+    #expect(secondBitmap.pixelsHigh == 20)
+    try expectColor(in: secondBitmap, atX: 40, y: 10, isApproximately: .srgbRed)
+    try expectColor(in: secondBitmap, atX: 78, y: 10, isApproximately: .srgbRed)
+  }
+
   // MARK: - Request construction
 
   private func makeImageRequest(

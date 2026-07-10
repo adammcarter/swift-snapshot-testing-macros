@@ -35,12 +35,17 @@ enum AppKitImageRenderer {
     let window = makeOffscreenWindow(size: size, appearance: appearance)
     view.appearance = appearance
 
-    host(view, in: window, size: size)
+    let hostingConstraints = host(view, in: window, size: size)
     apply(backgroundColor, to: view)
     layOutHierarchy(of: window)
 
     let image = drawImage(of: view, size: size, displayScale: displayScale)
 
+    // Explicitly tear down the window-edge constraints this render activated, so re-hosting a
+    // shared controller for the next size never inherits stale constraints. `removeFromSuperview`
+    // plus per-render window disposal already guarantees this via ARC, but making it explicit
+    // keeps the invariant independent of teardown timing.
+    NSLayoutConstraint.deactivate(hostingConstraints)
     view.removeFromSuperview()
     view.autoresizingMask = initialAutoresizingMask
     view.frame = initialFrame
@@ -76,9 +81,11 @@ enum AppKitImageRenderer {
   /// Mirrors the UIKit path's re-hosting: frame-based views fill the window through their
   /// autoresizing mask, while views already managed by Auto Layout are pinned to the window's
   /// content view so the layout pass solves them against the requested bounds.
-  private static func host(_ view: NSView, in window: NSWindow, size: CGSize) {
+  /// Returns the window-edge constraints it activated (empty for the autoresizing-mask branch),
+  /// so the caller can deactivate them explicitly in teardown.
+  private static func host(_ view: NSView, in window: NSWindow, size: CGSize) -> [NSLayoutConstraint] {
     guard let contentView = window.contentView else {
-      return
+      return []
     }
 
     view.removeFromSuperview()
@@ -87,15 +94,18 @@ enum AppKitImageRenderer {
     if view.translatesAutoresizingMaskIntoConstraints {
       view.frame = .init(origin: .zero, size: size)
       view.autoresizingMask = [.width, .height]
+      return []
     }
-    else {
-      NSLayoutConstraint.activate([
-        view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-        view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-        view.topAnchor.constraint(equalTo: contentView.topAnchor),
-        view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-      ])
-    }
+
+    let hostingConstraints = [
+      view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+      view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+      view.topAnchor.constraint(equalTo: contentView.topAnchor),
+      view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+    ]
+    NSLayoutConstraint.activate(hostingConstraints)
+
+    return hostingConstraints
   }
 
   /// Applies the decorator's background color under the view's themed effective appearance.
