@@ -46,6 +46,55 @@ struct ApplySafetyTests {
   }
 
   @Test
+  func releaseDoesNotRemoveReplacementLockFile() throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    let lockPath = URL(fileURLWithPath: fixture.root).appendingPathComponent(".snapshot-migration.lock").path
+    let lock = try ApplyLock.acquire(projectRoot: fixture.root, timeoutSeconds: 0)
+
+    // Simulate another process replacing the lock file behind this lock object.
+    _ = unlink(lockPath)
+    try "replacement-owner".write(toFile: lockPath, atomically: true, encoding: .utf8)
+
+    lock.release()
+
+    #expect(FileManager.default.fileExists(atPath: lockPath))
+    let contents = try String(contentsOfFile: lockPath, encoding: .utf8)
+    #expect(contents == "replacement-owner")
+  }
+
+  @Test
+  func doubleReleaseIsANoOpAndPreservesSubsequentLock() throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    let lockPath = URL(fileURLWithPath: fixture.root).appendingPathComponent(".snapshot-migration.lock").path
+
+    let first = try ApplyLock.acquire(projectRoot: fixture.root, timeoutSeconds: 0)
+    first.release()
+
+    let second = try ApplyLock.acquire(projectRoot: fixture.root, timeoutSeconds: 0)
+    defer { second.release() }
+
+    // A second release of the already-released lock must not disturb the new holder.
+    first.release()
+
+    #expect(FileManager.default.fileExists(atPath: lockPath))
+    do {
+      _ = try ApplyLock.acquire(projectRoot: fixture.root, timeoutSeconds: 0)
+      Issue.record("Expected acquire to fail while second lock is held")
+    } catch let error as ApplyLockError {
+      guard case .lockHeld = error else {
+        Issue.record("Expected lockHeld, got \(error)")
+        return
+      }
+    } catch {
+      Issue.record("Expected ApplyLockError, got \(error)")
+    }
+  }
+
+  @Test
   func preconditionHashMismatchIsRejected() throws {
     let fixture = try TempProject.make()
     defer { fixture.cleanup() }

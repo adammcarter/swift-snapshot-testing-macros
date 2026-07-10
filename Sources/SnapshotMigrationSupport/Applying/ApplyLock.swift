@@ -11,30 +11,49 @@ public enum ApplyLockError: Error, Equatable {
   case lockCreateFailed(String)
 }
 
-public struct ApplyLock {
+/// Serializes `--apply` runs via `flock(2)` on a persistent lock file.
+///
+/// Design choice: the lock file is never unlinked. Earlier versions created
+/// the file with `O_CREAT | O_EXCL` and reclaimed stale locks by unlinking,
+/// which had a race: two waiters could both observe the same stale PID, one
+/// would unlink-and-recreate, and the other would then unlink the fresh lock,
+/// letting two `--apply` runs proceed concurrently. With `flock` the kernel
+/// owns the mutual exclusion (the lock dies with the process, so there is no
+/// stale state to reclaim) and because no code path ever unlinks the file,
+/// there is no window in which one process can destroy another's lock. The
+/// holder's PID is written into the file for diagnostics only; it carries no
+/// locking semantics.
+public final class ApplyLock: @unchecked Sendable {
   private let lockPath: String
   private let fileDescriptor: CInt
+  private let releaseGuard = NSLock()
+  private var released = false
+
+  private init(lockPath: String, fileDescriptor: CInt) {
+    self.lockPath = lockPath
+    self.fileDescriptor = fileDescriptor
+  }
 
   public static func acquire(projectRoot: String, timeoutSeconds: Int) throws -> ApplyLock {
     let lockPath = URL(fileURLWithPath: projectRoot).appendingPathComponent(".snapshot-migration.lock").path
     let deadline = Date().addingTimeInterval(TimeInterval(max(0, timeoutSeconds)))
 
     while true {
-      let fileDescriptor = open(lockPath, O_CREAT | O_EXCL | O_RDWR, mode_t(0o600))
-      if fileDescriptor >= 0 {
-        let ownerPID = "\(getpid())"
-        _ = ownerPID.withCString { ptr in
-          write(fileDescriptor, ptr, strlen(ptr))
-        }
-        return ApplyLock(lockPath: lockPath, fileDescriptor: fileDescriptor)
-      }
-
-      if errno != EEXIST {
+      let fileDescriptor = open(lockPath, O_CREAT | O_RDWR | O_CLOEXEC, mode_t(0o600))
+      if fileDescriptor < 0 {
         throw ApplyLockError.lockCreateFailed(lockPath)
       }
 
-      if reclaimStaleLockIfNeeded(atPath: lockPath) {
-        continue
+      if flock(fileDescriptor, LOCK_EX | LOCK_NB) == 0 {
+        writeOwnerPIDForDiagnostics(to: fileDescriptor)
+        return ApplyLock(lockPath: lockPath, fileDescriptor: fileDescriptor)
+      }
+
+      let flockErrno = errno
+      _ = close(fileDescriptor)
+
+      if flockErrno != EWOULDBLOCK && flockErrno != EAGAIN {
+        throw ApplyLockError.lockCreateFailed(lockPath)
       }
 
       if Date() >= deadline {
@@ -45,19 +64,23 @@ public struct ApplyLock {
     }
   }
 
+  /// Releases the lock by closing the file descriptor, which drops the
+  /// `flock`. Idempotent: repeated calls are no-ops, so a stale reference can
+  /// never close a reused descriptor belonging to a newer lock holder. The
+  /// lock file itself is intentionally left in place (see type docs).
   public func release() {
+    releaseGuard.lock()
+    defer { releaseGuard.unlock() }
+    guard !released else { return }
+    released = true
     _ = close(fileDescriptor)
-    _ = unlink(lockPath)
   }
 
-  private static func reclaimStaleLockIfNeeded(atPath path: String) -> Bool {
-    guard let ownerText = try? String(contentsOfFile: path, encoding: .utf8) else { return false }
-    let trimmedOwner = ownerText.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard let ownerPID = Int32(trimmedOwner), ownerPID > 0 else { return false }
-
-    if kill(ownerPID, 0) == -1, errno == ESRCH {
-      return unlink(path) == 0
+  private static func writeOwnerPIDForDiagnostics(to fileDescriptor: CInt) {
+    _ = ftruncate(fileDescriptor, 0)
+    let ownerPID = "\(getpid())"
+    _ = ownerPID.withCString { ptr in
+      write(fileDescriptor, ptr, strlen(ptr))
     }
-    return false
   }
 }
