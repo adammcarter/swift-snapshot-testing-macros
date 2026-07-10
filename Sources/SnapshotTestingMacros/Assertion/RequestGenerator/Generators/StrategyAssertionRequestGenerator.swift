@@ -23,7 +23,7 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
       case .recursiveDescription:
         request = AssertionRequest(
           view: try context.makeSnapshotView(),
-          snapshotting: .recursiveDescription,
+          snapshotting: makeRecursiveDescriptionSnapshotting(),
           snapshotDirectory: context.snapshotDirectory,
           testName: testName,
           fileID: context.fileID,
@@ -62,6 +62,42 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
     }
 
     return [request]
+  }
+
+  /// Builds a recursive-description strategy that honours the request's size, theme, and
+  /// display scale so the dump matches the size/theme components baked into the reference
+  /// file's name. Without this, the size/theme fan-out would emit N×M identically-generated
+  /// text files whose names claim settings that were never applied: the view would dump with
+  /// whatever stale frame it happened to have, never the computed request size.
+  ///
+  /// The settings are applied at render time (not at request-generation time) because the
+  /// snapshot value can be a single cached instance shared by every request in the size/theme
+  /// fan-out, and all requests are generated before any of them renders — a generation-time
+  /// mutation would let the last-generated permutation win for every artifact.
+  private func makeRecursiveDescriptionSnapshotting() -> Snapshotting<SnapshotViewController, String> {
+    #if canImport(UIKit)
+    // pointfree's parameterised strategy re-hosts the view at `size` with the given traits
+    // (theme + display scale) and lays it out before dumping, mirroring the `.image` path.
+    return .recursiveDescription(on: .init(), size: size, traits: makeTraits())
+    #elseif canImport(AppKit)
+    // pointfree's AppKit variant never lays out and takes no size or appearance, so apply
+    // both here before delegating to it for the dump. The display scale has no textual
+    // representation in `_subtreeDescription`, so it cannot affect the artifact.
+    let size = size
+    let theme = theme
+
+    return Snapshotting<SnapshotView, String>.recursiveDescription
+      .pullback { viewController in
+        MainActor.assumeIsolated {
+          let view = viewController.view
+          view.appearance = theme
+          view.frame.size = size
+          view.needsLayout = true
+          view.layoutSubtreeIfNeeded()
+          return view
+        }
+      }
+    #endif
   }
 
   #if canImport(AppKit)

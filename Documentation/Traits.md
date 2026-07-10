@@ -34,6 +34,13 @@ If the same snapshot trait appears more than once in the same scope chain, the l
 | Record | `.record` / `.record(.all)` / `.record(.missing)` | Control when snapshots are recorded |
 | Diff tool | `.diffTool(.default)` | Configure the diff command shown on failure |
 
+The `.strategy(.recursiveDescription)` text strategy participates in the same size/theme
+fan-out as `.image`: each reference is laid out at the request's computed size with the
+request's theme applied before the hierarchy is dumped, so the size and theme components in
+the file name describe the render they contain. Note that a view whose textual description
+is theme-independent produces identical light/dark dumps; the display scale has no textual
+representation, so it never affects `.recursiveDescription` artifacts.
+
 When no `.record` or `.diffTool` trait is set, ambient swift-snapshot-testing configuration
 applies as usual: your own `withSnapshotTesting(record:diffTool:)`, pointfree's
 `.snapshots(record:diffTool:)` trait, and the `SNAPSHOT_TESTING_RECORD` environment variable

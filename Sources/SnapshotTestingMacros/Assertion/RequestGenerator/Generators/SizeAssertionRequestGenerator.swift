@@ -19,9 +19,12 @@ struct SizeAssertionRequestGenerator: AccumulatedAssertionRequestGenerating {
 
   func accumulateRequests(for value: SizePair) throws -> [any AssertionRequesting] {
     /*
-     Return the view controller that's just gone through the layout process in this generator.
-    
-     Using the base view would result in a zero size frame as it has not been laid out until this generator.
+     Reuse the view controller that `makeSizes()` measured rather than building a fresh one.
+
+     Measurement only lays the view out for `.minimum` dimensions — fully `.fixed` sizes never
+     touch the view here — so the view's frame is not guaranteed to match the computed size at
+     this point. Every strategy applies the computed size (and theme/scale) itself at render
+     time; see `StrategyAssertionRequestGenerator`.
      */
     let contextWithLaidOutView = AssertionRequestContext(
       name: context.name,
