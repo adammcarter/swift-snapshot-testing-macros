@@ -34,6 +34,24 @@ If the same snapshot trait appears more than once in the same scope chain, the l
 | Record | `.record` / `.record(.all)` / `.record(.missing)` | Control when snapshots are recorded |
 | Diff tool | `.diffTool(.default)` | Configure the diff command shown on failure |
 
+### Size components in reference names
+
+Each size contributes a component to the reference file name. Explicitly fixed dimensions are
+embedded in that component, so multiple fixed sizes on one test keep value-stable,
+order-independent names when the sizes list is edited or reordered:
+
+| Size | Name component |
+| --- | --- |
+| `.sizes(.minimum)` (the default) | `min-size` |
+| `.sizes(width: 320, height: 480)` | `fixed-320x480` |
+| `.sizes(width: 320)` | `min-height-w320` |
+| `.sizes(height: 480)` | `min-width-h480` |
+| `.sizes(devices: .iPhoneX)` | `iPhoneX` |
+
+An explicit `scale:` appends a `-<scale>x` suffix (`scale: 2` gives `fixed-320x480-2x`), so
+size variants differing only by scale never collide on one reference file. Non-integral
+values fold their decimal point to a hyphen (`100.5` becomes `100-5`).
+
 The `.strategy(.recursiveDescription)` text strategy participates in the same size/theme
 fan-out as `.image`: each reference is laid out at the request's computed size with the
 request's theme applied before the hierarchy is dumped, so the size and theme components in

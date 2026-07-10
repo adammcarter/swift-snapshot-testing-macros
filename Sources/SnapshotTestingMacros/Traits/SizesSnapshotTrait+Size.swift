@@ -37,15 +37,52 @@ extension SizesSnapshotTrait {
       self.displayName = "size"
       self.debugDescription = "width: \(width), height: \(height), scale: \(String(describing: scale))"
 
+      /*
+       Embed the concrete dimensions for any explicitly fixed length so multiple fixed sizes in
+       one test produce value-stable, order-independent reference names — without them the only
+       disambiguator is the positional `.N` counter, and editing the sizes array silently
+       re-maps every subsequent reference to a different geometry. The fully-minimum default
+       keeps its historical `min-size` name (when `scale` is `nil`) so committed references
+       recorded under it stay valid.
+       */
       let description =
         switch (width, height) {
-          case (.fixed, .fixed): "fixed size"
-          case (.fixed, .minimum): "min height"
-          case (.minimum, .fixed): "min width"
-          case (.minimum, .minimum): "min size"
+          case (.fixed(let width), .fixed(let height)):
+            "fixed-\(Self.lengthValueDescription(width))x\(Self.lengthValueDescription(height))"
+          case (.fixed(let width), .minimum):
+            "min-height-w\(Self.lengthValueDescription(width))"
+          case (.minimum, .fixed(let height)):
+            "min-width-h\(Self.lengthValueDescription(height))"
+          case (.minimum, .minimum):
+            "min-size"
         }
 
-      self.testNameDescription = description.replacingOccurrences(of: " ", with: "-")
+      let scaleSuffix = scale.map { "-\(Self.lengthValueDescription($0))x" } ?? ""
+
+      self.testNameDescription = description + scaleSuffix
+    }
+
+    /// Formats a dimension or scale value for use inside a reference file name: integral values
+    /// drop their fraction (`100.0` → `100`) and any remaining non-word characters are folded to
+    /// hyphens (`100.5` → `100-5`) so the emitted name already matches what the file-name
+    /// sanitisation would produce.
+    private static func lengthValueDescription(_ value: Double) -> String {
+      let formatted: String =
+        if value.isFinite,
+          value == value.rounded(),
+          value.magnitude < 1_000_000_000_000
+        {
+          String(Int(value))
+        }
+        else {
+          String(describing: value)
+        }
+
+      return formatted.replacingOccurrences(
+        of: "\\W+",
+        with: "-",
+        options: .regularExpression
+      )
     }
 
     init(
