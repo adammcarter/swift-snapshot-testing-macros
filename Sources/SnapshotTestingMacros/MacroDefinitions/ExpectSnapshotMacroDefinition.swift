@@ -99,6 +99,20 @@ public macro expectSnapshot<V: SwiftUI.View, ConfigurationValue: Sendable>(
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
+public macro expectSnapshot<ConfigurationValue: Sendable>(
+  _ configuration: SnapshotConfiguration<ConfigurationValue>,
+  named: String? = nil,
+  _ makeValue: @escaping @MainActor (ConfigurationValue) -> SnapshotView
+) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
+
+@freestanding(expression)
+public macro expectSnapshot<ConfigurationValue: Sendable>(
+  _ configuration: SnapshotConfiguration<ConfigurationValue>,
+  named: String? = nil,
+  _ makeValue: @escaping @MainActor (ConfigurationValue) -> SnapshotViewController
+) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
+
+@freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
   named: String? = nil,

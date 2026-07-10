@@ -348,6 +348,54 @@ public func __expectSnapshot<V: View, ConfigurationValue: Sendable>(
 
 @_documentation(visibility: private)
 // swiftlint:disable:next identifier_name
+public func __expectSnapshot<ConfigurationValue: Sendable>(
+  _ configuration: SnapshotConfiguration<ConfigurationValue>,
+  named: String? = nil,
+  function: StaticString = #function,
+  fileID: StaticString = #fileID,
+  filePath: StaticString = #filePath,
+  line: UInt = #line,
+  column: UInt = #column,
+  makeValue: @escaping @MainActor (ConfigurationValue) -> SnapshotView
+) {
+  ExpectSnapshotAdapter.run(
+    configuration: configuration,
+    named: named,
+    function: function,
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column,
+    makeValue: makeValue
+  )
+}
+
+@_documentation(visibility: private)
+// swiftlint:disable:next identifier_name
+public func __expectSnapshot<ConfigurationValue: Sendable>(
+  _ configuration: SnapshotConfiguration<ConfigurationValue>,
+  named: String? = nil,
+  function: StaticString = #function,
+  fileID: StaticString = #fileID,
+  filePath: StaticString = #filePath,
+  line: UInt = #line,
+  column: UInt = #column,
+  makeValue: @escaping @MainActor (ConfigurationValue) -> SnapshotViewController
+) {
+  ExpectSnapshotAdapter.run(
+    configuration: configuration,
+    named: named,
+    function: function,
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column,
+    makeValue: makeValue
+  )
+}
+
+@_documentation(visibility: private)
+// swiftlint:disable:next identifier_name
 public func __expectSnapshot<V: View, A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
   named: String? = nil,

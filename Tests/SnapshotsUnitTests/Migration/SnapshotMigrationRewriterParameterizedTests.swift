@@ -17,10 +17,14 @@ struct RewriterParameterizedTests {
 
     #expect(result.output.contains("@Test(arguments: makeStates())"))
     #expect(result.output.contains("func profile(configuration: SnapshotConfiguration<UserState>)"))
+    #expect(result.output.contains("let snapshotConfiguration = configuration"))
     #expect(result.output.contains("let state = configuration.value"))
-    #expect(result.output.contains("let snapshotName = (configuration.name ?? String(describing: configuration.value)) + \"/\" + (\"profile\")"))
     #expect(result.output.contains("let snapshotValue = UserProfileView(state: state)"))
-    #expect(result.output.contains("#expectSnapshot(snapshotValue, named: snapshotName)"))
+    #expect(
+      result.output.contains(
+        "#expectSnapshot(snapshotConfiguration, named: \"profile\") { _ in snapshotValue }"
+      )
+    )
     #expect(result.output.contains("UserProfileView(state: state)"))
     #expect(result.reasons.isEmpty)
   }
@@ -39,10 +43,14 @@ struct RewriterParameterizedTests {
     #expect(result.output.contains("@MainActor"))
     #expect(result.output.contains("@Test(\"Card\", arguments: makeCases())"))
     #expect(result.output.contains("func card(configuration: SnapshotConfiguration<CardState>)"))
+    #expect(result.output.contains("let snapshotConfiguration = configuration"))
     #expect(result.output.contains("let state = configuration.value"))
-    #expect(result.output.contains("let snapshotName = (configuration.name ?? String(describing: configuration.value)) + \"/\" + (\"Card\")"))
     #expect(result.output.contains("let snapshotValue: UIViewController = makeController(state: state)"))
-    #expect(result.output.contains("#expectSnapshot(snapshotValue, named: snapshotName)"))
+    #expect(
+      result.output.contains(
+        "#expectSnapshot(snapshotConfiguration, named: \"Card\") { _ in snapshotValue }"
+      )
+    )
     #expect(result.reasons.isEmpty)
   }
 
@@ -59,9 +67,17 @@ struct RewriterParameterizedTests {
 
     #expect(result.output.contains("@Test(arguments: makeStates())"))
     #expect(result.output.contains("func profile(state: UserState)"))
-    #expect(result.output.contains("let snapshotName = (String(describing: state)) + \"/\" + (\"profile\")"))
+    #expect(
+      result.output.contains(
+        #"let snapshotConfiguration = SnapshotConfiguration(name: "\(state)", value: state)"#
+      )
+    )
     #expect(result.output.contains("let snapshotValue = UserProfileView(state: state)"))
-    #expect(result.output.contains("#expectSnapshot(snapshotValue, named: snapshotName)"))
+    #expect(
+      result.output.contains(
+        "#expectSnapshot(snapshotConfiguration, named: \"profile\") { _ in snapshotValue }"
+      )
+    )
     #expect(result.output.contains("UserProfileView(state: state)"))
     #expect(result.reasons.isEmpty)
   }
@@ -97,8 +113,16 @@ struct RewriterParameterizedTests {
     #expect(result.output.contains("@Test(arguments: makeStates())"))
     #expect(result.output.contains("func card(state: CardState)"))
     #expect(result.output.contains("let snapshotValue: UIViewController = makeController(state: state)"))
-    #expect(result.output.contains("let snapshotName = (String(describing: state)) + \"/\" + (\"card\")"))
-    #expect(result.output.contains("#expectSnapshot(snapshotValue, named: snapshotName)"))
+    #expect(
+      result.output.contains(
+        #"let snapshotConfiguration = SnapshotConfiguration(name: "\(state)", value: state)"#
+      )
+    )
+    #expect(
+      result.output.contains(
+        "#expectSnapshot(snapshotConfiguration, named: \"card\") { _ in snapshotValue }"
+      )
+    )
     #expect(result.reasons.isEmpty)
   }
 
@@ -162,12 +186,16 @@ struct RewriterParameterizedTests {
 
     #expect(result.output.contains("@Test(arguments: styles)"))
     #expect(result.output.contains("func populated(configuration: SnapshotConfiguration<SignpostStyle>) async throws"))
+    #expect(result.output.contains("let snapshotConfiguration = configuration"))
     #expect(result.output.contains("let style = configuration.value"))
-    #expect(result.output.contains("let snapshotName = (configuration.name ?? String(describing: configuration.value)) + \"/\" + (\"populated\")"))
     #expect(result.output.contains("let viewModel = makeViewModel(style: style)"))
     #expect(result.output.contains("viewModel.contentView = makeContentView()"))
     #expect(result.output.contains("let snapshotValue = Signpost(viewModel: viewModel)"))
-    #expect(result.output.contains("#expectSnapshot(snapshotValue, named: snapshotName)"))
+    #expect(
+      result.output.contains(
+        "#expectSnapshot(snapshotConfiguration, named: \"populated\") { _ in snapshotValue }"
+      )
+    )
     #expect(result.reasons.isEmpty)
   }
 
@@ -184,10 +212,14 @@ struct RewriterParameterizedTests {
     let result = try SnapshotMigrationRewriter().rewrite(source: input)
 
     #expect(result.output.contains("func code(configuration: SnapshotConfiguration<DeliveryMethod>) async"))
+    #expect(result.output.contains("let snapshotConfiguration = configuration"))
     #expect(result.output.contains("let method = configuration.value"))
-    #expect(result.output.contains("let snapshotName = (configuration.name ?? String(describing: configuration.value)) + \"/\" + (\"code\")"))
     #expect(result.output.contains("let snapshotValue = TwoFactorCodeView(viewModel: model)"))
-    #expect(result.output.contains("#expectSnapshot(snapshotValue, named: snapshotName)"))
+    #expect(
+      result.output.contains(
+        "#expectSnapshot(snapshotConfiguration, named: \"code\") { _ in snapshotValue }"
+      )
+    )
     #expect(!result.output.contains("await #expectSnapshot("))
     #expect(result.reasons.isEmpty)
   }
@@ -273,9 +305,18 @@ struct RewriterParameterizedTests {
 
     let result = try SnapshotMigrationRewriter().rewrite(source: input)
 
-    #expect(result.output.contains("let snapshotName = (configuration.name ?? String(describing: configuration.value)) + \"/\" + (\"allActions\")"))
+    // The configuration must be captured before the extracted value shadows the
+    // `configuration` parameter name.
+    #expect(result.output.contains("let snapshotConfiguration = configuration\n"))
     #expect(result.output.contains("let configuration = configuration.value"))
-    #expect(result.output.contains("#expectSnapshot(snapshotValue, named: snapshotName)"))
+    #expect(
+      result.output.contains(
+        "#expectSnapshot(snapshotConfiguration, named: \"allActions\") { _ in snapshotValue }"
+      )
+    )
+    let captureIndex = try #require(result.output.range(of: "let snapshotConfiguration = configuration\n"))
+    let shadowIndex = try #require(result.output.range(of: "let configuration = configuration.value"))
+    #expect(captureIndex.lowerBound < shadowIndex.lowerBound)
     #expect(result.reasons.isEmpty)
   }
 

@@ -558,6 +558,76 @@ enum ExpectSnapshotAdapter {
     )
   }
 
+  static func run<ConfigurationValue: Sendable>(
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (ConfigurationValue) -> SnapshotView
+  ) {
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    let resolvedConfiguration = resolvedConfiguration(from: configuration)
+
+    TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      runOnMainActorRecordingIssues(
+        context: context,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) {
+        try runMainActorSnapshot(
+          context: context,
+          named: named,
+          configuration: resolvedConfiguration,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column,
+          makeValue: makeValue
+        )
+      }
+    }
+  }
+
+  static func run<ConfigurationValue: Sendable>(
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (ConfigurationValue) -> SnapshotViewController
+  ) {
+    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    let resolvedConfiguration = resolvedConfiguration(from: configuration)
+
+    TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
+      runOnMainActorRecordingIssues(
+        context: context,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) {
+        try runMainActorSnapshot(
+          context: context,
+          named: named,
+          configuration: resolvedConfiguration,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column,
+          makeValue: makeValue
+        )
+      }
+    }
+  }
+
   static func run<V: View, A: Sendable, B: Sendable>(
     configuration: SnapshotConfiguration<(A, B)>,
     named: String?,

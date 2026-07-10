@@ -288,6 +288,8 @@ public struct SnapshotMigrationRewriter {
       functionEdits.append(mainActorEdit)
     }
 
+    let displayNameExpression = parameterizedDisplayNameExpression(for: legacyFunction)
+
     let rewrittenBody: String
     switch parameterizedArgument.kind {
     case .configurations:
@@ -325,8 +327,7 @@ public struct SnapshotMigrationRewriter {
           expression: bodyParts.terminalExpression,
           preludeStatements: bodyParts.preludeStatements,
           parameterNames: parameterInfos.map(\.localName),
-          namedLiteral: legacyFunction.namedLiteral,
-          functionName: function.name.text,
+          displayNameExpression: displayNameExpression,
           body: body,
           source: source
         )
@@ -335,8 +336,7 @@ public struct SnapshotMigrationRewriter {
           expression: bodyParts.terminalExpression,
           preludeStatements: bodyParts.preludeStatements,
           parameterNames: parameterInfos.map(\.localName),
-          namedLiteral: legacyFunction.namedLiteral,
-          functionName: function.name.text,
+          displayNameExpression: displayNameExpression,
           snapshotValueType: snapshotValueType,
           body: body,
           source: source
@@ -365,8 +365,7 @@ public struct SnapshotMigrationRewriter {
           expression: bodyParts.terminalExpression,
           preludeStatements: bodyParts.preludeStatements,
           parameterName: parameterName,
-          namedLiteral: legacyFunction.namedLiteral,
-          functionName: function.name.text,
+          displayNameExpression: displayNameExpression,
           body: body,
           source: source
         )
@@ -375,8 +374,7 @@ public struct SnapshotMigrationRewriter {
           expression: bodyParts.terminalExpression,
           preludeStatements: bodyParts.preludeStatements,
           parameterName: parameterName,
-          namedLiteral: legacyFunction.namedLiteral,
-          functionName: function.name.text,
+          displayNameExpression: displayNameExpression,
           snapshotValueType: snapshotValueType,
           body: body,
           source: source
@@ -739,43 +737,37 @@ public struct SnapshotMigrationRewriter {
     """
   }
 
+  /*
+   Parameterized bodies route the case naming through the native configuration machinery:
+   `#expectSnapshot(<configuration>, named: <legacy display name>) { _ in snapshotValue }`
+   reproduces the legacy artifact layout
+   `__Snapshots__/<TestFile>/<display>/<case>_<display>_<size>_<theme>` exactly, because the
+   assertion pipeline scopes configuration-named tests into a folder named after the display
+   name and prefixes the file name with the configuration name.
+
+   The configuration is always captured as `snapshotConfiguration` before any other rewritten
+   statement so later statements (value extraction, prelude) cannot shadow it.
+   */
+
   private func rewriteSwiftUIConfigurationsBody(
     expression: String,
     preludeStatements: [String],
     parameterNames: [String],
-    namedLiteral: String?,
-    functionName: String,
+    displayNameExpression: String,
     body: CodeBlockSyntax,
     source: String
   ) -> String {
     let closingIndent = indentation(atUTF8Offset: body.rightBrace.positionAfterSkippingLeadingTrivia.utf8Offset, in: source)
-    let statementIndent = body
-      .statements
-      .first
-      .map { indentation(atUTF8Offset: $0.positionAfterSkippingLeadingTrivia.utf8Offset, in: source) }
-      ?? (closingIndent + "  ")
-    let extractedValueLine: String
-    if parameterNames.count == 1 {
-      extractedValueLine = "let \(parameterNames[0]) = configuration.value"
-    } else {
-      extractedValueLine = "let (\(parameterNames.joined(separator: ", "))) = configuration.value"
-    }
-
-    let caseNameExpression = "configuration.name ?? String(describing: configuration.value)"
-    let snapshotNameExpression = legacyCompatibleSnapshotNameExpression(
-      caseNameExpression: caseNameExpression,
-      legacyNameLiteral: namedLiteral,
-      functionName: functionName
-    )
-    let snapshotNameLine = "let snapshotName = \(snapshotNameExpression)"
+    let statementIndent = statementIndentation(for: body, closingIndent: closingIndent, source: source)
+    let extractedValueLine = configurationValueExtractionLine(parameterNames: parameterNames)
     let prelude = renderStatements(preludeStatements, indentation: statementIndent)
 
     return """
     {
-    \(statementIndent)\(snapshotNameLine)
+    \(statementIndent)let snapshotConfiguration = configuration
     \(statementIndent)\(extractedValueLine)
     \(prelude)\(statementIndent)let snapshotValue = \(expression)
-    \(statementIndent)#expectSnapshot(snapshotValue, named: snapshotName)
+    \(statementIndent)\(configurationAssertionLine(displayNameExpression: displayNameExpression))
     \(closingIndent)}
     """
   }
@@ -784,40 +776,22 @@ public struct SnapshotMigrationRewriter {
     expression: String,
     preludeStatements: [String],
     parameterNames: [String],
-    namedLiteral: String?,
-    functionName: String,
+    displayNameExpression: String,
     snapshotValueType: String,
     body: CodeBlockSyntax,
     source: String
   ) -> String {
     let closingIndent = indentation(atUTF8Offset: body.rightBrace.positionAfterSkippingLeadingTrivia.utf8Offset, in: source)
-    let statementIndent = body
-      .statements
-      .first
-      .map { indentation(atUTF8Offset: $0.positionAfterSkippingLeadingTrivia.utf8Offset, in: source) }
-      ?? (closingIndent + "  ")
-    let extractedValueLine: String
-    if parameterNames.count == 1 {
-      extractedValueLine = "let \(parameterNames[0]) = configuration.value"
-    } else {
-      extractedValueLine = "let (\(parameterNames.joined(separator: ", "))) = configuration.value"
-    }
-
-    let caseNameExpression = "configuration.name ?? String(describing: configuration.value)"
-    let snapshotNameExpression = legacyCompatibleSnapshotNameExpression(
-      caseNameExpression: caseNameExpression,
-      legacyNameLiteral: namedLiteral,
-      functionName: functionName
-    )
-    let snapshotNameLine = "let snapshotName = \(snapshotNameExpression)"
+    let statementIndent = statementIndentation(for: body, closingIndent: closingIndent, source: source)
+    let extractedValueLine = configurationValueExtractionLine(parameterNames: parameterNames)
     let prelude = renderStatements(preludeStatements, indentation: statementIndent)
 
     return """
     {
-    \(statementIndent)\(snapshotNameLine)
+    \(statementIndent)let snapshotConfiguration = configuration
     \(statementIndent)\(extractedValueLine)
     \(prelude)\(statementIndent)let snapshotValue: \(snapshotValueType) = \(expression)
-    \(statementIndent)#expectSnapshot(snapshotValue, named: snapshotName)
+    \(statementIndent)\(configurationAssertionLine(displayNameExpression: displayNameExpression))
     \(closingIndent)}
     """
   }
@@ -826,31 +800,19 @@ public struct SnapshotMigrationRewriter {
     expression: String,
     preludeStatements: [String],
     parameterName: String,
-    namedLiteral: String?,
-    functionName: String,
+    displayNameExpression: String,
     body: CodeBlockSyntax,
     source: String
   ) -> String {
     let closingIndent = indentation(atUTF8Offset: body.rightBrace.positionAfterSkippingLeadingTrivia.utf8Offset, in: source)
-    let statementIndent = body
-      .statements
-      .first
-      .map { indentation(atUTF8Offset: $0.positionAfterSkippingLeadingTrivia.utf8Offset, in: source) }
-      ?? (closingIndent + "  ")
-    let caseNameExpression = "String(describing: \(parameterName))"
-    let snapshotNameExpression = legacyCompatibleSnapshotNameExpression(
-      caseNameExpression: caseNameExpression,
-      legacyNameLiteral: namedLiteral,
-      functionName: functionName
-    )
-    let snapshotNameLine = "let snapshotName = \(snapshotNameExpression)"
+    let statementIndent = statementIndentation(for: body, closingIndent: closingIndent, source: source)
     let prelude = renderStatements(preludeStatements, indentation: statementIndent)
 
     return """
     {
-    \(statementIndent)\(snapshotNameLine)
+    \(statementIndent)\(configurationValuesConfigurationLine(parameterName: parameterName))
     \(prelude)\(statementIndent)let snapshotValue = \(expression)
-    \(statementIndent)#expectSnapshot(snapshotValue, named: snapshotName)
+    \(statementIndent)\(configurationAssertionLine(displayNameExpression: displayNameExpression))
     \(closingIndent)}
     """
   }
@@ -859,35 +821,52 @@ public struct SnapshotMigrationRewriter {
     expression: String,
     preludeStatements: [String],
     parameterName: String,
-    namedLiteral: String?,
-    functionName: String,
+    displayNameExpression: String,
     snapshotValueType: String,
     body: CodeBlockSyntax,
     source: String
   ) -> String {
     let closingIndent = indentation(atUTF8Offset: body.rightBrace.positionAfterSkippingLeadingTrivia.utf8Offset, in: source)
-    let statementIndent = body
-      .statements
-      .first
-      .map { indentation(atUTF8Offset: $0.positionAfterSkippingLeadingTrivia.utf8Offset, in: source) }
-      ?? (closingIndent + "  ")
-
-    let caseNameExpression = "String(describing: \(parameterName))"
-    let snapshotNameExpression = legacyCompatibleSnapshotNameExpression(
-      caseNameExpression: caseNameExpression,
-      legacyNameLiteral: namedLiteral,
-      functionName: functionName
-    )
-    let snapshotNameLine = "let snapshotName = \(snapshotNameExpression)"
+    let statementIndent = statementIndentation(for: body, closingIndent: closingIndent, source: source)
     let prelude = renderStatements(preludeStatements, indentation: statementIndent)
 
     return """
     {
-    \(statementIndent)\(snapshotNameLine)
+    \(statementIndent)\(configurationValuesConfigurationLine(parameterName: parameterName))
     \(prelude)\(statementIndent)let snapshotValue: \(snapshotValueType) = \(expression)
-    \(statementIndent)#expectSnapshot(snapshotValue, named: snapshotName)
+    \(statementIndent)\(configurationAssertionLine(displayNameExpression: displayNameExpression))
     \(closingIndent)}
     """
+  }
+
+  private func statementIndentation(
+    for body: CodeBlockSyntax,
+    closingIndent: String,
+    source: String
+  ) -> String {
+    body
+      .statements
+      .first
+      .map { indentation(atUTF8Offset: $0.positionAfterSkippingLeadingTrivia.utf8Offset, in: source) }
+      ?? (closingIndent + "  ")
+  }
+
+  private func configurationValueExtractionLine(parameterNames: [String]) -> String {
+    if parameterNames.count == 1 {
+      return "let \(parameterNames[0]) = configuration.value"
+    }
+    return "let (\(parameterNames.joined(separator: ", "))) = configuration.value"
+  }
+
+  /// Rebuilds the configuration the legacy runtime derived for `configurationValues:`
+  /// arguments: `SnapshotConfiguration(name: "\(value)", value: value)` — the exact
+  /// `"\(value)"` stringification legacy used, so derived case names stay byte-identical.
+  private func configurationValuesConfigurationLine(parameterName: String) -> String {
+    "let snapshotConfiguration = SnapshotConfiguration(name: \"\\(\(parameterName))\", value: \(parameterName))"
+  }
+
+  private func configurationAssertionLine(displayNameExpression: String) -> String {
+    "#expectSnapshot(snapshotConfiguration, named: \(displayNameExpression)) { _ in snapshotValue }"
   }
 
   private func renderStatements(_ statements: [String], indentation: String) -> String {
@@ -905,26 +884,31 @@ public struct SnapshotMigrationRewriter {
       .joined(separator: "\n")
   }
 
-  private func legacyCompatibleSnapshotNameExpression(
-    caseNameExpression: String,
-    legacyNameLiteral: String?,
-    functionName: String
-  ) -> String {
-    let displayNameExpression = snapshotDisplayNameExpression(
-      legacyNameLiteral: legacyNameLiteral,
-      functionName: functionName
-    )
-    return "(\(caseNameExpression)) + \"/\" + (\(displayNameExpression))"
+  /// Resolves the display-name expression for parameterized rewrites using the exact legacy
+  /// fallback chain: test display name → enclosing suite display name → function name.
+  ///
+  /// Interpolated display-name literals are skipped just like the legacy macro did (it read
+  /// `representedLiteralValue`, which is `nil` for interpolations, and fell through).
+  private func parameterizedDisplayNameExpression(for legacyFunction: LegacyFunction) -> String {
+    if legacyFunction.namedLiteralIsPlain, let namedLiteral = legacyFunction.namedLiteral {
+      return namedLiteral
+    }
+
+    if let suiteDisplayNameLiteral = legacyFunction.suiteDisplayNameLiteral {
+      return suiteDisplayNameLiteral
+    }
+
+    return swiftStringLiteral(unescapedIdentifierText(legacyFunction.function.name.text))
   }
 
-  private func snapshotDisplayNameExpression(
-    legacyNameLiteral: String?,
-    functionName: String
-  ) -> String {
-    if let legacyNameLiteral {
-      return legacyNameLiteral
+  /// Mirrors the legacy macro's `identifierDisplayName`, which strips backticks from escaped
+  /// identifiers before using the function name as the display name.
+  private func unescapedIdentifierText(_ identifier: String) -> String {
+    guard identifier.count >= 2, identifier.hasPrefix("`"), identifier.hasSuffix("`") else {
+      return identifier
     }
-    return swiftStringLiteral(functionName)
+
+    return String(identifier.dropFirst().dropLast())
   }
 
   private func swiftStringLiteral(_ value: String) -> String {
@@ -1071,6 +1055,8 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
     let legacyFunction = LegacyFunction(
       function: node,
       namedLiteral: parsed.namedLiteral,
+      namedLiteralIsPlain: parsed.namedLiteralIsPlain,
+      suiteDisplayNameLiteral: enclosingSuiteDisplayNameLiteral(for: node),
       snapshotAttributeNameStartUTF8Offset: snapshotAttribute.attributeName.positionAfterSkippingLeadingTrivia.utf8Offset,
       snapshotAttributeNameEndUTF8Offset: snapshotAttribute.attributeName.endPositionBeforeTrailingTrivia.utf8Offset,
       parameterizedArgument: parsed.parameterizedArgument,
@@ -1079,6 +1065,53 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
     legacyFunctions.append(legacyFunction)
 
     return .visitChildren
+  }
+
+  /// Mirrors the legacy macro's suite display-name lookup: the innermost lexical context that
+  /// carries a `@SnapshotSuite` attribute wins, and only a plain string literal first argument
+  /// counts as its display name — if that attribute has none, the lookup stops (it does not
+  /// keep searching outer suites).
+  private func enclosingSuiteDisplayNameLiteral(for function: FunctionDeclSyntax) -> String? {
+    var current = Syntax(function).parent
+
+    while let node = current {
+      if let attributes = declarationAttributes(of: node) {
+        let suiteAttribute = attributes
+          .compactMap { $0.as(AttributeSyntax.self) }
+          .first { attribute in
+            attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.trimmed.text == "SnapshotSuite"
+          }
+
+        if let suiteAttribute {
+          return plainDisplayNameLiteral(from: suiteAttribute)
+        }
+      }
+
+      current = node.parent
+    }
+
+    return nil
+  }
+
+  private func declarationAttributes(of node: Syntax) -> AttributeListSyntax? {
+    if let structDecl = node.as(StructDeclSyntax.self) { return structDecl.attributes }
+    if let classDecl = node.as(ClassDeclSyntax.self) { return classDecl.attributes }
+    if let actorDecl = node.as(ActorDeclSyntax.self) { return actorDecl.attributes }
+    if let enumDecl = node.as(EnumDeclSyntax.self) { return enumDecl.attributes }
+    if let extensionDecl = node.as(ExtensionDeclSyntax.self) { return extensionDecl.attributes }
+    return nil
+  }
+
+  private func plainDisplayNameLiteral(from attribute: AttributeSyntax) -> String? {
+    guard
+      let firstArgument = attribute.arguments?.as(LabeledExprListSyntax.self)?.first,
+      let stringLiteral = firstArgument.expression.as(StringLiteralExprSyntax.self),
+      stringLiteral.representedLiteralValue != nil
+    else {
+      return nil
+    }
+
+    return stringLiteral.trimmedDescription
   }
 
   private func snapshotTestAttribute(in attributes: AttributeListSyntax) -> AttributeSyntax? {
@@ -1095,12 +1128,18 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
 
   private func parse(snapshotAttribute attribute: AttributeSyntax) -> ParsedSnapshotAttribute {
     guard let arguments = attribute.arguments else {
-      return ParsedSnapshotAttribute(namedLiteral: nil, parameterizedArgument: nil, parseIssue: nil)
+      return ParsedSnapshotAttribute(
+        namedLiteral: nil,
+        namedLiteralIsPlain: false,
+        parameterizedArgument: nil,
+        parseIssue: nil
+      )
     }
 
     guard let labeledArguments = arguments.as(LabeledExprListSyntax.self) else {
       return ParsedSnapshotAttribute(
         namedLiteral: nil,
+        namedLiteralIsPlain: false,
         parameterizedArgument: nil,
         parseIssue: AttributeParseIssue(
           code: "unsupported-attribute-arguments",
@@ -1110,6 +1149,7 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
     }
 
     var namedLiteral: String?
+    var namedLiteralIsPlain = false
     var parameterizedArgument: ParameterizedSnapshotArgument?
     var parseIssue: AttributeParseIssue?
 
@@ -1119,6 +1159,7 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
          let stringLiteral = argument.expression.as(StringLiteralExprSyntax.self)
       {
         namedLiteral = stringLiteral.trimmedDescription
+        namedLiteralIsPlain = stringLiteral.representedLiteralValue != nil
       }
 
       guard let labelSyntax = argument.label else { continue }
@@ -1155,6 +1196,7 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
 
     return ParsedSnapshotAttribute(
       namedLiteral: namedLiteral,
+      namedLiteralIsPlain: namedLiteralIsPlain,
       parameterizedArgument: parameterizedArgument,
       parseIssue: parseIssue
     )
@@ -1164,6 +1206,8 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
 private struct LegacyFunction: Hashable {
   let function: FunctionDeclSyntax
   let namedLiteral: String?
+  let namedLiteralIsPlain: Bool
+  let suiteDisplayNameLiteral: String?
   let snapshotAttributeNameStartUTF8Offset: Int
   let snapshotAttributeNameEndUTF8Offset: Int
   let parameterizedArgument: ParameterizedSnapshotArgument?
@@ -1187,6 +1231,7 @@ private struct BodyRewriteParts {
 
 private struct ParsedSnapshotAttribute {
   let namedLiteral: String?
+  let namedLiteralIsPlain: Bool
   let parameterizedArgument: ParameterizedSnapshotArgument?
   let parseIssue: AttributeParseIssue?
 }

@@ -11,8 +11,8 @@ The legacy `@SnapshotSuite` and `@SnapshotTest` macros are still available for m
 | `@SnapshotSuite` | `@Suite` plus snapshot traits |
 | `@SnapshotTest` | `@Test` plus `#expectSnapshot(...)` |
 | `@SnapshotTest("Name")` | `@Test("Name")` for test output, plus `named:` for snapshot artifact naming when needed |
-| `@SnapshotTest(configurations: ...)` | SwiftUI: `@Test(arguments: [SnapshotConfiguration(...)])` plus `#expectSnapshot(configuration) { ... }`. UIKit/AppKit: keep `@Test(arguments:)`, build the platform value directly, and use `named:` yourself when you need per-argument artifacts. |
-| `@SnapshotTest(configurationValues: ...)` | SwiftUI: `@Test(arguments: values)` plus `#expectSnapshot(argument: value) { ... }`. UIKit/AppKit: keep `@Test(arguments:)`, build the platform value directly, and use `named:` yourself when you need per-argument artifacts. |
+| `@SnapshotTest(configurations: ...)` | `@Test(arguments: [SnapshotConfiguration(...)])` plus `#expectSnapshot(configuration) { ... }` on all platforms |
+| `@SnapshotTest(configurationValues: ...)` | `@Test(arguments: values)` plus `#expectSnapshot(argument: value) { ... }`, or `#expectSnapshot(SnapshotConfiguration(name: "\(value)", value: value)) { ... }` when existing references must keep their exact legacy case names |
 
 ## Basic before and after
 
@@ -98,6 +98,20 @@ func userProfile(state: UserState) {
 }
 ```
 
+`argument:` derives the case name from the value (normalised, with a `snapshot` fallback when the
+value has no usable text). When you need the artifact names to stay byte-identical to the legacy
+`"\(value)"` stringification — for example, to keep checked-in references — build the
+configuration explicitly, which is the form the migration script emits:
+
+```swift
+@Test(arguments: makeUserStates())
+func userProfile(state: UserState) {
+  let snapshotConfiguration = SnapshotConfiguration(name: "\(state)", value: state)
+  let snapshotValue = UserProfileView(state: state)
+  #expectSnapshot(snapshotConfiguration, named: "userProfile") { _ in snapshotValue }
+}
+```
+
 ## UIKit and AppKit
 
 In v1, UIKit and AppKit participate through the direct-value overloads only:
@@ -111,14 +125,35 @@ func profileController() {
 
 Use a helper-backed expression for the platform view or controller and keep the test itself as a regular `@Test`. The helper expression is evaluated on the main actor inside the snapshot operation.
 
-When migrating parameterised UIKit or AppKit snapshots, keep `@Test(arguments:)` on the test, build the platform view or controller from that argument, and pass the direct value to `#expectSnapshot(...)`. If you need separate artifacts per argument, derive a unique `named:` value yourself or split the cases into separate tests. That keeps the cases distinct, but it does not recreate the legacy configuration-scoped folder structure. The `SnapshotConfiguration` and `argument:` convenience builders remain SwiftUI-only in v1.
+Parameterised UIKit and AppKit snapshots use the same `SnapshotConfiguration` closure form as SwiftUI; the closure builds the platform view or controller on the main actor:
 
-SwiftUI keeps the broader convenience surface:
+```swift
+@MainActor
+@Test(arguments: [
+  SnapshotConfiguration(name: "compact", value: CardState.compact),
+  SnapshotConfiguration(name: "expanded", value: CardState.expanded),
+])
+func card(configuration: SnapshotConfiguration<CardState>) {
+  let snapshotConfiguration = configuration
+  let state = configuration.value
+  let snapshotValue: UIViewController = makeController(state: state)
+  #expectSnapshot(snapshotConfiguration, named: "Card") { _ in snapshotValue }
+}
+```
 
-- Direct-value snapshots
-- Closure forms
-- `SnapshotConfiguration`
-- `argument:`
+The `argument:` convenience builder remains SwiftUI-only in v1.
+
+## Artifact naming parity
+
+Legacy parameterised artifacts live at `__Snapshots__/<TestFile>/<display>/<case>_<display>_<size>_<theme>.<n>.<ext>`. The native configuration pipeline produces exactly that layout, so migrated parameterised tests keep resolving the checked-in legacy references as long as:
+
+- the legacy display name is passed through `named:` unchanged (the migration script applies the legacy fallback chain: test display name → suite display name → function name), and
+- the case naming goes through the configuration — explicit `SnapshotConfiguration(name:)` entries for `configurations:`, or `SnapshotConfiguration(name: "\(value)", value: value)` for `configurationValues:`.
+
+Residual caveats:
+
+- Legacy UIKit/AppKit `configurations:` declarations without unique literal case names are still skipped by the migration script (`unsupported-argument-naming`) because their legacy artifacts collided on a single path.
+- Legacy SwiftUI `configurations:` entries with `name: nil` also collided on one un-suffixed artifact per size/theme; the native pipeline derives a per-case name instead, so those references must be re-recorded once after migration.
 
 ## Migration script
 
