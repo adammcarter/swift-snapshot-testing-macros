@@ -6,7 +6,7 @@ import Testing
 @Suite
 struct MigrationRunnerIntegrationTests {
   @Test
-  func dryRunProducesReportAndKeepsTempDirectory() async throws {
+  func dryRunProducesReportAndLeavesNoStagingDirectoryBehind() async throws {
     let fixture = try TempProject.make()
     defer { fixture.cleanup() }
 
@@ -46,8 +46,95 @@ struct MigrationRunnerIntegrationTests {
     #expect(outcome.report.timings.rewriteStage.wallSeconds >= 0)
     #expect(outcome.report.timings.apply.wallSeconds == 0)
     #expect(outcome.report.timings.apply.cpuSeconds == 0)
-    #expect(fileManager.fileExists(atPath: tempRoot))
+    #expect(!fileManager.fileExists(atPath: tempRoot))
+    #expect(outcome.keptStagingRoot == nil)
     #expect(current == original)
+  }
+
+  @Test
+  func dryRunWithKeepTempKeepsStagingDirectoryAndReportsKeptPath() async throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    let original = """
+    @SnapshotSuite
+    struct ProfileSnapshots {
+      @SnapshotTest("Default")
+      func profile() -> some View {
+        Text("A")
+      }
+    }
+    """
+
+    try fixture.write(path: "Tests/Profile.swift", contents: original)
+    let options = MigrationOptions(
+      projectRoot: fixture.root,
+      mode: .dryRun,
+      jsonReportPath: nil,
+      keepTemp: true,
+      failOnSkips: false,
+      maxFileSizeBytes: 2_000_000,
+      maxStagedBytes: 536_870_912,
+      applyLockTimeoutSeconds: 0
+    )
+
+    let outcome = try await MigrationRunner().runWithOutcome(options: options)
+    let tempRoot = "/tmp/snapshot-migration/\(outcome.report.runID)"
+    let fileManager = FileManager.default
+    defer { try? fileManager.removeItem(atPath: tempRoot) }
+
+    let stagedPath = "\(tempRoot)/Tests/Profile.swift"
+    #expect(outcome.exitCode == .success)
+    #expect(outcome.keptStagingRoot == tempRoot)
+    #expect(fileManager.fileExists(atPath: tempRoot))
+    #expect(fileManager.fileExists(atPath: stagedPath))
+    let staged = try String(contentsOfFile: stagedPath, encoding: .utf8)
+    #expect(staged.contains("#expectSnapshot"))
+  }
+
+  @Test
+  func failedApplyKeepsStagedCopiesForRecovery() async throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    let original = """
+    @SnapshotSuite
+    struct ProfileSnapshots {
+      @SnapshotTest("Default")
+      func profile() -> some View {
+        Text("A")
+      }
+    }
+    """
+
+    let filePath = try fixture.write(path: "Tests/Profile.swift", contents: original)
+
+    // Hold the apply lock so the apply phase fails without mutating any file.
+    let lock = try ApplyLock.acquire(projectRoot: fixture.root, timeoutSeconds: 0)
+    defer { lock.release() }
+
+    let options = MigrationOptions(
+      projectRoot: fixture.root,
+      mode: .apply,
+      jsonReportPath: nil,
+      keepTemp: false,
+      failOnSkips: false,
+      maxFileSizeBytes: 2_000_000,
+      maxStagedBytes: 536_870_912,
+      applyLockTimeoutSeconds: 0
+    )
+
+    let outcome = try await MigrationRunner().runWithOutcome(options: options)
+    let tempRoot = "/tmp/snapshot-migration/\(outcome.report.runID)"
+    let fileManager = FileManager.default
+    defer { try? fileManager.removeItem(atPath: tempRoot) }
+
+    let current = try String(contentsOfFile: filePath, encoding: .utf8)
+    #expect(outcome.exitCode == .applySafetyFailure)
+    #expect(current == original)
+    // Staged rewrites are the recovery copy for a failed apply run: they must survive.
+    #expect(outcome.keptStagingRoot == tempRoot)
+    #expect(fileManager.fileExists(atPath: "\(tempRoot)/Tests/Profile.swift"))
   }
 
   @Test
@@ -93,6 +180,7 @@ struct MigrationRunnerIntegrationTests {
     #expect(updated.contains("@Test(\"Default\")"))
     #expect(updated.contains("#expectSnapshot(snapshotValue, named: \"Default\")"))
     #expect(!fileManager.fileExists(atPath: tempRoot))
+    #expect(outcome.keptStagingRoot == nil)
   }
 
   @Test

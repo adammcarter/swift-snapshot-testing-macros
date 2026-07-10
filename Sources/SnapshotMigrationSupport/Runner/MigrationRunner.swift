@@ -17,10 +17,15 @@ public enum MigrationExitCode: Int, Sendable {
 public struct MigrationRunOutcome: Sendable {
   public let report: MigrationReport
   public let exitCode: MigrationExitCode
+  /// Path of the run's staging directory when it was intentionally kept (via
+  /// `--keep-temp`, or as the recovery copy after a failed apply run); `nil`
+  /// when the staging directory was removed or never created.
+  public let keptStagingRoot: String?
 
-  public init(report: MigrationReport, exitCode: MigrationExitCode) {
+  public init(report: MigrationReport, exitCode: MigrationExitCode, keptStagingRoot: String? = nil) {
     self.report = report
     self.exitCode = exitCode
+    self.keptStagingRoot = keptStagingRoot
   }
 }
 
@@ -130,22 +135,22 @@ public struct MigrationRunner {
         continue
       }
 
-      if options.mode == .apply || options.mode == .dryRun || options.keepTemp {
-        do {
-          if stagingStore == nil {
-            stagingStore = try RunStagingStore.create(runID: runID)
-          }
-          try stagingStore?.stage(
-            relativePath: file.relativePath,
-            contents: rewriteResult.output,
-            maxStagedBytes: options.maxStagedBytes
-          )
-        } catch {
-          hadMigrationFailures = true
-          failedDeclarations += max(1, declarations.count)
-          issueLines.append("\(file.relativePath):1 <unknown> temp-storage-cap-exceeded unable to stage rewritten output")
-          continue
+      // Every mode stages so dry-run enforces the same --max-staged-bytes cap an
+      // apply run would hit; whether staging survives the run is decided at the end.
+      do {
+        if stagingStore == nil {
+          stagingStore = try RunStagingStore.create(runID: runID)
         }
+        try stagingStore?.stage(
+          relativePath: file.relativePath,
+          contents: rewriteResult.output,
+          maxStagedBytes: options.maxStagedBytes
+        )
+      } catch {
+        hadMigrationFailures = true
+        failedDeclarations += max(1, declarations.count)
+        issueLines.append("\(file.relativePath):1 <unknown> temp-storage-cap-exceeded unable to stage rewritten output")
+        continue
       }
 
       pendingApplies.append(
@@ -220,12 +225,18 @@ public struct MigrationRunner {
       applyTiming = try finishPhase(from: applyTimingStart, clock: clock)
     }
 
-    if options.mode == .apply,
-       !options.keepTemp,
-       !hadMigrationFailures,
-       !hadApplyFailures
-    {
-      stagingStore?.remove()
+    // Staged copies are the only durable record of the rewritten output. Keep them
+    // when the user asked (--keep-temp) or when an apply run failed, so the staged
+    // rewrites remain available for inspection and manual recovery. Every other run
+    // — dry-run included, success or failure — removes its staging directory.
+    var keptStagingRoot: String?
+    if let stagingStore {
+      let keepForApplyRecovery = options.mode == .apply && (hadMigrationFailures || hadApplyFailures)
+      if options.keepTemp || keepForApplyRecovery {
+        keptStagingRoot = stagingStore.root
+      } else {
+        stagingStore.remove()
+      }
     }
 
     let migrationPercentage: Int
@@ -268,7 +279,7 @@ public struct MigrationRunner {
       exitCode = .migrationFailure
     }
 
-    return MigrationRunOutcome(report: report, exitCode: exitCode)
+    return MigrationRunOutcome(report: report, exitCode: exitCode, keptStagingRoot: keptStagingRoot)
   }
 }
 

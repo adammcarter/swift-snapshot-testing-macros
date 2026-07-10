@@ -11,6 +11,10 @@ enum SnapshotMigrationCLI {
       let consoleReporter = ConsoleReporter()
       consoleReporter.printSummary(report: outcome.report, maxIssues: 50)
 
+      if let keptStagingRoot = outcome.keptStagingRoot {
+        print("staged rewrites kept at: \(keptStagingRoot)")
+      }
+
       if let jsonReportPath = options.jsonReportPath {
         try JSONReporter().write(report: outcome.report, to: jsonReportPath)
       }

@@ -143,6 +143,16 @@ struct ApplySafetyTests {
   }
 
   @Test
+  func stagingParentDirectoryIsPrivateToTheCurrentUser() throws {
+    let store = try RunStagingStore.create(runID: "apply-parent-perms-\(UUID().uuidString)")
+    defer { store.remove() }
+
+    let attributes = try FileManager.default.attributesOfItem(atPath: "/tmp/snapshot-migration")
+    let permissions = (attributes[.posixPermissions] as? NSNumber)?.int16Value
+    #expect(permissions == 0o700)
+  }
+
+  @Test
   func stagingCapExceededLatchesAcrossSubsequentWrites() throws {
     var store = try RunStagingStore.create(runID: "apply-cap-\(UUID().uuidString)")
     defer { store.remove() }
@@ -243,7 +253,7 @@ struct ApplySafetyTests {
   }
 
   @Test
-  func dryRunReturnsSuccessAndKeepsTempOutput() async throws {
+  func dryRunReturnsSuccessAndLeavesNoTempOutput() async throws {
     let fixture = try TempProject.make()
     defer { fixture.cleanup() }
 
@@ -280,7 +290,8 @@ struct ApplySafetyTests {
     #expect(outcome.report.timings.total.wallSeconds > 0)
     #expect(outcome.report.timings.rewriteStage.wallSeconds >= 0)
     #expect(outcome.report.timings.apply.wallSeconds == 0)
-    #expect(fileManager.fileExists(atPath: tempRoot))
+    #expect(!fileManager.fileExists(atPath: tempRoot))
+    #expect(outcome.keptStagingRoot == nil)
     #expect(updated == original)
   }
 

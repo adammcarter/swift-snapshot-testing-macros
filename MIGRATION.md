@@ -166,6 +166,13 @@ Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo --apply --jso
 
 The command defaults to dry-run mode. Add `--apply` to write migrated files. Each run also reports total, scan, rewrite/stage, and apply timings in both the console summary and JSON report.
 
+Every run stages its rewritten sources under a user-private directory (`/tmp/snapshot-migration/run-<uuid>`, mode `0700`, parent included). The staging directory is removed at the end of the run — dry-run or apply, success or failure — except in two cases:
+
+- `--keep-temp` keeps it for inspection.
+- A failed `--apply` run keeps it as the recovery copy of the intended rewrites.
+
+Whenever the directory is kept, the CLI prints `staged rewrites kept at: <path>`.
+
 Recommended rollout:
 
 1. Use dry-run first.

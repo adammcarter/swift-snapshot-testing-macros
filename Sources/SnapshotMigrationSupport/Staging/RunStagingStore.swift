@@ -18,10 +18,15 @@ public struct RunStagingStore {
   }
 
   public static func create(runID: String = UUID().uuidString, fileManager: FileManager = .default) throws -> RunStagingStore {
-    let rootURL = URL(fileURLWithPath: "/tmp", isDirectory: true)
+    let parentURL = URL(fileURLWithPath: "/tmp", isDirectory: true)
       .appendingPathComponent("snapshot-migration", isDirectory: true)
-      .appendingPathComponent(runID, isDirectory: true)
 
+    // The shared parent lives under world-readable /tmp; keep it private so staged
+    // source copies are never exposed to other local users.
+    try fileManager.createDirectory(atPath: parentURL.path, withIntermediateDirectories: true)
+    try fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: parentURL.path)
+
+    let rootURL = parentURL.appendingPathComponent(runID, isDirectory: true)
     return try RunStagingStore(root: rootURL.path, fileManager: fileManager)
   }
 
