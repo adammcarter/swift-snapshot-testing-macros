@@ -24,17 +24,17 @@ extension IfConfigDeclSyntax {
     suiteMacroArguments: SnapshotMacroArguments,
     macroContext: SnapshotSuiteMacroContext
   ) -> IfConfigDeclSyntax {
-    let clauses = clauses.compactMap { clause -> IfConfigClauseSyntax? in
-      guard
-        let memberBlockItemListExpr = clause.elements?.as(MemberBlockItemListSyntax.self)
-      else {
-        return nil
-      }
-
-      let blockItems = memberBlockItemListExpr.blockItemTestExprs(
-        suiteMacroArguments: suiteMacroArguments,
-        macroContext: macroContext
-      )
+    let clauses = clauses.map { clause -> IfConfigClauseSyntax in
+      // A source-empty branch (or one whose elements are not a member list) must be kept as an
+      // empty clause with the warning comment — never dropped. Returning nil here would remove
+      // the clause, and if that clause were the first, the reassembled `#if` would start with
+      // `#else`: invalid Swift in the generated suite.
+      let blockItems =
+        clause.elements?.as(MemberBlockItemListSyntax.self)?
+        .blockItemTestExprs(
+          suiteMacroArguments: suiteMacroArguments,
+          macroContext: macroContext
+        ) ?? []
 
       #warning("TODO: Replace this with an if block, if empty 'CodeBlockItemListSyntax { [comment] }' else existing, minus all the faff for trivia.")
 

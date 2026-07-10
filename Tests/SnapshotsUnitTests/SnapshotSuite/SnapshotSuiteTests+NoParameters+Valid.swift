@@ -288,6 +288,61 @@ extension SnapshotSuiteTests.NoParameters {
         """
       }
     }
+
+    /// A source-empty `#if` branch (the "skip on X" pattern) must be preserved as an empty clause
+    /// with the warning comment rather than dropped. Dropping a *first* empty branch would leave
+    /// the reassembled `#if` starting with `#else` — invalid Swift in the generated suite.
+    @Test
+    func testPoundIfWithSourceEmptyFirstBranch() {
+      assertMacro {
+        """
+        @MainActor
+        @Suite
+        @SnapshotSuite
+        struct SnapshotTests {
+        #if os(watchOS)
+        #else
+          @SnapshotTest
+          func makeMyView() -> some View {
+            Text("my view")
+          }
+        #endif
+        }
+        """
+      } expansion: {
+        """
+        @MainActor
+        @Suite
+        struct SnapshotTests {
+        #if os(watchOS)
+        #else
+          func makeMyView() -> some View {
+            Text("my view")
+          }
+        #endif
+
+          @MainActor
+          @Suite(.pointfreeSnapshots)
+          struct SnapshotTests_GeneratedSnapshotSuite {
+
+            #if os(watchOS)
+
+            // ⚠️ No tests could be generated for this block
+
+            #else
+            @MainActor
+            @Test()
+            func makeMyView_snapshotTest() async throws {
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: .none)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
+            #endif
+          }
+        }
+        """
+      }
+    }
   }
 }
 #endif
