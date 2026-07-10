@@ -1,3 +1,8 @@
+// The committed references in __Snapshots__ are recorded on the iOS simulator (the CI
+// repetition job's platform). Artifact names carry no platform dimension, so running this
+// suite on macOS renders via AppKit and can never match those references — gate it to UIKit
+// like its legacy sibling. Dedicated macOS repetition coverage needs its own reference set.
+#if canImport(UIKit)
 import SnapshotTestingMacros
 import SwiftUI
 import Testing
@@ -31,3 +36,4 @@ struct ExpectSnapshotRepetitionTests {
     #expectSnapshot(Text("helper unnamed"))
   }
 }
+#endif

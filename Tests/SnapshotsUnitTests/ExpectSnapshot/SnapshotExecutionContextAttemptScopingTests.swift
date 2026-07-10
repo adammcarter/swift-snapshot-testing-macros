@@ -37,6 +37,31 @@ struct SnapshotContextAttemptScopingTests {
     #expect(firstResolvedNames == ["profileCard", "profileCard"])
   }
 
+  /// A suite-level trait invocation (`testCase == nil`) wraps ALL of a suite's tests in one
+  /// `provideScope` call. It must NOT bind an attempt token, otherwise every test in the suite
+  /// shares one execution context and artifact names leak across tests (observed: `singular()`
+  /// resolving names under `helperWrappedUnnamedAssertionsReuseTheSameContext-2`).
+  @Test
+  func suiteLevelScopeDoesNotShareOneContextAcrossTestCaseScopes() async throws {
+    let trait = AttemptScopePassthroughTrait()
+    let test = try #require(Test.current)
+    let testCase = try #require(Test.Case.current)
+    var firstResolvedNames = [String]()
+
+    try await trait.provideScope(for: test, testCase: nil) {
+      for _ in 0 ..< 2 {
+        try await trait.provideScope(for: test, testCase: testCase) {
+          let name = TaskLocalSnapshotExecutionContext.withCurrent(function: "profileCard()") {
+            $0.resolvedAssertionName(named: nil)
+          }
+          firstResolvedNames.append(name)
+        }
+      }
+    }
+
+    #expect(firstResolvedNames == ["profileCard", "profileCard"])
+  }
+
   /// (R1) Sequential child tasks spawned by the test body share the attempt's context, so
   /// unnamed assertions suffix deterministically across the whole attempt.
   @Test

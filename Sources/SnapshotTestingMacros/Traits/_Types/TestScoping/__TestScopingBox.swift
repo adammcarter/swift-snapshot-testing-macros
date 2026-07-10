@@ -11,9 +11,16 @@ public struct __TestScopingBox: Testing.TestScoping {
 
   public func provideScope(
     for _: Test,
-    testCase _: Test.Case?,
+    testCase: Test.Case?,
     performing function: () async throws -> Void
   ) async throws {
+    // Suite-level invocations (`testCase == nil`) wrap all of a suite's tests in one call;
+    // binding the attempt token there would share one execution context across every test.
+    guard testCase != nil else {
+      try await snapshotTestScoping.provideScope(performing: function)
+      return
+    }
+
     try await SnapshotAttemptToken.withAttemptScope {
       try await snapshotTestScoping.provideScope(performing: function)
     }

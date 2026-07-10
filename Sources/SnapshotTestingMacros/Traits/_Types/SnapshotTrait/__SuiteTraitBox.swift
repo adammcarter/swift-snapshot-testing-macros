@@ -22,4 +22,9 @@ public struct __SuiteTraitBox: Testing.SuiteTrait {
   }
 }
 
-extension __TestScopingBox: Testing.SuiteTrait {}
+extension __TestScopingBox: Testing.SuiteTrait {
+  /// Boxed scoping traits mirror ``SnapshotSuiteTrait``'s recursive application so their scope
+  /// is provided once per descendant test case rather than once around the whole suite (which
+  /// would share one per-attempt token across every test in the suite).
+  public var isRecursive: Bool { true }
+}
