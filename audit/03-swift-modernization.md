@@ -14,7 +14,8 @@ modernization work is therefore **not** a broad rewrite. It is four precise slic
 
 1. remove the private-layout `Mirror` walk for `Test.Case` arguments in favour of Swift Testing's
    existing SPI, compiler-gated for its Swift 6.1/6.2 shape change;
-2. fix the known trait-less multi-assertion naming hole before doing cosmetic concurrency cleanup;
+2. fix the case-identity collision bypasses and trait-less multi-assertion naming hole before doing
+   cosmetic concurrency cleanup;
 3. consolidate the six trait task-locals only as a tested, behaviour-preserving internal refactor;
 4. finish the few syntax-driven macro/migration edges that still yield ambiguity or silently
    non-compiling migrated output.
@@ -31,7 +32,8 @@ private reflection is avoidable today.
 | Per-case discriminator bypasses collision detection | `SnapshotExecutionContext.swift:131-159` and `ExpectSnapshotAdapter.swift:1117-1142` now register the folded name; tests cover distinct values normalizing to one name | **Fixed at `7460647`** |
 | Swift Testing exposes no case arguments publicly **or under SPI** | Swift 6.1 and 6.2 both expose `Test.Case.arguments` under `Experimental` / `ForToolsIntegrationOnly` SPI; only `[Argument]` vs `[Argument]?` differs | **Incorrect; replace reflection with a gated SPI adapter** |
 | One structured task-local is a small safe win | It touches every trait scope, decorator composition, direct trait reads, capture/rebind, and precedence tests | **Worthwhile M refactor, but not a first fix** |
-| All seven `@unchecked Sendable` sites should become `Mutex` | Four mutable-state boxes are good `Mutex` candidates; two boxes deliberately carry non-`Sendable` AppKit/UI values and still need an explicit unchecked boundary | **Split by invariant; do not run a blind sweep** |
+| All seven production `@unchecked Sendable` sites should become `Mutex` | There are seven production sites plus one test helper. Direct `Synchronization.Mutex` is macOS 15+/iOS 18+, while this package declares iOS 15. Two production boxes deliberately carry non-`Sendable` UI values | **Use one iOS-15-compatible `Locked<State>` boundary for synchronous state; do not run a blind `Mutex` sweep** |
+| Typed throws should be rejected as unsupported | `FunctionSignatureSyntax.isThrows` detects the throws clause, including `throws(E)`, and generated calls receive `try`; the generated test widens the effect to ordinary `throws` | **Coverage/policy gap, not a current compile defect** |
 
 Swift Testing source evidence:
 
@@ -41,6 +43,16 @@ Swift Testing source evidence:
   is an SPI `[Argument]?`; `isParameterized` is public.
 - The proposal for a simpler public value array remains
   [swift-testing PR #1350](https://github.com/swiftlang/swift-testing/pull/1350).
+
+Deployment evidence:
+
+- Both manifests declare macOS 15 and iOS 15. The current
+  [Synchronization `Mutex`](https://developer.apple.com/documentation/synchronization/mutex)
+  is available from macOS 15 and iOS 18, so using it in shared runtime code would silently raise
+  the effective iOS floor.
+- The Swift 6.2.1 `MainActor.assumeIsolated` result is still constrained to `Sendable`; the source
+  comment saying this restriction lasts only “until Swift 6.2” is stale. The narrow AppKit transfer
+  boundary still has a purpose.
 
 ---
 
@@ -120,7 +132,24 @@ pointfree internals and pins versions. Keep the matrix canary, add it to every X
 upstream PR #1350. If SPI use is rejected as policy, at minimum use public `isParameterized` to fail
 closed with an issue when extraction fails rather than returning an undiscriminated name.
 
-### 3. [Low] The collision registry is process-lifetime and insert-only
+### 3. [Medium] Case identity has two collision-guard bypasses
+
+The existing collision fix only runs after `SnapshotCaseDiscriminator.identity` returns an identity.
+Two inputs evade or defeat that protection:
+
+1. values such as `""` and `"!!!"` normalize to an empty component; line 45 returns `nil`, so the
+   parameterized case falls back to the undiscriminated base name and never enters the guard;
+2. `rawDescription` flattens arguments and tuple elements with the same `"-"` separator, so
+   `("a-b", "c")` and `("a", "b-c")` both become `"a-b-c"`. The guard then mistakes distinct
+   cases for a repetition of one value.
+
+**Fix direction (S/M, compatibility risk medium):** preserve argument/component structure in the
+registry identity (for example, a length-prefixed encoding or a typed array key), and give an empty
+visible discriminator a deterministic hashed fallback or record an attributed issue and skip. Add
+real parameterized tests for empty/punctuation-only values and delimiter-ambiguous tuples before
+changing production naming.
+
+### 4. [Low] The collision registry is process-lifetime and insert-only
 
 `SnapshotConfigurationNameCollisions.shared` owns a locked dictionary and never evicts entries
 (`SnapshotConfigurationNameCollisions.swift:24-49`). Growth is bounded by the number of distinct
@@ -131,10 +160,11 @@ Moving it onto `SnapshotAttemptToken` would be **wrong**: collisions are detecte
 for distinct parameterized cases. The honest choices are:
 
 - document the process lifetime and accept the bounded run-sized cache (S, no behaviour risk); or
-- replace lossy names with `normalizedName + stableHash(rawDescription)` so collisions are impossible
-  without global state (M, high reference-churn/compatibility risk and ADR-worthy).
+- replace lossy names with `normalizedName + stableHash(structurallyEncodedComponents)` so
+  collisions are practically eliminated without global state (M, high reference-churn/compatibility
+  risk and ADR-worthy).
 
-`Mutex` improves checked synchronization here; it does not solve lifetime.
+Changing the lock primitive does not solve lifetime.
 
 ---
 
@@ -212,14 +242,13 @@ existing public factories, land behind precedence tests, and do not combine this
 
 The attempt token owns exactly one lazily-created execution context and inherits into structured
 child tasks. That design fixed the former raw-task-pointer cache and should stay. An `actor` would make
-the synchronous name/reference APIs async for no product value. `Synchronization.Mutex` is the right
-modern primitive:
+the synchronous name/reference APIs async for no product value. Direct `Synchronization.Mutex` is
+not deployment-neutral here: its iOS 18 availability conflicts with the package's iOS 15 floor.
+Consolidate the invariant behind one compatibility wrapper instead:
 
 ```swift
-import Synchronization
-
 final class SnapshotAttemptToken: Sendable {
-  private let context = Mutex<SnapshotExecutionContext?>(nil)
+  private let context = Locked<SnapshotExecutionContext?>(nil)
 
   func executionContext(function: StaticString) -> SnapshotExecutionContext {
     context.withLock { value in
@@ -232,26 +261,32 @@ final class SnapshotAttemptToken: Sendable {
 }
 ```
 
-**Effort:** S. **Risk:** low, after the supported Xcode matrix proves the exact `Mutex` spelling on
-Swift 6.1 and 6.2.
+`Locked<State>` can keep the current `NSLock` implementation and centralize its single audited
+`@unchecked Sendable` invariant. It can switch internally to `Mutex` only in a target/deployment
+configuration where that availability is valid.
+
+**Effort:** S/M. **Risk:** low after the supported Xcode matrix proves iOS 15 remains buildable.
 
 ---
 
-## Complete `@unchecked Sendable` inventory (7)
+## Complete `@unchecked Sendable` inventory (7 production + 1 test helper)
 
 | Site | Invariant | Assessment | Modernization |
 | --- | --- | --- | --- |
 | `ExpectSnapshotAdapter.UncheckedSendableBox` | Exclusive one-way handoff of a possibly non-`Sendable` view or builder into a synchronous/structured main-actor hop; producer never touches it again | Sound and well documented; the type system on the oldest supported toolchains cannot express this region transfer | Keep one centralized unchecked boundary. Re-test whether `sending` removes it only after dropping Swift 6.1 |
-| `ExpectSnapshotAdapter.SyncMainActorResultBox` | `main.sync` gives write-before-read ordering; lock protects a single `Result` slot | Sound; actual `T` is `[SnapshotFailure]`, which is `Sendable` | Constrain `T: Sendable` and store the optional result in `Mutex`; this can likely become checked `Sendable` |
-| `StrategyAssertionRequestGenerator.MainActorResultBox` | `MainActor.assumeIsolated` executes synchronously on the current main thread; an `NSView`/`NSImage` never crosses concurrently | Sound but duplicated low-level ceremony | Keep unchecked while Swift 6.1 is supported; extract one `withSynchronousMainActorResult` helper and remove the two `preconditionFailure` call sites from normal code shape |
-| `SnapshotAttemptToken` | `NSLock` protects lazy context creation; immutable case identity | Sound | `Mutex<SnapshotExecutionContext?>`; checked `Sendable` |
-| `SnapshotExecutionContextNameState` | One lock protects `usedNames`, reference counts, and occurrence counts as one state unit | Sound | One `Mutex<State>`; checked `Sendable` and fewer lock/state fields |
-| `SnapshotConfigurationNameCollisions` | One lock protects a process-global dictionary | Thread-safe; lifetime is intentionally/accidentally process-wide | `Mutex<[String: String]>` for checked access; decide lifetime separately |
-| `SnapshotMigrationSupport.ApplyLock` | Kernel `flock` owns inter-process exclusion; `releaseGuard` makes descriptor close idempotent | Sound after the earlier stale-lock race fix | `Mutex<Bool>` for release state, add `deinit { release() }` if ownership policy allows, and make the class checked `Sendable` |
+| `ExpectSnapshotAdapter.SyncMainActorResultBox` | `main.sync` gives write-before-read ordering; lock protects a single `Result` slot | Sound; actual `T` is `[SnapshotFailure]`, which is `Sendable`, and a strict Swift 6.2.1 probe can return `Result` directly from `DispatchQueue.main.sync` | Prefer deleting the box if the Swift 6.1/6.2 Apple matrix accepts the direct `Result`; otherwise use `Locked<Result<…>?>` |
+| `StrategyAssertionRequestGenerator.MainActorResultBox` | `MainActor.assumeIsolated` executes synchronously on the current main thread; an `NSView`/`NSImage` never crosses concurrently | Narrowly sound; its “until Swift 6.2” comment is stale because the 6.2.1 result remains `Sendable`-constrained | Keep one specialized unchecked synchronous AppKit transfer helper until the minimum compiler signature permits removal |
+| `SnapshotAttemptToken` | `NSLock` protects lazy context creation; immutable case identity | Sound | `Locked<SnapshotExecutionContext?>` |
+| `SnapshotExecutionContextNameState` | One lock protects `usedNames`, reference counts, and occurrence counts as one state unit | Sound | One `Locked<State>` and fewer lock/state fields |
+| `SnapshotConfigurationNameCollisions` | One lock protects a process-global dictionary | Thread-safe; lifetime is intentionally/accidentally process-wide | `Locked<State>` plus typed keys; decide lifetime separately |
+| `SnapshotMigrationSupport.ApplyLock` | Kernel `flock` owns inter-process exclusion; `releaseGuard` makes descriptor close idempotent | Mostly sound after the stale-lock race fix, but a missed explicit `release()` keeps the descriptor until process exit | `Locked<Bool>` for release state and `deinit { release() }` as the ownership safety net |
+| Test-only `SnapshotIssueAttributionTests.RenderProbe` | One lock protects its two optional observations | Sound test helper | Reuse `Locked<State>` or isolate the probe to `@MainActor` |
 
 Do not replace these with actors wholesale. All hot operations are synchronous, tiny critical
 sections; actor conversion would infect rendering and migration APIs with suspension without making
-the invariants clearer.
+the invariants clearer. A compatibility wrapper does not make the underlying lock magically checked;
+it reduces seven scattered unchecked invariants to one reviewable implementation while preserving
+iOS 15.
 
 ---
 
@@ -320,15 +355,18 @@ public macro expectSnapshot<V: View>(
 Keep trailing closure syntax for literals. Add macro fixtures for `makeValue: makeView` and retain the
 old unlabeled overload for source compatibility.
 
-#### B. Typed throws is accepted but erased without an explicit policy (#21)
+#### B. Typed throws works, but lacks a pinned compatibility policy (#21)
 
 `FunctionSignatureSyntax.isThrows` checks only for a throws specifier; `throws(MyError)` is treated as
 ordinary throwing code. Generated legacy test functions are always untyped `async throws`, and the
-builder inserts only `try`, so the typed error contract is erased at the generated boundary.
+builder inserts `try`. That widening is legal: the original function retains its typed contract and
+the generated test may expose the broader `throws` effect.
 
-**Fix (S):** either diagnose `throws(Type)` with a fix-it to bare `throws` (the issue's stated policy),
-or deliberately support it and add expansion/compile tests. Do not keep accidental acceptance.
-**Risk:** low if diagnostic-only, medium if preserving typed throws through generated signatures.
+**Fix (S, tests first):** add expansion and Apple-toolchain compile fixtures for typed-throwing
+functions and initializers across the supported matrix. Treat rejection as a separate product policy
+only if the maintainer explicitly wants issue #21's older restriction; do not diagnose currently
+valid generated code as a correctness fix. **Risk:** low for coverage; source-breaking if rejection
+is chosen later.
 
 #### C. Generic legacy suites/functions need a direct diagnostic
 
@@ -356,6 +394,14 @@ extension SnapshotConfiguration where T == Void {
 becomes `Optional("value")`, producing an awkward normalized reference. A more-specific optional
 overload can map `.some` to the wrapped description and `.none` to `nil`/`none`. **Effort S, risk
 medium** because references rename; ship as an opt-in or migration release.
+
+#### F. Generated attribute filtering must match names, not prefixes
+
+`Test.swift:463-472` and `SnapshotTest.swift:255` use `hasPrefix` on rendered attribute text.
+That can treat `@MainActorish` as `@MainActor` and `@availableFeature` as `@available`, while
+module-qualified spellings need deliberate handling. Reuse the existing syntax-aware attribute-name
+helper and compare the terminal identifier exactly. Add misleading-prefix and qualified-name macro
+fixtures. **Effort S, risk low.**
 
 ### Bigger macro refactor: reduce string-emitted syntax at the edges
 
@@ -389,9 +435,12 @@ wholesale.
    drop `CustomTrait()`/`MyTraits.dark`. Fail closed with an "ambiguous first argument" skip rather
    than guessing. **S, low risk.**
 3. **remaining string decisions** — nil/type-context checks, literal-name extraction, and
-   zero-argument function detection still use `contains`/regex around an already-parsed expression.
-   Drive them from syntax nodes so strings such as `"nil-state"` cannot affect typing decisions.
-   **M, medium regression risk.**
+   zero-argument function detection still use `contains`/regex around an already-parsed expression
+   and, for function lookup, whole-source text without lexical scope. Comments, string literals, or
+   a same-named declaration in another type can change the migration decision. Drive them from syntax
+   nodes and scope-aware declaration keys so strings such as `"nil-state"` and `"func values()"`
+   cannot affect typing decisions. Fail closed on multiple plausible declarations. **M, medium
+   regression risk.**
 
 ### Split by responsibility after the fixes
 
@@ -416,13 +465,13 @@ check alone cannot catch an untyped `.init(...)`.
 
 | Opportunity | Concrete move | Value | Effort / risk |
 | --- | --- | --- | --- |
-| `Sequence` configuration values (#45) | Change legacy `configurationValues` constraints and parser overloads from `Collection` to `Sequence`, materializing once with `Array`; cover `stride`, range, set, and array overload resolution | Makes `stride(...)` work; the issue asks for `Strideable`, but `Sequence` is the right abstraction | S / low |
+| Finite `Sequence` configuration values (#45) | Add a more-general `Sequence` path while retaining the more-specific `Collection` overloads; materialize once and cover `stride`, range, set, single-pass sequence, and overload resolution | Makes `stride(...)` work; ranges already work today. Document that input is consumed once and must be finite | S/M / medium: arbitrary `Sequence` permits infinite input and can alter overload ranking |
 | `Duration` snapshot timeout | Add `.snapshotTimeout(_ duration: Duration)` and convert once at pointfree's `TimeInterval` boundary; remove the 5-second `#warning` | Type-safe, tunable slow-CI behaviour | S/M / low |
 | `Duration` time-limit helper (#28) | Convert/round to Swift Testing's supported `TimeLimitTrait` representation and document granularity | Consistent Swift-native call site | S / low |
 | `ContinuousClock` for apply-lock timeout | Replace `Date()` deadline comparison with a monotonic `ContinuousClock.Instant`; keep the sync sleep loop or make a separately async API | Wall-clock changes cannot extend/shorten apply-lock waits | S / low |
 | Parameter packs | Prototype `SnapshotConfiguration<(repeat each Value)>` plus a `(repeat each Value) -> V` builder to replace tuple-2/tuple-3 overload families | Removes repeated public/runtime/macro declarations and unlocks arity 4+ | M/L / medium-high; spike across every compiler row |
 | Structured configuration task-local | One internal config value, one capture, one rebind | Prevents future trait omission | M / medium |
-| `Synchronization.Mutex` | Convert lock-protected state holders, not non-`Sendable` handoff boxes | Checked synchronization, clearer invariants | S/M / low after matrix proof |
+| iOS-15-compatible `Locked<State>` | Consolidate synchronous lock-protected holders behind one audited boundary; use `Mutex` internally only where deployment permits | Clearer invariants without raising the package floor | S/M / low after Apple matrix proof |
 
 ### #22 (`IfConfig` lazy properties) is not currently a useful optimization
 
@@ -444,8 +493,11 @@ express the empty/non-empty clause with a normal syntax-builder branch and delet
 | `IfConfig.swift:39` — empty-clause/trivia construction | Mechanical syntax-builder refactor; keep the fixed source-empty branch behaviour |
 | `SnapshotSuite/_Support/MacroContext.swift:5` — macro-generated member expressions | Track as a design note only; do not add another macro layer without a concrete duplication win |
 
-Warnings compiled into every consumer build are a poor backlog. Convert deferred work to linked
-issues/comments or implement it; reserve `#warning` for an actionable migration signal.
+These are four production `#warning`s plus one source TODO. The four
+`#warning("Unsupported Kit")` occurrences under macro expansion fixtures are deliberate expected
+payload and must remain. Warnings compiled into every consumer build are a poor backlog: convert
+deferred production work to linked issues/comments or implement it; reserve `#warning` for an
+actionable migration signal.
 
 ---
 
@@ -455,15 +507,21 @@ issues/comments or implement it; reserve `#warning` for an actionable migration 
 
 1. **Replace `Test.Case._kind` reflection with the compiler-gated SPI adapter** and run its canary on
    every Xcode matrix row.
-2. **Write the failing trait-less two-assertion integration test**, then choose and document the
+2. **Pin the empty and structurally ambiguous case-identity failures**, then preserve component
+   structure and fail closed when a parameterized identity cannot be produced.
+3. **Write the failing trait-less two-assertion integration test**, then choose and document the
    stable call-site naming migration.
-3. Fix the migration rewriter's do/catch + labelled-statement descent and ambiguous trait fold,
+4. Fix the migration rewriter's do/catch + labelled-statement descent, ambiguous trait fold, and
+   scope-insensitive text heuristics,
    driven by failing tests and a compile/type-check canary.
-4. Add typed-throws and generic legacy diagnostics; constrain `SnapshotConfiguration.none`.
-5. Adopt `Sequence` for `configurationValues`, `ContinuousClock` for the lock deadline, and remove the
-   four source `#warning`s through their owned slices.
-6. Convert the four lock-protected mutable state holders to `Mutex`; retain the two deliberate
-   non-`Sendable` handoff boundaries.
+5. Add typed-throws compile coverage, exact attribute-name fixtures, and generic legacy diagnostics;
+   constrain `SnapshotConfiguration.none`.
+6. Add deliberate finite-`Sequence` support for `configurationValues`, adopt `ContinuousClock` for
+   the lock deadline, add `ApplyLock.deinit`, and remove the four production `#warning`s through
+   their owned slices.
+7. Consolidate synchronous mutable state behind an iOS-15-compatible `Locked<State>`; retain the
+   deliberate non-`Sendable` UI handoff boundary and delete the sync result box only if every Apple
+   compiler row accepts direct `Result` transport.
 
 ### Bigger refactors — schedule separately
 
@@ -473,6 +531,6 @@ issues/comments or implement it; reserve `#warning` for an actionable migration 
 3. Prototype parameter packs across Xcode 16.3–26.5 before changing the public overload surface.
 4. Move string-emitted macro expansions to typed builders only as a representation-only change.
 
-The sequencing matters: the first three safe wins remove silent reference corruption and silent
+The sequencing matters: the first four safe wins remove silent reference corruption and silent
 non-compiling migration output. The larger refactors improve change safety, but none should delay
 those correctness slices.
