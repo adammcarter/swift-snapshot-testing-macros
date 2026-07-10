@@ -388,6 +388,19 @@ public struct SnapshotMigrationRewriter {
         return nil
       }
 
+      if configurationsExpressionHasUnsupportedInitShorthand(in: normalizedArguments) {
+        reasons.append(
+          makeReason(
+            code: "unsupported-configuration-shape",
+            message: "`configurations:` element uses an initializer shorthand that cannot be safely typed.",
+            utf8Offset: function.positionAfterSkippingLeadingTrivia.utf8Offset,
+            converter: converter,
+            source: source
+          )
+        )
+        return nil
+      }
+
       let configurationType = snapshotConfigurationValueType(for: parameterInfos)
       normalizedArguments = rewriteConfigurationsArgumentsExpression(
         normalizedArguments,
@@ -841,8 +854,9 @@ public struct SnapshotMigrationRewriter {
   /// The expressions occupying configuration-element position within a `configurations:`
   /// argument: the direct elements of a top-level array literal, or — for the
   /// `<sequence>.map { ... }` shape — the result expressions of closures passed to the
-  /// top-level call (implicit final expression and direct `return` statements), including the
-  /// elements of an array literal returned by such a closure.
+  /// top-level call, including result expressions reachable only through control flow
+  /// (terminal `if`/`switch`/ternary expressions, `return`s nested in `guard`/`if`/`switch`),
+  /// and the elements of an array literal in result position.
   private func configurationElementExpressions(of root: ExprSyntax) -> [ExprSyntax] {
     if let arrayExpression = root.as(ArrayExprSyntax.self) {
       return arrayExpression.elements.map { ExprSyntax($0.expression) }
@@ -859,18 +873,7 @@ public struct SnapshotMigrationRewriter {
 
     var resultExpressions: [ExprSyntax] = []
     for closure in closures {
-      for statement in closure.statements {
-        if let returnStatement = statement.item.as(ReturnStmtSyntax.self),
-           let returnedExpression = returnStatement.expression
-        {
-          resultExpressions.append(returnedExpression)
-        }
-      }
-      if let lastStatement = closure.statements.last,
-         let lastExpression = lastStatement.item.as(ExprSyntax.self)
-      {
-        resultExpressions.append(lastExpression)
-      }
+      collectConfigurationResultExpressions(in: closure.statements, into: &resultExpressions)
     }
 
     return resultExpressions.flatMap { result -> [ExprSyntax] in
@@ -879,6 +882,107 @@ public struct SnapshotMigrationRewriter {
       }
       return [result]
     }
+  }
+
+  /// Walks a closure/branch body collecting every expression whose value becomes a configuration
+  /// element: the implicit final expression, and any `return`ed expression — descending through
+  /// `guard`/`if`/`switch` statements and `if`/`switch`/ternary *expressions* so element-position
+  /// `.init(...)` shorthands reachable only via control flow are still found (and later typed).
+  private func collectConfigurationResultExpressions(
+    in statements: CodeBlockItemListSyntax,
+    into results: inout [ExprSyntax]
+  ) {
+    guard !statements.isEmpty else { return }
+    let lastIndex = statements.index(before: statements.endIndex)
+    for index in statements.indices {
+      let statement = statements[index]
+      let isLast = index == lastIndex
+
+      if let returnStatement = statement.item.as(ReturnStmtSyntax.self),
+         let returnedExpression = returnStatement.expression
+      {
+        addConfigurationResultExpression(returnedExpression, into: &results)
+        continue
+      }
+      if let guardStatement = statement.item.as(GuardStmtSyntax.self) {
+        collectConfigurationResultExpressions(in: guardStatement.body.statements, into: &results)
+        continue
+      }
+
+      // A standalone `if`/`switch` is stored as `.stmt(ExpressionStmtSyntax)`; a plain final
+      // expression is stored as `.expr`. Unwrap both to the underlying expression.
+      let expression: ExprSyntax?
+      if let expressionStatement = statement.item.as(ExpressionStmtSyntax.self) {
+        expression = expressionStatement.expression
+      } else {
+        expression = statement.item.as(ExprSyntax.self)
+      }
+
+      guard let expression else { continue }
+
+      // `if`/`switch` (whether statement or terminal expression) carry their own branch results;
+      // any other expression only counts when it is the closure's implicit final result.
+      if expression.is(IfExprSyntax.self) || expression.is(SwitchExprSyntax.self) || isLast {
+        addConfigurationResultExpression(expression, into: &results)
+      }
+    }
+  }
+
+  /// Records a result expression, descending through control-flow *expressions* (`if`/`switch`/
+  /// ternary) so the leaf configuration expressions in each branch are collected individually.
+  private func addConfigurationResultExpression(
+    _ expression: ExprSyntax,
+    into results: inout [ExprSyntax]
+  ) {
+    if let ifExpression = expression.as(IfExprSyntax.self) {
+      collectConfigurationResultExpressions(in: ifExpression.body.statements, into: &results)
+      switch ifExpression.elseBody {
+      case .codeBlock(let block):
+        collectConfigurationResultExpressions(in: block.statements, into: &results)
+      case .ifExpr(let nestedIf):
+        addConfigurationResultExpression(ExprSyntax(nestedIf), into: &results)
+      case nil:
+        break
+      }
+    } else if let switchExpression = expression.as(SwitchExprSyntax.self) {
+      for caseItem in switchExpression.cases {
+        if let switchCase = caseItem.as(SwitchCaseSyntax.self) {
+          collectConfigurationResultExpressions(in: switchCase.statements, into: &results)
+        }
+      }
+    } else if let ternary = expression.as(TernaryExprSyntax.self) {
+      addConfigurationResultExpression(ternary.thenExpression, into: &results)
+      addConfigurationResultExpression(ternary.elseExpression, into: &results)
+    } else {
+      results.append(expression)
+    }
+  }
+
+  /// True when the configurations expression carries an element-position bare `.init(...)`
+  /// shorthand the rewriter cannot type (unrecognized first label), which would otherwise be
+  /// emitted as ambiguous, non-compiling output. Element-position only, so contextual `.init`
+  /// nested inside a configuration *value* is not implicated.
+  private func configurationsExpressionHasUnsupportedInitShorthand(in expression: String) -> Bool {
+    guard expression.contains(".init") else { return false }
+
+    var parser = Parser(expression)
+    let parsed = ExprSyntax.parse(from: &parser)
+    guard !parsed.hasError, parsed.description == expression else { return false }
+
+    for element in configurationElementExpressions(of: parsed) {
+      guard let call = element.as(FunctionCallExprSyntax.self),
+            let memberAccess = call.calledExpression.as(MemberAccessExprSyntax.self),
+            memberAccess.base == nil,
+            memberAccess.declName.baseName.text == "init"
+      else {
+        continue
+      }
+      if configurationCalleeRewrite(for: call) == nil {
+        return true
+      }
+    }
+
+    return false
   }
 
   private enum ConfigurationCalleeRewrite {
