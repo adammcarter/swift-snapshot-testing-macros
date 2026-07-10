@@ -53,8 +53,8 @@ struct SnapshotIssueAttributionTests {
     #expect(probe.sawMainThread == true)
   }
 
-  /// Same contract for the configuration-based async overload (the `runLazyAsyncThrowing`
-  /// path): structured main-actor bridge plus attributed failure.
+  /// Same contract for the configuration-based async overload (the rethrowing async core):
+  /// structured main-actor bridge plus attributed failure.
   @Test(.record(.never), .theme(.light))
   func asyncConfigurationOverloadRendersOnTheTestTaskMainActorBridge() async throws {
     try #require(!currentThreadIsMain())

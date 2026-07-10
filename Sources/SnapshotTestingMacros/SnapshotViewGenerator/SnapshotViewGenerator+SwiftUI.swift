@@ -16,7 +16,7 @@ extension SnapshotViewGenerator {
       displayName: displayName,
       configuration: configuration,
       makeValue: {
-        try makeSnapshotView(from: makeValue($0))
+        makeSnapshotHostingController(for: try makeValue($0))
       },
       fileID: fileID,
       filePath: filePath,
@@ -39,7 +39,7 @@ extension SnapshotViewGenerator {
     self.init(
       displayName: displayName,
       configuration: configuration,
-      makeValue: { try makeSnapshotView(from: await makeValue($0)) },
+      makeValue: { makeSnapshotHostingController(for: try await makeValue($0)) },
       fileID: fileID,
       filePath: filePath,
       line: line,
@@ -48,8 +48,13 @@ extension SnapshotViewGenerator {
   }
 }
 
+/// Hosts a SwiftUI view in the platform's hosting controller, configured for snapshotting.
+///
+/// This is the single SwiftUI→`SnapshotViewController` normalization step: the
+/// `SnapshotViewGenerator` SwiftUI initializers (the legacy macro path) and the
+/// `#expectSnapshot` adapter's SwiftUI shims both funnel through it.
 @MainActor
-private func makeSnapshotView<V: SwiftUI.View>(from view: V) throws -> SnapshotViewController {
+func makeSnapshotHostingController<V: SwiftUI.View>(for view: V) -> SnapshotViewController {
   let controller = SnapshotHostingController(rootView: view)
   controller.view.backgroundColor = nil
 
