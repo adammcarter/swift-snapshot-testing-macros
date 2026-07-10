@@ -32,7 +32,7 @@ extension SnapshotTestScoping {
       return
     }
 
-    try await SnapshotAttemptToken.withAttemptScope {
+    try await SnapshotAttemptToken.withAttemptScope(for: testCase) {
       try await provideScope(performing: function)
     }
   }

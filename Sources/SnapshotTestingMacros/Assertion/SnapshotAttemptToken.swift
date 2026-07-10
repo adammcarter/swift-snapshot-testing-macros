@@ -1,4 +1,5 @@
 import Foundation
+import Testing
 
 /// A per-attempt identity token that owns the ``SnapshotExecutionContext`` for one execution
 /// (attempt) of a test body.
@@ -26,6 +27,15 @@ final class SnapshotAttemptToken: @unchecked Sendable {
   private let lock = NSLock()
   private var context: SnapshotExecutionContext?
 
+  /// A stable per-case discriminator for the parameterized case this attempt belongs to, or
+  /// `nil` for a non-parameterized test. Captured once when the token is bound, so every
+  /// assertion in the attempt shares it.
+  private let caseDiscriminator: String?
+
+  init(caseDiscriminator: String? = nil) {
+    self.caseDiscriminator = caseDiscriminator
+  }
+
   /// Returns the attempt's execution context, creating it on first use.
   func executionContext(function: StaticString) -> SnapshotExecutionContext {
     lock.withLock {
@@ -33,7 +43,7 @@ final class SnapshotAttemptToken: @unchecked Sendable {
         return context
       }
 
-      let created = SnapshotExecutionContext(function: function)
+      let created = SnapshotExecutionContext(function: function, caseDiscriminator: caseDiscriminator)
       context = created
       return created
     }
@@ -44,12 +54,20 @@ final class SnapshotAttemptToken: @unchecked Sendable {
   /// Nested snapshot trait scopes (for example a suite trait and a test trait applied to the
   /// same test) belong to the same attempt, so an already-bound token is kept rather than
   /// replaced: every assertion in the attempt shares one execution context.
-  static func withAttemptScope<T>(perform work: () async throws -> T) async rethrows -> T {
+  ///
+  /// `testCase` is the parameterized-case identity the Swift Testing runner passes to
+  /// `provideScope`; its argument value(s) become the per-case discriminator that keeps unnamed
+  /// assertions in distinct cases from colliding on one reference file.
+  static func withAttemptScope<T>(
+    for testCase: Test.Case?,
+    perform work: () async throws -> T
+  ) async rethrows -> T {
     if current != nil {
       return try await work()
     }
 
-    return try await $current.withValue(SnapshotAttemptToken()) {
+    let token = SnapshotAttemptToken(caseDiscriminator: SnapshotCaseDiscriminator.value(for: testCase))
+    return try await $current.withValue(token) {
       try await work()
     }
   }

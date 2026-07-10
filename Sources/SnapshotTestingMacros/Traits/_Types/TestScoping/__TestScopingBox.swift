@@ -33,7 +33,7 @@ public struct __TestScopingBox: Testing.TestScoping {
       return
     }
 
-    try await SnapshotAttemptToken.withAttemptScope {
+    try await SnapshotAttemptToken.withAttemptScope(for: testCase) {
       try await snapshotTestScoping.provideScope(performing: function)
     }
   }

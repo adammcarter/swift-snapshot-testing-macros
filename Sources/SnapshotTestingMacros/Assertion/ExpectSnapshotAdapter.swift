@@ -1106,7 +1106,13 @@ enum ExpectSnapshotAdapter {
     makeViewController: @escaping @MainActor (ConfigurationValue) throws -> SnapshotViewController
   ) throws -> [SnapshotFailure] {
     let generator = SnapshotViewGenerator(
-      displayName: context.resolvedAssertionName(named: named),
+      // An `argument:`/configuration assertion already distinguishes each parameterized case by
+      // its configuration name, so the per-case discriminator is suppressed there to keep those
+      // reference names unchanged; unnamed, non-configuration assertions fold it in.
+      displayName: context.resolvedAssertionName(
+        named: named,
+        disambiguatesUnnamedCase: configuration.name == nil
+      ),
       configuration: configuration,
       makeValue: makeViewController,
       fileID: fileID,

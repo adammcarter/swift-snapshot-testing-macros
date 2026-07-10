@@ -9,16 +9,45 @@ private final class SnapshotExecutionContextNameState: @unchecked Sendable {
 
 final class SnapshotExecutionContext: Sendable {
   let baseName: String
+
+  /// A stable per-case discriminator for the parameterized `@Test(arguments:)` case that owns
+  /// this attempt, or `nil` for a non-parameterized test. When present, it is folded into the
+  /// unnamed base name so distinct cases resolve distinct reference files (see
+  /// ``SnapshotCaseDiscriminator``).
+  let caseDiscriminator: String?
+
   private let nameState = SnapshotExecutionContextNameState()
 
-  init(function: StaticString) {
+  init(function: StaticString, caseDiscriminator: String? = nil) {
     let raw = String(describing: function)
     let candidate = raw.split(separator: "(").first.map(String.init) ?? raw
     self.baseName = candidate.isEmpty ? "snapshot" : candidate
+    self.caseDiscriminator = caseDiscriminator
   }
 
-  func resolvedAssertionName(named override: String?) -> String {
-    let requestedName = Self.resolvedAssertionName(named: override, baseName: baseName)
+  /// Resolves the display name for one assertion, deduplicating repeats within this attempt.
+  ///
+  /// An unnamed assertion (`override == nil`) folds in the attempt's ``caseDiscriminator`` when
+  /// one is present and `disambiguatesUnnamedCase` is `true`, so each parameterized case gets a
+  /// distinct reference name. `disambiguatesUnnamedCase` is `false` on the
+  /// `argument:`/configuration path, whose configuration name already distinguishes the case —
+  /// folding there would needlessly churn those references. A named assertion is the user's
+  /// deliberate choice and is never rewritten.
+  func resolvedAssertionName(
+    named override: String?,
+    disambiguatesUnnamedCase: Bool = true
+  ) -> String {
+    let requestedName: String
+    if let override {
+      requestedName = override
+    }
+    else if disambiguatesUnnamedCase, let caseDiscriminator {
+      requestedName = "\(baseName)-\(caseDiscriminator)"
+    }
+    else {
+      requestedName = baseName
+    }
+
     return nameState.lock.withLock {
       if nameState.usedNames.insert(Self.dedupKey(for: requestedName)).inserted {
         return requestedName
