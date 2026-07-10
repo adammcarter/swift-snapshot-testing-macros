@@ -343,6 +343,158 @@ struct RewriterParameterizedTests {
   }
 
   @Test
+  func preservesReceiverQualifiedInitializersInsideConfigurationValues() throws {
+    let input = """
+    @SnapshotTest(configurations: [
+      .init(name: "bob", value: User.init(name: "Bob")),
+    ])
+    func profile(user: User) -> some View {
+      ProfileView(user: user)
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(
+      result.output.contains(
+        "SnapshotConfiguration<User>(name: \"bob\", value: User.init(name: \"Bob\"))"
+      )
+    )
+    #expect(!result.output.contains("UserSnapshotConfiguration"))
+    #expect(result.reasons.isEmpty)
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
+  func preservesNestedContextualInitializersInsideConfigurationValues() throws {
+    let input = """
+    @SnapshotTest(configurations: [
+      .init(name: "bob", value: .init(name: "Bob")),
+    ])
+    func profile(user: User) -> some View {
+      ProfileView(user: user)
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(
+      result.output.contains(
+        "SnapshotConfiguration<User>(name: \"bob\", value: .init(name: \"Bob\"))"
+      )
+    )
+    #expect(!result.output.contains("value: SnapshotConfiguration"))
+    #expect(result.reasons.isEmpty)
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
+  func leavesSnapshotConfigurationTextInsideStringLiteralsUntouched() throws {
+    let input = """
+    @SnapshotTest(configurations: [
+      .init(name: "uses SnapshotConfiguration(", value: 1),
+    ])
+    func card(state: Int) -> some View {
+      CardView(state: state)
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(
+      result.output.contains(
+        "SnapshotConfiguration<Int>(name: \"uses SnapshotConfiguration(\", value: 1)"
+      )
+    )
+    #expect(!result.output.contains("uses SnapshotConfiguration<Int>("))
+    #expect(result.reasons.isEmpty)
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
+  func leavesCustomTypesEndingInSnapshotConfigurationUntouched() throws {
+    let input = """
+    @SnapshotTest(configurations: [
+      MySnapshotConfiguration(name: "compact", value: 1),
+    ])
+    func card(state: Int) -> some View {
+      CardView(state: state)
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.output.contains("MySnapshotConfiguration(name: \"compact\", value: 1)"))
+    #expect(!result.output.contains("MySnapshotConfiguration<Int>"))
+    #expect(result.reasons.isEmpty)
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
+  func specializesExplicitSnapshotConfigurationElements() throws {
+    let input = """
+    @SnapshotTest(configurations: [
+      SnapshotConfiguration(name: "logged-out", value: UserState.loggedOut),
+      SnapshotConfiguration(name: "logged-in", value: UserState.loggedIn),
+    ])
+    func userProfile(state: UserState) -> some View {
+      UserProfileView(state: state)
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.output.contains("SnapshotConfiguration<UserState>(name: \"logged-out\", value: UserState.loggedOut)"))
+    #expect(result.output.contains("SnapshotConfiguration<UserState>(name: \"logged-in\", value: UserState.loggedIn)"))
+    #expect(result.reasons.isEmpty)
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
+  func specializesModuleQualifiedSnapshotConfigurationElements() throws {
+    let input = """
+    @SnapshotTest(configurations: [
+      SnapshotTestingMacros.SnapshotConfiguration(name: "compact", value: 1),
+    ])
+    func card(state: Int) -> some View {
+      CardView(state: state)
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(
+      result.output.contains(
+        "SnapshotTestingMacros.SnapshotConfiguration<Int>(name: \"compact\", value: 1)"
+      )
+    )
+    #expect(result.reasons.isEmpty)
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
+  func rewritesExplicitReturnsInsideMapClosuresForConfigurations() throws {
+    let input = """
+    @SnapshotTest(configurations: states.map { state in
+      return .init(name: state.title, value: state)
+    })
+    func profile(state: UserState) -> some View {
+      UserProfileView(state: state)
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(
+      result.output.contains(
+        "return SnapshotConfiguration<UserState>(name: state.title, value: state)"
+      )
+    )
+    #expect(result.reasons.isEmpty)
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
   func keepsSingleSuiteAttributeForParameterizedMigration() throws {
     let input = """
     @Suite

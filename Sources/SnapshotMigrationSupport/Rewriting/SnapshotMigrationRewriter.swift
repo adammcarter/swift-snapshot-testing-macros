@@ -764,37 +764,154 @@ public struct SnapshotMigrationRewriter {
     return trimmed
   }
 
-  private func expandSnapshotConfigurationInitializerShorthand(in expression: String) -> String {
-    guard expression.contains(".init") else { return expression }
-    guard let regex = try? NSRegularExpression(pattern: #"\.init\s*\((?=\s*(?:name:|value:))"#) else {
-      return expression
-    }
-
-    let range = NSRange(expression.startIndex..<expression.endIndex, in: expression)
-    return regex.stringByReplacingMatches(
-      in: expression,
-      range: range,
-      withTemplate: "SnapshotConfiguration("
-    )
-  }
-
   private func rewriteConfigurationsArgumentsExpression(
     _ expression: String,
     configurationType: String,
     source: String
   ) -> String {
-    var rewritten = expandSnapshotConfigurationInitializerShorthand(in: expression)
-    rewritten = invokeZeroArgumentFunctionReferenceIfNeeded(rewritten, source: source)
-    rewritten = addConfigurationInitializerTypeContext(
-      to: rewritten,
+    var rewritten = rewriteConfigurationElementInitializers(
+      in: expression,
       configurationType: configurationType
     )
+    rewritten = invokeZeroArgumentFunctionReferenceIfNeeded(rewritten, source: source)
 
     if shouldAddConfigurationsTypeContext(to: rewritten) {
       return "(\(rewritten)) as [SnapshotConfiguration<\(configurationType)>]"
     }
 
     return rewritten
+  }
+
+  /// Rewrites configuration constructions in element position — direct elements of the
+  /// top-level array literal and result expressions of closures passed to the top-level call
+  /// (the `.map { ... }` shape) — into explicitly typed `SnapshotConfiguration<T>(...)` calls:
+  ///
+  /// - a bare `.init(name:...)` / `.init(value:...)` shorthand becomes `SnapshotConfiguration<T>(...)`
+  /// - an explicit `SnapshotConfiguration(...)` / `Module.SnapshotConfiguration(...)` gains `<T>`
+  ///
+  /// Everything else is left byte-identical: receiver-qualified initializers
+  /// (`User.init(name:)`), initializers nested inside element values, string-literal contents,
+  /// and types whose names merely end in `SnapshotConfiguration`.
+  private func rewriteConfigurationElementInitializers(
+    in expression: String,
+    configurationType: String
+  ) -> String {
+    guard expression.contains(".init") || expression.contains("SnapshotConfiguration") else {
+      return expression
+    }
+
+    var parser = Parser(expression)
+    let parsed = ExprSyntax.parse(from: &parser)
+    guard !parsed.hasError, parsed.description == expression else { return expression }
+
+    var edits: [TextEdit] = []
+    for element in configurationElementExpressions(of: parsed) {
+      guard let call = element.as(FunctionCallExprSyntax.self),
+            let rewrite = configurationCalleeRewrite(for: call)
+      else {
+        continue
+      }
+
+      let callee = call.calledExpression
+      switch rewrite {
+      case .replaceBareInitializerShorthand:
+        edits.append(
+          TextEdit(
+            startUTF8Offset: callee.positionAfterSkippingLeadingTrivia.utf8Offset,
+            endUTF8Offset: callee.endPositionBeforeTrailingTrivia.utf8Offset,
+            replacement: "SnapshotConfiguration<\(configurationType)>"
+          )
+        )
+      case .specializeConfigurationReference:
+        let insertionOffset = callee.endPositionBeforeTrailingTrivia.utf8Offset
+        edits.append(
+          TextEdit(
+            startUTF8Offset: insertionOffset,
+            endUTF8Offset: insertionOffset,
+            replacement: "<\(configurationType)>"
+          )
+        )
+      }
+    }
+
+    guard !edits.isEmpty else { return expression }
+    return apply(edits: edits, to: expression)
+  }
+
+  /// The expressions occupying configuration-element position within a `configurations:`
+  /// argument: the direct elements of a top-level array literal, or — for the
+  /// `<sequence>.map { ... }` shape — the result expressions of closures passed to the
+  /// top-level call (implicit final expression and direct `return` statements), including the
+  /// elements of an array literal returned by such a closure.
+  private func configurationElementExpressions(of root: ExprSyntax) -> [ExprSyntax] {
+    if let arrayExpression = root.as(ArrayExprSyntax.self) {
+      return arrayExpression.elements.map { ExprSyntax($0.expression) }
+    }
+
+    guard let call = root.as(FunctionCallExprSyntax.self) else { return [] }
+
+    var closures: [ClosureExprSyntax] = call.arguments.compactMap {
+      $0.expression.as(ClosureExprSyntax.self)
+    }
+    if let trailingClosure = call.trailingClosure {
+      closures.append(trailingClosure)
+    }
+
+    var resultExpressions: [ExprSyntax] = []
+    for closure in closures {
+      for statement in closure.statements {
+        if let returnStatement = statement.item.as(ReturnStmtSyntax.self),
+           let returnedExpression = returnStatement.expression
+        {
+          resultExpressions.append(returnedExpression)
+        }
+      }
+      if let lastStatement = closure.statements.last,
+         let lastExpression = lastStatement.item.as(ExprSyntax.self)
+      {
+        resultExpressions.append(lastExpression)
+      }
+    }
+
+    return resultExpressions.flatMap { result -> [ExprSyntax] in
+      if let arrayExpression = result.as(ArrayExprSyntax.self) {
+        return arrayExpression.elements.map { ExprSyntax($0.expression) }
+      }
+      return [result]
+    }
+  }
+
+  private enum ConfigurationCalleeRewrite {
+    /// `.init(name:...)` → `SnapshotConfiguration<T>(name:...)`
+    case replaceBareInitializerShorthand
+    /// `SnapshotConfiguration(...)` / `Module.SnapshotConfiguration(...)` → add `<T>`
+    case specializeConfigurationReference
+  }
+
+  private func configurationCalleeRewrite(
+    for call: FunctionCallExprSyntax
+  ) -> ConfigurationCalleeRewrite? {
+    if let memberAccess = call.calledExpression.as(MemberAccessExprSyntax.self) {
+      if memberAccess.base == nil,
+         memberAccess.declName.baseName.text == "init",
+         let firstLabel = call.arguments.first?.label?.text,
+         firstLabel == "name" || firstLabel == "value"
+      {
+        return .replaceBareInitializerShorthand
+      }
+      if memberAccess.declName.baseName.text == "SnapshotConfiguration" {
+        return .specializeConfigurationReference
+      }
+      return nil
+    }
+
+    if let reference = call.calledExpression.as(DeclReferenceExprSyntax.self),
+       reference.baseName.text == "SnapshotConfiguration"
+    {
+      return .specializeConfigurationReference
+    }
+
+    return nil
   }
 
   private func invokeZeroArgumentFunctionReferenceIfNeeded(_ expression: String, source: String) -> String {
@@ -811,16 +928,6 @@ public struct SnapshotMigrationRewriter {
   private func shouldAddConfigurationsTypeContext(to expression: String) -> Bool {
     let trimmed = expression.trimmingCharacters(in: .whitespacesAndNewlines)
     return trimmed.contains("nil")
-  }
-
-  private func addConfigurationInitializerTypeContext(
-    to expression: String,
-    configurationType: String
-  ) -> String {
-    expression.replacingOccurrences(
-      of: "SnapshotConfiguration(",
-      with: "SnapshotConfiguration<\(configurationType)>("
-    )
   }
 
   private func bareIdentifierName(in expression: String) -> String? {
@@ -1169,6 +1276,10 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
   private(set) var legacyFunctions: [LegacyFunction] = []
   private(set) var qualifiedSnapshotAttributes: [QualifiedSnapshotAttribute] = []
 
+  /// `@SnapshotSuite` attributes the dedup logic deleted outright (because an argument-carrying
+  /// `@Suite` survives on the same declaration); these must not also receive a rename edit.
+  private var suppressedSnapshotSuiteRenameOffsets: Set<Int> = []
+
   override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
     removeDuplicateSuiteAttributeIfNeeded(in: node.attributes)
     return .visitChildren
@@ -1207,7 +1318,11 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
       return .visitChildren
     }
 
-    if identifier == "SnapshotSuite" {
+    if identifier == "SnapshotSuite",
+       !suppressedSnapshotSuiteRenameOffsets.contains(
+         node.attributeName.positionAfterSkippingLeadingTrivia.utf8Offset
+       )
+    {
       suiteAttributeEdits.append(
         TextEdit(
           startUTF8Offset: node.attributeName.positionAfterSkippingLeadingTrivia.utf8Offset,
@@ -1223,24 +1338,117 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
   private func removeDuplicateSuiteAttributeIfNeeded(in attributes: AttributeListSyntax) {
     let attributeSyntaxes = attributes.compactMap { $0.as(AttributeSyntax.self) }
 
-    let hasSnapshotSuite = attributeSyntaxes.contains {
+    let snapshotSuiteAttributes = attributeSyntaxes.filter {
       $0.attributeName.as(IdentifierTypeSyntax.self)?.name.trimmed.text == "SnapshotSuite"
     }
-    let hasSuite = attributeSyntaxes.contains {
+    let suiteAttributes = attributeSyntaxes.filter {
       $0.attributeName.as(IdentifierTypeSyntax.self)?.name.trimmed.text == "Suite"
     }
 
-    guard hasSnapshotSuite, hasSuite else { return }
+    guard !snapshotSuiteAttributes.isEmpty, !suiteAttributes.isEmpty else { return }
 
-    for attribute in attributeSyntaxes where attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.trimmed.text == "Suite" {
+    guard let argumentCarryingSuite = suiteAttributes.first(where: { $0.arguments != nil }) else {
+      // Every duplicate `@Suite` is bare: delete them all and let the `@SnapshotSuite` rename
+      // supply the surviving `@Suite`, keeping the legacy attribute's arguments intact.
+      for attribute in suiteAttributes {
+        suiteAttributeEdits.append(
+          TextEdit(
+            startUTF8Offset: attribute.positionAfterSkippingLeadingTrivia.utf8Offset,
+            endUTF8Offset: attribute.endPositionBeforeTrailingTrivia.utf8Offset,
+            replacement: ""
+          )
+        )
+      }
+      return
+    }
+
+    // The pre-existing `@Suite` carries arguments (display name and/or traits) that a wholesale
+    // delete would silently destroy. Keep that attribute, delete the legacy `@SnapshotSuite`
+    // instead, and fold the legacy snapshot traits into the surviving argument list.
+    for bareSuite in suiteAttributes where bareSuite.arguments == nil {
       suiteAttributeEdits.append(
         TextEdit(
-          startUTF8Offset: attribute.positionAfterSkippingLeadingTrivia.utf8Offset,
-          endUTF8Offset: attribute.endPositionBeforeTrailingTrivia.utf8Offset,
+          startUTF8Offset: bareSuite.positionAfterSkippingLeadingTrivia.utf8Offset,
+          endUTF8Offset: bareSuite.endPositionBeforeTrailingTrivia.utf8Offset,
           replacement: ""
         )
       )
     }
+
+    for snapshotSuite in snapshotSuiteAttributes {
+      suppressedSnapshotSuiteRenameOffsets.insert(
+        snapshotSuite.attributeName.positionAfterSkippingLeadingTrivia.utf8Offset
+      )
+      suiteAttributeEdits.append(attributeRemovalEdit(for: snapshotSuite))
+    }
+
+    if let foldEdit = traitFoldingEdit(into: argumentCarryingSuite, from: snapshotSuiteAttributes) {
+      suiteAttributeEdits.append(foldEdit)
+    }
+  }
+
+  /// Removes an attribute together with its comment-free leading trivia so the deleted
+  /// attribute does not leave a blank line behind. Leading trivia containing comments is kept.
+  private func attributeRemovalEdit(for attribute: AttributeSyntax) -> TextEdit {
+    let leadingTriviaHasComment = attribute.leadingTrivia.contains { piece in
+      switch piece {
+      case .lineComment, .blockComment, .docLineComment, .docBlockComment:
+        return true
+      default:
+        return false
+      }
+    }
+
+    let startUTF8Offset = leadingTriviaHasComment
+      ? attribute.positionAfterSkippingLeadingTrivia.utf8Offset
+      : attribute.position.utf8Offset
+
+    return TextEdit(
+      startUTF8Offset: startUTF8Offset,
+      endUTF8Offset: attribute.endPositionBeforeTrailingTrivia.utf8Offset,
+      replacement: ""
+    )
+  }
+
+  /// Appends the legacy `@SnapshotSuite` trait arguments to the surviving `@Suite` attribute's
+  /// argument list. A plain-string display name in first position is not folded: it never named
+  /// the Swift Testing suite (the legacy attribute only fed the snapshot runtime), and its
+  /// artifact-naming role survives through the parameterized display-name fallback chain.
+  private func traitFoldingEdit(
+    into suiteAttribute: AttributeSyntax,
+    from snapshotSuiteAttributes: [AttributeSyntax]
+  ) -> TextEdit? {
+    guard let suiteArguments = suiteAttribute.arguments?.as(LabeledExprListSyntax.self),
+          let rightParen = suiteAttribute.rightParen
+    else {
+      return nil
+    }
+
+    var foldedArgumentTexts: [String] = []
+    for snapshotSuite in snapshotSuiteAttributes {
+      guard let arguments = snapshotSuite.arguments?.as(LabeledExprListSyntax.self) else { continue }
+      for (index, argument) in arguments.enumerated() {
+        if index == 0, isDisplayNameArgument(argument.expression) { continue }
+        foldedArgumentTexts.append(argument.expression.trimmedDescription)
+      }
+    }
+
+    guard !foldedArgumentTexts.isEmpty else { return nil }
+
+    let insertionOffset = rightParen.positionAfterSkippingLeadingTrivia.utf8Offset
+    let separator = suiteArguments.last?.trailingComma == nil ? ", " : " "
+    return TextEdit(
+      startUTF8Offset: insertionOffset,
+      endUTF8Offset: insertionOffset,
+      replacement: separator + foldedArgumentTexts.joined(separator: ", ")
+    )
+  }
+
+  /// A first argument occupying the legacy `displayName` parameter: a string literal
+  /// (including interpolated ones) or an explicit `nil`. Neither is a suite trait, so neither
+  /// may be folded into the surviving `@Suite` trait list.
+  private func isDisplayNameArgument(_ expression: ExprSyntax) -> Bool {
+    expression.is(StringLiteralExprSyntax.self) || expression.is(NilLiteralExprSyntax.self)
   }
 
   override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {

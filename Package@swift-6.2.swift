@@ -105,6 +105,7 @@ let package = Package(
         "SnapshotsMacros",
         "SnapshotMigrationSupport",
 
+        .product(name: "SwiftParser", package: "swift-syntax"),
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
         .product(name: "MacroTesting", package: "swift-macro-testing"),
       ],

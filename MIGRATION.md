@@ -173,6 +173,22 @@ Every run stages its rewritten sources under a user-private directory (`/tmp/sna
 
 Whenever the directory is kept, the CLI prints `staged rewrites kept at: <path>`.
 
+### Suite attribute handling
+
+Legacy suites often carry both attributes (`@Suite` for Swift Testing discovery plus
+`@SnapshotSuite` for the snapshot machinery). The script always leaves exactly one `@Suite`
+behind:
+
+- A bare `@Suite` is removed and `@SnapshotSuite(...)` is renamed in place, keeping its
+  arguments: `@Suite` + `@SnapshotSuite(.theme(.light))` becomes `@Suite(.theme(.light))`.
+- An argument-carrying `@Suite` is preserved verbatim and the legacy attribute is deleted
+  instead, with its snapshot traits folded onto the surviving attribute:
+  `@Suite("Cards", .serialized)` + `@SnapshotSuite(.theme(.light))` becomes
+  `@Suite("Cards", .serialized, .theme(.light))`.
+- A legacy display name (`@SnapshotSuite("Suite Cards", ...)`) is not promoted onto an
+  argument-carrying `@Suite` — it never named the Swift Testing suite — but it still names the
+  snapshot artifacts through the `named:` fallback chain described under artifact naming parity.
+
 ### Exit codes
 
 | Code | Meaning |
