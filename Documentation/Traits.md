@@ -69,6 +69,12 @@ applies as usual: your own `withSnapshotTesting(record:diffTool:)`, pointfree's
 (so `SNAPSHOT_TESTING_RECORD=all swift test` re-records as expected). An explicit trait
 overrides all of these for its scope.
 
+The Bool convenience `.record(false)` maps to `.never`: snapshots are strictly verified, and
+a missing reference fails the test instead of being recorded. This deliberately diverges from
+swift-snapshot-testing's `assertSnapshot(..., record: false)`, which behaves like `.missing`
+(verify existing references, record missing ones). Use `.record(.missing)` when you want
+pointfree's Bool-`false` behaviour.
+
 ## Suite-level and test-level traits
 
 Use suite traits for defaults and test traits for local overrides:

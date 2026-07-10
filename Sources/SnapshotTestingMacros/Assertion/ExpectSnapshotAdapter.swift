@@ -51,7 +51,17 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping () -> V
   ) {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
 
     run(
       makeValue(),
@@ -73,7 +83,17 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping () async throws -> V
   ) async throws {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
 
     try await runValueOnMainActor(
       SnapshotValueBox(try await makeValue()),
@@ -95,7 +115,17 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping () async -> V
   ) async {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
 
     do {
       try await runValueOnMainActor(
@@ -155,7 +185,17 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping () throws -> V
   ) throws {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
 
     run(
       try makeValue(),
@@ -285,7 +325,17 @@ enum ExpectSnapshotAdapter {
     line: UInt,
     column: UInt
   ) {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
 
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
       let valueBox = SnapshotValueBox(value)
@@ -319,7 +369,17 @@ enum ExpectSnapshotAdapter {
     line: UInt,
     column: UInt
   ) {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
 
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
       runOnMainActorRecordingIssues(
@@ -352,7 +412,17 @@ enum ExpectSnapshotAdapter {
     line: UInt,
     column: UInt
   ) {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
 
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
       runOnMainActorRecordingIssues(
@@ -386,7 +456,17 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor (ConfigurationValue) throws -> V
   ) {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
     let resolvedConfiguration = resolvedConfiguration(from: configuration)
 
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
@@ -421,7 +501,17 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor (ConfigurationValue) throws -> V
   ) throws {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
     let resolvedConfiguration = resolvedConfiguration(from: configuration)
 
     try TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
@@ -483,7 +573,17 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping (ConfigurationValue) async throws -> V
   ) async throws {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
     let resolvedConfiguration = resolvedConfiguration(from: configuration)
 
     try await TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
@@ -606,7 +706,17 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor (ConfigurationValue) -> SnapshotView
   ) {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
     let resolvedConfiguration = resolvedConfiguration(from: configuration)
 
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in
@@ -641,7 +751,17 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor (ConfigurationValue) -> SnapshotViewController
   ) {
-    _ = SnapshotRuntimePreconditions.requireActiveTestContext(Test.current)
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
     let resolvedConfiguration = resolvedConfiguration(from: configuration)
 
     TaskLocalSnapshotExecutionContext.withCurrent(function: function) { context in

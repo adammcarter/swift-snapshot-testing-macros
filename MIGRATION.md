@@ -14,6 +14,21 @@ The legacy `@SnapshotSuite` and `@SnapshotTest` macros are still available for m
 | `@SnapshotTest(configurations: ...)` | `@Test(arguments: [SnapshotConfiguration(...)])` plus `#expectSnapshot(configuration) { ... }` on all platforms |
 | `@SnapshotTest(configurationValues: ...)` | `@Test(arguments: values)` plus `#expectSnapshot(argument: value) { ... }`, or `#expectSnapshot(SnapshotConfiguration(name: "\(value)", value: value)) { ... }` when existing references must keep their exact legacy case names |
 
+## Runtime requirements and semantic differences
+
+- `#expectSnapshot(...)` is Swift Testing only at runtime: it must run on the active Swift
+  Testing test task. Calling it from an XCTest method during incremental migration, from
+  `Task.detached { ... }`, or from a GCD callback that leaves the test task is unsupported —
+  the assertion is skipped and a failure issue is recorded at the call site (surfaced as a
+  run-level issue, since there is no test to attribute it to). Keep XCTest-hosted snapshot
+  tests on the legacy pointfree `assertSnapshot` until their suite migrates to `@Test`.
+- `assertSnapshot(..., record: false)` and `@Test(.record(false))` are not equivalent:
+  pointfree's `record: false` behaves like `.missing` (verify existing references, record
+  missing ones), while the `.record(false)` trait maps to `.never` (strictly verified — a
+  missing reference fails the test and is never written). Migrate `record: false` call sites
+  to `.record(.missing)` when you need to keep bootstrapping missing references; keep
+  `.record(false)` when a missing reference should be a hard failure.
+
 ## Basic before and after
 
 ### Before

@@ -1,6 +1,12 @@
 import Foundation
 
-@available(*, message: "This is an implementation detail. Do not call this function directly.")
+/// This is an implementation detail of the legacy `@SnapshotSuite` macro expansion. Do not call
+/// this function directly.
+///
+/// It is `public` only because macro-generated code must reference it; a `deprecated` annotation
+/// would emit warnings at every legacy macro expansion site, so it is hidden from documentation
+/// instead.
+@_documentation(visibility: private)
 @MainActor
 public func assertSnapshot(with viewGenerator: some SnapshotViewGenerating) async throws {
   try assertSnapshotSync(with: await resolvedSyncViewGenerator(from: viewGenerator))

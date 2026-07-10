@@ -33,9 +33,13 @@ struct RecordSnapshotTraitTests {
 
     #expect(trait.record == .all)
 
+    // `.record(false)` means "verified": missing references fail rather than being recorded.
+    // This deliberately diverges from pointfree's `record: false` == `.missing` Bool
+    // convention; the divergence is documented on the trait and in MIGRATION.md.
     let traitFalse = RecordSnapshotTrait.record(false)
 
     #expect(traitFalse.record == .never)
+    #expect(traitFalse.record != .missing)
   }
 
   @Test
