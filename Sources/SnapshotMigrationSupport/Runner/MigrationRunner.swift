@@ -32,6 +32,23 @@ public struct MigrationRunOutcome: Sendable {
 public struct MigrationRunner {
   public init() {}
 
+  /// Maps an error thrown while creating the staging store or staging a rewritten
+  /// file to the issue-line reason code reported for that file. Only a genuine
+  /// `--max-staged-bytes` breach may report `temp-storage-cap-exceeded`; directory
+  /// creation/permission failures and write failures get their own codes.
+  static func stagingIssueCode(for error: Error) -> String {
+    switch error {
+    case RunStagingStoreError.tempStorageCapExceeded:
+      return "temp-storage-cap-exceeded"
+    case RunStagingStoreError.writeFailed:
+      return "staging-write-failed"
+    case RunStagingStoreError.invalidRelativePath:
+      return "staging-invalid-path"
+    default:
+      return "staging-setup-failed"
+    }
+  }
+
   public func run(options: MigrationOptions) async throws -> MigrationExitCode {
     try await runWithOutcome(options: options).exitCode
   }
@@ -53,6 +70,16 @@ public struct MigrationRunner {
     let replacer = AtomicFileReplacer()
 
     var stagingStore: RunStagingStore?
+    var keptStagingRoot: String?
+    // Removal lives in a defer so an error unwinding the run cannot leak the staging
+    // directory. Runs that decide to keep it (--keep-temp, or apply-failure recovery)
+    // record that decision in keptStagingRoot before returning; --keep-temp also
+    // preserves the directory when the run itself throws.
+    defer {
+      if let stagingStore, keptStagingRoot == nil, !options.keepTemp {
+        stagingStore.remove()
+      }
+    }
     var hadMigrationFailures = false
     var hadApplyFailures = false
     var applyLockAcquisitionFailed = false
@@ -150,7 +177,9 @@ public struct MigrationRunner {
       } catch {
         hadMigrationFailures = true
         failedDeclarations += max(1, declarations.count)
-        issueLines.append("\(file.relativePath):1 <unknown> temp-storage-cap-exceeded unable to stage rewritten output")
+        issueLines.append(
+          "\(file.relativePath):1 <unknown> \(Self.stagingIssueCode(for: error)) unable to stage rewritten output"
+        )
         continue
       }
 
@@ -230,14 +259,12 @@ public struct MigrationRunner {
     // Staged copies are the only durable record of the rewritten output. Keep them
     // when the user asked (--keep-temp) or when an apply run failed, so the staged
     // rewrites remain available for inspection and manual recovery. Every other run
-    // — dry-run included, success or failure — removes its staging directory.
-    var keptStagingRoot: String?
+    // — dry-run included, success or failure — has its staging directory removed by
+    // the defer declared alongside stagingStore.
     if let stagingStore {
       let keepForApplyRecovery = options.mode == .apply && (hadMigrationFailures || hadApplyFailures)
       if options.keepTemp || keepForApplyRecovery {
         keptStagingRoot = stagingStore.root
-      } else {
-        stagingStore.remove()
       }
     }
 

@@ -35,6 +35,7 @@ public struct MigrationOptions: Equatable {
 }
 
 public enum MigrationCLIError: Error, Equatable {
+  case helpRequested
   case missingProjectRoot
   case missingOptionValue(String)
   case invalidIntegerOption(String)

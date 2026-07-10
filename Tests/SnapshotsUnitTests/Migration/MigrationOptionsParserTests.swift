@@ -101,6 +101,20 @@ struct MigrationOptionsParserTests {
     assertParseError(arguments: ["--project-root", "/tmp/example", "--bogus"], expected: .unknownOption("--bogus"))
   }
 
+  @Test
+  func helpFlagRequestsHelpInsteadOfUnknownOption() {
+    assertParseError(arguments: ["--help"], expected: .helpRequested)
+    assertParseError(arguments: ["-h"], expected: .helpRequested)
+  }
+
+  @Test
+  func helpFlagWinsEvenWhenCombinedWithOtherOptions() {
+    assertParseError(
+      arguments: ["--project-root", "/tmp/example", "--apply", "--help"],
+      expected: .helpRequested
+    )
+  }
+
   private func assertParseError(arguments: [String], expected: MigrationCLIError) {
     do {
       _ = try MigrationOptionsParser.parse(arguments: arguments)

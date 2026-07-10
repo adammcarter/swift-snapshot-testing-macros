@@ -90,6 +90,48 @@ struct MigrationCLIEntryPointTests {
   }
 
   @Test
+  func helpPrintsEveryFlagAndTheExitCodeLadderAndExitsZero() async {
+    var lines: [String] = []
+    var errorLines: [String] = []
+    let exitCode = await MigrationCLIEntryPoint.run(
+      arguments: ["--help"],
+      emitLine: { lines.append($0) },
+      emitErrorLine: { errorLines.append($0) }
+    )
+
+    #expect(exitCode == 0)
+    #expect(errorLines.isEmpty)
+
+    let helpText = lines.joined(separator: "\n")
+    let documentedFlags = [
+      "--project-root",
+      "--apply",
+      "--json-report",
+      "--keep-temp",
+      "--fail-on-skips",
+      "--max-file-size-bytes",
+      "--max-staged-bytes",
+      "--apply-lock-timeout-seconds",
+      "--help",
+    ]
+    for flag in documentedFlags {
+      #expect(helpText.contains(flag), "help text must document \(flag)")
+    }
+    for exitCodeDescription in [
+      "0", "success",
+      "1", "migration failure",
+      "2", "apply safety failure",
+      "3", "invalid usage",
+      "4", "strict skip failure",
+    ] {
+      #expect(
+        helpText.lowercased().contains(exitCodeDescription),
+        "help text must document exit code entry '\(exitCodeDescription)'"
+      )
+    }
+  }
+
+  @Test
   func invalidUsageStillExitsInvalidUsage() async {
     var errorLines: [String] = []
     let exitCode = await MigrationCLIEntryPoint.run(

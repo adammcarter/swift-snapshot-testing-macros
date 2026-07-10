@@ -203,10 +203,11 @@ struct ApplySafetyTests {
       applyLockTimeoutSeconds: 0
     )
 
-    let exitCode = try await MigrationRunner().run(options: options)
+    let outcome = try await MigrationRunner().runWithOutcome(options: options)
+    defer { removeStagingDirectory(of: outcome) }
     let updated = try String(contentsOfFile: targetPath, encoding: .utf8)
 
-    #expect(exitCode == .migrationFailure)
+    #expect(outcome.exitCode == .migrationFailure)
     #expect(updated == original)
   }
 
@@ -243,11 +244,12 @@ struct ApplySafetyTests {
       applyLockTimeoutSeconds: 0
     )
 
-    let exitCode = try await MigrationRunner().run(options: options)
+    let outcome = try await MigrationRunner().runWithOutcome(options: options)
+    defer { removeStagingDirectory(of: outcome) }
     let firstUpdated = try String(contentsOfFile: firstPath, encoding: .utf8)
     let secondUpdated = try String(contentsOfFile: secondPath, encoding: .utf8)
 
-    #expect(exitCode == .migrationFailure)
+    #expect(outcome.exitCode == .migrationFailure)
     #expect(firstUpdated == original)
     #expect(secondUpdated == original)
   }
@@ -293,6 +295,36 @@ struct ApplySafetyTests {
     #expect(!fileManager.fileExists(atPath: tempRoot))
     #expect(outcome.keptStagingRoot == nil)
     #expect(updated == original)
+  }
+
+  @Test
+  func stagingIssueCodesDistinguishCapWriteAndSetupFailures() {
+    #expect(
+      MigrationRunner.stagingIssueCode(for: RunStagingStoreError.tempStorageCapExceeded)
+        == "temp-storage-cap-exceeded"
+    )
+    #expect(
+      MigrationRunner.stagingIssueCode(for: RunStagingStoreError.writeFailed("/tmp/x"))
+        == "staging-write-failed"
+    )
+    #expect(
+      MigrationRunner.stagingIssueCode(for: RunStagingStoreError.invalidRelativePath("../x"))
+        == "staging-invalid-path"
+    )
+    // Anything thrown while creating the staging directory itself (mkdir/chmod
+    // failures surface as Foundation errors) must not masquerade as a cap breach.
+    #expect(
+      MigrationRunner.stagingIssueCode(for: CocoaError(.fileWriteNoPermission))
+        == "staging-setup-failed"
+    )
+  }
+
+  /// Tests that keep the staging directory (`--keep-temp`, or apply-failure recovery)
+  /// must remove it themselves so repeated test runs don't accumulate directories
+  /// under /tmp/snapshot-migration.
+  private func removeStagingDirectory(of outcome: MigrationRunOutcome) {
+    let root = outcome.keptStagingRoot ?? "/tmp/snapshot-migration/\(outcome.report.runID)"
+    try? FileManager.default.removeItem(atPath: root)
   }
 
   private func findUnusedPID(startingAt start: Int32 = 500_000) -> Int32 {

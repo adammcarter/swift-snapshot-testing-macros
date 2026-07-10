@@ -53,7 +53,10 @@ private func makeSnapshotView<V: SwiftUI.View>(from view: V) throws -> SnapshotV
   let controller = SnapshotHostingController(rootView: view)
   controller.view.backgroundColor = nil
 
-  if #available(iOS 16.0, *) {
+  // `sizingOptions` exists from iOS 16 (UIHostingController) and macOS 13
+  // (NSHostingController); name both so the check states the real dependency
+  // instead of relying on the `*` wildcard to admit every macOS version.
+  if #available(iOS 16.0, macOS 13.0, *) {
     controller.sizingOptions = [.intrinsicContentSize, .preferredContentSize]
   }
 

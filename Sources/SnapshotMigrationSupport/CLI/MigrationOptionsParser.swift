@@ -13,6 +13,8 @@ public enum MigrationOptionsParser {
     var index = 0
     while index < arguments.count {
       switch arguments[index] {
+      case "--help", "-h":
+        throw MigrationCLIError.helpRequested
       case "--project-root":
         index += 1
         guard index < arguments.count, !arguments[index].hasPrefix("--") else {

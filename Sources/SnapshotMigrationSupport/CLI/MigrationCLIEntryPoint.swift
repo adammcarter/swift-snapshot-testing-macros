@@ -45,6 +45,11 @@ public enum MigrationCLIEntryPoint {
       }
 
       return Int32(outcome.exitCode.rawValue)
+    } catch MigrationCLIError.helpRequested {
+      for line in helpLines {
+        emitLine(line)
+      }
+      return Int32(MigrationExitCode.success.rawValue)
     } catch let error as MigrationCLIError {
       emitErrorLine("migration error: \(userFacingMessage(for: error))")
       return Int32(MigrationExitCode.invalidUsage.rawValue)
@@ -54,8 +59,42 @@ public enum MigrationCLIEntryPoint {
     }
   }
 
+  /// The `--help` output. Every flag the parser accepts and every exit code the
+  /// runner can resolve must appear here; `MigrationCLIEntryPointTests` locks that.
+  private static let helpLines = [
+    "usage: migrate-snapshot-tests --project-root <path> [options]",
+    "",
+    "Migrates legacy @SnapshotSuite/@SnapshotTest declarations to @Suite/@Test",
+    "with #expectSnapshot(...). Defaults to dry-run: no files are modified",
+    "unless --apply is passed.",
+    "",
+    "options:",
+    "  --project-root <path>             Root of the project to scan (required).",
+    "  --apply                           Write the migrated files (default: dry-run).",
+    "  --json-report <path>              Write the full machine-readable report to <path>.",
+    "  --keep-temp                       Keep the run's staging directory under",
+    "                                    /tmp/snapshot-migration for inspection.",
+    "  --fail-on-skips                   Exit 4 when any declaration is skipped or any",
+    "                                    file is unreadable or oversize.",
+    "  --max-file-size-bytes <bytes>     Exclude files larger than <bytes> (default: 2000000).",
+    "  --max-staged-bytes <bytes>        Fail the run when staged rewritten copies exceed",
+    "                                    <bytes> in total (default: 536870912).",
+    "  --apply-lock-timeout-seconds <s>  Wait up to <s> seconds for the apply lock (default: 0).",
+    "  --help, -h                        Show this help and exit.",
+    "",
+    "exit codes:",
+    "  0  success",
+    "  1  migration failure (rewrite/staging errors; also the JSON-report-write fallback)",
+    "  2  apply safety failure (precondition, atomic replace, non-regular file, or apply lock)",
+    "  3  invalid usage",
+    "  4  strict skip failure (--fail-on-skips with skipped, unreadable, or oversize files)",
+  ]
+
   private static func userFacingMessage(for error: MigrationCLIError) -> String {
     switch error {
+    case .helpRequested:
+      // Handled by the dedicated catch in `run`; kept for switch exhaustiveness.
+      return "help requested"
     case .missingProjectRoot:
       return "missing required option --project-root <path>"
     case .missingOptionValue(let option):

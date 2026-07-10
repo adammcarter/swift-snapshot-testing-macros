@@ -29,8 +29,14 @@ public struct ConsoleReporter {
       emit(line)
     }
 
-    for issue in report.issueLines.sorted().prefix(maxIssues) {
+    let sortedIssues = report.issueLines.sorted()
+    for issue in sortedIssues.prefix(maxIssues) {
       emit(issue)
+    }
+
+    let truncatedCount = sortedIssues.count - maxIssues
+    if truncatedCount > 0 {
+      emit("... and \(truncatedCount) more issue(s); use --json-report for the full list")
     }
   }
 

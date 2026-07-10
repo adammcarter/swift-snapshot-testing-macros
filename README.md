@@ -29,6 +29,10 @@ struct ProfileCardSnapshots {
 }
 ```
 
+## Supported platforms
+
+iOS 15+ and macOS 15+ only. watchOS, tvOS, and visionOS are not supported; building the package for those platforms fails with an explicit compile-time error.
+
 ## Supported native surface
 
 | Surface | Support |

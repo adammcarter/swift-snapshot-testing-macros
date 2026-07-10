@@ -183,7 +183,21 @@ Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo
 Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo --apply --json-report ./snapshot-migration-report.json
 ```
 
-The command defaults to dry-run mode. Add `--apply` to write migrated files. Each run also reports total, scan, rewrite/stage, and apply timings in both the console summary and JSON report.
+The command defaults to dry-run mode. Add `--apply` to write migrated files. Each run also reports total, scan, rewrite/stage, and apply timings in both the console summary and JSON report. The console summary prints at most 50 issue lines, ending with `... and N more issue(s)` when truncated; use `--json-report` for the full list.
+
+### Command-line options
+
+| Option | Meaning |
+|---|---|
+| `--project-root <path>` | Root of the project to scan. Required. |
+| `--apply` | Write the migrated files. Without it the run is a dry-run and modifies nothing. |
+| `--json-report <path>` | Write the full machine-readable report (including every issue line) to `<path>`. |
+| `--keep-temp` | Keep the run's staging directory under `/tmp/snapshot-migration` for inspection. |
+| `--fail-on-skips` | Exit with code 4 when any declaration is skipped or any file is unreadable or oversize. |
+| `--max-file-size-bytes <bytes>` | Exclude files larger than `<bytes>` from migration (default: `2000000`). |
+| `--max-staged-bytes <bytes>` | Fail the run when the staged rewritten copies exceed `<bytes>` in total (default: `536870912`). |
+| `--apply-lock-timeout-seconds <s>` | Wait up to `<s>` seconds for another `--apply` run's lock before giving up (default: `0`). |
+| `--help`, `-h` | Print usage (all options plus the exit-code ladder) and exit 0. |
 
 Every run stages its rewritten sources under a user-private directory (`/tmp/snapshot-migration/run-<uuid>`, mode `0700`, parent included). The staging directory is removed at the end of the run — dry-run or apply, success or failure — except in two cases:
 
