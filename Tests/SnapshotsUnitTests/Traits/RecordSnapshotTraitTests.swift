@@ -17,13 +17,14 @@ struct RecordSnapshotTraitTests {
   func provideScope() async throws {
     let trait = RecordSnapshotTrait(record: .all)
 
-    #expect(RecordSnapshotTrait.current == .missing)
+    // nil means "no trait set" so ambient pointfree configuration is inherited.
+    #expect(RecordSnapshotTrait.current == nil)
 
     try await trait.provideScope {
       #expect(RecordSnapshotTrait.current == .all)
     }
 
-    #expect(RecordSnapshotTrait.current == .missing)
+    #expect(RecordSnapshotTrait.current == nil)
   }
 
   @Test

@@ -34,6 +34,12 @@ If the same snapshot trait appears more than once in the same scope chain, the l
 | Record | `.record` / `.record(.all)` / `.record(.missing)` | Control when snapshots are recorded |
 | Diff tool | `.diffTool(.default)` | Configure the diff command shown on failure |
 
+When no `.record` or `.diffTool` trait is set, ambient swift-snapshot-testing configuration
+applies as usual: your own `withSnapshotTesting(record:diffTool:)`, pointfree's
+`.snapshots(record:diffTool:)` trait, and the `SNAPSHOT_TESTING_RECORD` environment variable
+(so `SNAPSHOT_TESTING_RECORD=all swift test` re-records as expected). An explicit trait
+overrides all of these for its scope.
+
 ## Suite-level and test-level traits
 
 Use suite traits for defaults and test traits for local overrides:

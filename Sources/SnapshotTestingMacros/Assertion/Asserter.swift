@@ -24,6 +24,10 @@ struct Asserter {
   func collectFailuresSync(from requests: [any AssertionRequesting]) -> [SnapshotFailure] {
     var failures = [SnapshotFailure]()
 
+    // Trait task-locals are nil when no `.record`/`.diffTool` trait is set; pointfree's
+    // `withSnapshotTesting` treats nil as "inherit" — ambient consumer configuration (their
+    // own `withSnapshotTesting`, the `.snapshots` trait, `SNAPSHOT_TESTING_RECORD`) stays in
+    // effect, and pointfree's defaults apply last. Explicit traits still override everything.
     SnapshotTesting.withSnapshotTesting(
       record: RecordSnapshotTrait.current,
       diffTool: DiffToolSnapshotTrait.current

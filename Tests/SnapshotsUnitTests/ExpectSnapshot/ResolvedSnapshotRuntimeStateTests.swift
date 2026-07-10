@@ -10,11 +10,11 @@ struct ResolvedSnapshotRuntimeStateTests {
 
     #expect(runtime.theme == .all)
     #expect(runtime.strategy == .image)
-    #expect(runtime.record == .missing)
-    #expect(
-      runtime.diffTool(currentFilePath: "current", failedFilePath: "failed")
-        == DiffToolSnapshotTrait.DiffTool.default(currentFilePath: "current", failedFilePath: "failed")
-    )
+    // record/diffTool default to nil ("no trait set") so ambient pointfree configuration —
+    // a consumer's `withSnapshotTesting`, the `.snapshots` trait, `SNAPSHOT_TESTING_RECORD` —
+    // is inherited instead of clobbered.
+    #expect(runtime.record == nil)
+    #expect(runtime.diffTool == nil)
     #expect(runtime.sizes.count == 1)
     switch (defaultSize.width, defaultSize.height) {
       case (.minimum, .minimum):
