@@ -195,6 +195,48 @@ struct MigrationRunnerIntegrationTests {
   }
 
   @Test
+  func applyRunWithAMigrationFailureExitsMigrationFailure() async throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    // A single migratable file whose rewritten output blows the staging cap: staging throws and
+    // `hadMigrationFailures` is set with `failedDeclarations > 0`. Every site that sets
+    // `hadMigrationFailures` also increments `failedDeclarations`, so `resolveExitCode` alone
+    // must return `.migrationFailure` here — pinning the invariant that `hadMigrationFailures`
+    // never coincides with a `.success` exit code.
+    let hugeComment = "// " + String(repeating: "padding ", count: 400)
+    try fixture.write(
+      path: "Tests/Large.swift",
+      contents: """
+      \(hugeComment)
+      @SnapshotTest("Large")
+      func large() -> some View {
+        Text("B")
+      }
+      """
+    )
+
+    let options = MigrationOptions(
+      projectRoot: fixture.root,
+      mode: .apply,
+      jsonReportPath: nil,
+      keepTemp: false,
+      failOnSkips: false,
+      maxFileSizeBytes: 2_000_000,
+      maxStagedBytes: 1_000,
+      applyLockTimeoutSeconds: 0
+    )
+
+    let outcome = try await MigrationRunner().runWithOutcome(options: options)
+    defer { try? FileManager.default.removeItem(atPath: "/tmp/snapshot-migration/\(outcome.report.runID)") }
+
+    #expect(outcome.report.failedDeclarations > 0)
+    #expect(outcome.report.applyLockAcquisitionFailed == false)
+    #expect(outcome.report.filesApplyFailed == 0)
+    #expect(outcome.exitCode == .migrationFailure)
+  }
+
+  @Test
   func lockContentionWithNoPendingAppliesStillExitsApplySafetyFailure() async throws {
     let fixture = try TempProject.make()
     defer { fixture.cleanup() }

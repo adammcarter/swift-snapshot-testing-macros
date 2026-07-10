@@ -312,10 +312,11 @@ public struct MigrationRunner {
       )
     )
 
-    var exitCode = report.resolveExitCode(failOnSkips: options.failOnSkips)
-    if options.mode == .apply, hadMigrationFailures, exitCode == .success {
-      exitCode = .migrationFailure
-    }
+    // `hadMigrationFailures` is only ever set alongside a `failedDeclarations` increment (and
+    // `failedDeclarations` is never decremented), so `resolveExitCode` already returns a
+    // non-success code (`.migrationFailure` or `.applySafetyFailure`) whenever a migration failed.
+    // No `.success`-to-`.migrationFailure` fallback is needed here.
+    let exitCode = report.resolveExitCode(failOnSkips: options.failOnSkips)
 
     return MigrationRunOutcome(report: report, exitCode: exitCode, keptStagingRoot: keptStagingRoot)
   }
