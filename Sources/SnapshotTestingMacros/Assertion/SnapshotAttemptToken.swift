@@ -9,9 +9,11 @@ import Foundation
 /// - All `#expectSnapshot` calls within the attempt — including calls made from helper
 ///   functions and from child tasks spawned by the test body, which inherit the task-local —
 ///   resolve the same token and therefore share one execution context, keeping unnamed
-///   artifact suffixes ("-2", "-3", …) stable and deterministic.
+///   artifact suffixes ("-2", "-3", …) and `.N` reference-file identifiers stable and
+///   deterministic.
 /// - A new attempt (test retry or repetition) enters the trait's scope again and receives a
-///   fresh token, so its first unnamed assertion resolves the unsuffixed base name again.
+///   fresh token, so its first unnamed assertion resolves the unsuffixed base name and the
+///   `.1` reference identifier again.
 /// - Because the token is a class instance, its identity cannot be recycled while anything
 ///   still references it — unlike raw current-task pointer bits, which the allocator reuses
 ///   for new tasks almost immediately.

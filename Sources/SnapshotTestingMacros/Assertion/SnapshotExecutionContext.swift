@@ -3,6 +3,7 @@ import Foundation
 private final class SnapshotExecutionContextNameState: @unchecked Sendable {
   let lock = NSLock()
   var usedNames = Set<String>()
+  var referenceCounts = [String: Int]()
 }
 
 final class SnapshotExecutionContext: Sendable {
@@ -36,5 +37,20 @@ final class SnapshotExecutionContext: Sendable {
 
   static func resolvedAssertionName(named override: String?, baseName: String) -> String {
     override ?? baseName
+  }
+
+  /// Returns the next `.N` reference-file identifier for `key`, counting within this context.
+  ///
+  /// This is the per-attempt equivalent of the counter pointfree's `.snapshots` trait binds
+  /// per test: the first reference for a key is `1`, subsequent same-key references within the
+  /// attempt count up deterministically in assertion order, and a new attempt — which owns a
+  /// fresh context — restarts at `1`, so repetitions and retries resolve the same reference
+  /// files again.
+  func nextReferenceIdentifier(forKey key: String) -> String {
+    nameState.lock.withLock {
+      let next = (nameState.referenceCounts[key] ?? 0) + 1
+      nameState.referenceCounts[key] = next
+      return String(next)
+    }
   }
 }

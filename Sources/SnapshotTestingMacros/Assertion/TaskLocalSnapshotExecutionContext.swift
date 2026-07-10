@@ -44,9 +44,10 @@ enum TaskLocalSnapshotExecutionContext {
   /// resolved a stale context whose `usedNames` were already populated and unnamed artifact
   /// names silently drifted to "-2"/"-3" suffixes. The residual limitation of the fresh-per-
   /// assertion fallback is narrow: a trait-less test that makes several *unnamed*
-  /// `#expectSnapshot` calls resolves the same base name for each of them instead of suffixing
-  /// deterministically — applying any snapshot trait (which binds the attempt token) or
-  /// distinct `named:` arguments restores deterministic naming.
+  /// `#expectSnapshot` calls resolves the same base name — and, since each fresh context also
+  /// restarts the `.N` reference identifier, the same reference file — for each of them
+  /// instead of suffixing deterministically. Applying any snapshot trait (which binds the
+  /// attempt token) or distinct `named:` arguments restores deterministic naming.
   private static func resolveContext(function: StaticString) -> SnapshotExecutionContext {
     if let token = SnapshotAttemptToken.current {
       return token.executionContext(function: function)

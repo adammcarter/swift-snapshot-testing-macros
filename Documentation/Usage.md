@@ -42,9 +42,15 @@ scope covers helper functions and child tasks spawned by the test body, and it r
 every new run of the test (including retries and repetitions), so artifact names stay stable
 across runs.
 
+The trailing `.N` reference-file identifier (as in `profileCard_min-size_light.1.png`) is
+part of the same scope: assertions that resolve the same reference path within one run count
+up deterministically in assertion order, and every new run restarts at `.1` — so repeated
+in-process test iterations and parallel tests always resolve the same reference files instead
+of depending on a process-wide counter.
+
 Without any snapshot trait there is no shared naming scope and every unnamed assertion
-resolves the same base name — give each assertion a distinct `named:` argument or apply a
-snapshot trait.
+resolves the same base name and the same `.1` reference file — give each assertion a distinct
+`named:` argument or apply a snapshot trait.
 
 ## SwiftUI closure forms
 

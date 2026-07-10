@@ -146,7 +146,7 @@ private struct PointfreeAsserter: SnapshotAsserting {
     let message = SnapshotTesting.verifySnapshot(
       of: request.view,
       as: request.snapshotting,
-      named: nil,
+      named: referenceIdentifier(for: request),
       snapshotDirectory: request.snapshotDirectory,
       timeout: 5,
       fileID: request.fileID,
@@ -159,6 +159,47 @@ private struct PointfreeAsserter: SnapshotAsserting {
     if let message {
       throw SnapshotError(message: message)
     }
+  }
+
+  /// Resolves the `.N` reference-file identifier from the attempt-scoped execution context.
+  ///
+  /// With `named: nil`, pointfree derives the identifier from a counter that is process-global
+  /// on the native `#expectSnapshot` path: the task-local counter is never bound (only
+  /// pointfree's `.snapshots` trait binds it, which native usage does not apply), and off-main
+  /// assertions lose `Test.current` across the main-queue hop and fall back to a global that
+  /// only an XCTest observer resets. Either way the counter keeps growing across attempts and
+  /// tests, so repetitions look for `name.2.png` that was never recorded and parallel
+  /// same-named tests are assigned `.N` suffixes by scheduling order.
+  ///
+  /// Counting within the attempt's ``SnapshotExecutionContext`` instead — the context the
+  /// adapter re-binds across the main-queue hop — reproduces the legacy behaviour, where the
+  /// auto-applied `.pointfreeSnapshots` trait reset pointfree's counter per test: every
+  /// attempt restarts at `.1`, and same-key assertions within one attempt count up
+  /// deterministically.
+  ///
+  /// Without a bound context — the deprecated `@SnapshotSuite` path, which enters through
+  /// `assertSnapshot(with:)` and does apply `.pointfreeSnapshots` — this returns `nil` so
+  /// pointfree's own per-test counter keeps assigning identifiers exactly as before.
+  private func referenceIdentifier(for request: some AssertionRequesting) -> String? {
+    guard let context = TaskLocalSnapshotExecutionContext.current else {
+      return nil
+    }
+
+    return context.nextReferenceIdentifier(forKey: Self.referenceCounterKey(for: request))
+  }
+
+  /// Mirrors the counter key pointfree derives in `verifySnapshot`: the resolved reference
+  /// directory plus the unsanitized test name (swift-snapshot-testing 1.19.1,
+  /// `AssertSnapshot.swift`), so distinct reference paths never share a count.
+  private static func referenceCounterKey(for request: some AssertionRequesting) -> String {
+    let fileUrl = URL(fileURLWithPath: "\(request.filePath)", isDirectory: false)
+    let directoryUrl = request.snapshotDirectory.map { URL(fileURLWithPath: $0, isDirectory: true) }
+      ?? fileUrl
+        .deletingLastPathComponent()
+        .appendingPathComponent("__Snapshots__")
+        .appendingPathComponent(fileUrl.deletingPathExtension().lastPathComponent)
+
+    return directoryUrl.appendingPathComponent(request.testName).absoluteString
   }
 }
 
