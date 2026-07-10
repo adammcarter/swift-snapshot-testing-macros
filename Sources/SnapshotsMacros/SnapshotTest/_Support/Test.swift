@@ -114,12 +114,36 @@ extension SnapshotSuite.TestBlock {
        a cryptic one inside macro-generated code. (An async function is fine: its `await`
        covers the initialiser call too.)
       */
-      if suiteDeclaration.isAsync,
-        snapshotTestFunctionDecl.isAsync == false,
-        snapshotTestFunctionDecl.isStatic == false
-      {
+      let functionNeedsAsync =
+        suiteDeclaration.isAsync
+        && snapshotTestFunctionDecl.isAsync == false
+        && snapshotTestFunctionDecl.isStatic == false
+
+      let functionNeedsThrows =
+        suiteDeclaration.isThrows
+        && snapshotTestFunctionDecl.isThrows == false
+        && snapshotTestFunctionDecl.isStatic == false
+
+      if functionNeedsAsync {
         addAsyncInitialiserDiagnostic(
           functionDecl: snapshotTestFunctionDecl,
+          alsoAddThrows: functionNeedsThrows,
+          context: macroContext.context
+        )
+      }
+
+      /*
+       The peer macro bakes `Suite().function()` but only emits `try` when the *function*
+       throws. A non-throwing instance function on a suite with a throwing initialiser therefore
+       generates a call to the throwing initialiser with no `try` — "call can throw but is not
+       marked with 'try'" in generated code. Diagnose it here, where the suite's initialiser is
+       visible, mirroring the async-init guard. (A throwing function's `try` covers the
+       initialiser call too.)
+      */
+      if functionNeedsThrows {
+        addThrowingInitialiserDiagnostic(
+          functionDecl: snapshotTestFunctionDecl,
+          alsoAddAsync: functionNeedsAsync,
           context: macroContext.context
         )
       }
@@ -266,17 +290,9 @@ private func addNonInstantiableFunctionDiagnostic(
 
 private func addAsyncInitialiserDiagnostic(
   functionDecl: FunctionDeclSyntax,
+  alsoAddThrows: Bool,
   context: some MacroExpansionContext
 ) {
-  let oldNode = functionDecl
-  let newNode = with(oldNode) {
-    $0.signature.effectSpecifiers = with(
-      $0.signature.effectSpecifiers ?? FunctionEffectSpecifiersSyntax()
-    ) {
-      $0.asyncSpecifier = .keyword(.async, trailingTrivia: .space)
-    }
-  }
-
   context.diagnose(
     DiagnosticFactory.generalErrorMessage(
       message:
@@ -285,12 +301,67 @@ private func addAsyncInitialiserDiagnostic(
       fixIts: [
         .replace(
           message: FixItWarning.generalMessage("Make function async"),
-          oldNode: oldNode,
-          newNode: newNode
+          oldNode: functionDecl,
+          newNode: withAddedEffectSpecifiers(
+            to: functionDecl,
+            async: true,
+            throws: alsoAddThrows
+          )
         )
       ]
     )
   )
+}
+
+private func addThrowingInitialiserDiagnostic(
+  functionDecl: FunctionDeclSyntax,
+  alsoAddAsync: Bool,
+  context: some MacroExpansionContext
+) {
+  context.diagnose(
+    DiagnosticFactory.generalErrorMessage(
+      message:
+        "Cannot create a test for non-throwing instance functions on a suite with a 'throws' initialiser. Make the function 'throws' so the generated code can 'try' the initialiser.",
+      node: functionDecl,
+      fixIts: [
+        .replace(
+          message: FixItWarning.generalMessage("Make function throws"),
+          oldNode: functionDecl,
+          newNode: withAddedEffectSpecifiers(
+            to: functionDecl,
+            async: alsoAddAsync,
+            throws: true
+          )
+        )
+      ]
+    )
+  )
+}
+
+/// Adds the requested effect specifiers to a function's signature so the fix-it always yields a
+/// function whose specifiers match the suite initialiser the generated code calls — for an
+/// `async throws` initialiser that means adding both `async` and `throws` in one fix so the peer
+/// emits `try await`.
+private func withAddedEffectSpecifiers(
+  to functionDecl: FunctionDeclSyntax,
+  async addAsync: Bool,
+  throws addThrows: Bool
+) -> FunctionDeclSyntax {
+  with(functionDecl) {
+    $0.signature.effectSpecifiers = with(
+      $0.signature.effectSpecifiers ?? FunctionEffectSpecifiersSyntax()
+    ) {
+      if addAsync {
+        $0.asyncSpecifier = .keyword(.async, trailingTrivia: .space)
+      }
+
+      if addThrows {
+        $0.throwsClause = ThrowsClauseSyntax(
+          throwsSpecifier: .keyword(.throws, trailingTrivia: .space)
+        )
+      }
+    }
+  }
 }
 
 private func makeTestMacroArguments(
