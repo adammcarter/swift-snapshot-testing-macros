@@ -19,20 +19,33 @@ final class SnapshotExecutionContext: Sendable {
   func resolvedAssertionName(named override: String?) -> String {
     let requestedName = Self.resolvedAssertionName(named: override, baseName: baseName)
     return nameState.lock.withLock {
-      if nameState.usedNames.insert(requestedName).inserted {
+      if nameState.usedNames.insert(Self.dedupKey(for: requestedName)).inserted {
         return requestedName
       }
 
       var suffix = 2
       while true {
         let candidate = "\(requestedName)-\(suffix)"
-        if nameState.usedNames.insert(candidate).inserted {
+        if nameState.usedNames.insert(Self.dedupKey(for: candidate)).inserted {
           return candidate
         }
 
         suffix += 1
       }
     }
+  }
+
+  /// The form of `name` that uniqueness must be enforced on: reference files are written with
+  /// every non-word character collapsed to `-` (`SnapshotNameNormalizer` here, pointfree's
+  /// `sanitizePathComponent` downstream), so raw names that sanitize identically — e.g.
+  /// "menu view" vs "menu-view" — would silently share one reference file if deduped raw.
+  /// Slash-separated path segments are normalized individually and keep their `/` because
+  /// they resolve to distinct subdirectories, not to one filename component.
+  private static func dedupKey(for name: String) -> String {
+    name
+      .split(separator: "/", omittingEmptySubsequences: true)
+      .map { SnapshotNameNormalizer.folderComponent(from: String($0)) }
+      .joined(separator: "/")
   }
 
   static func resolvedAssertionName(named override: String?, baseName: String) -> String {
