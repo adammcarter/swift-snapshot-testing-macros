@@ -3,7 +3,7 @@ import Testing
 @testable import SnapshotMigrationSupport
 
 @Suite
-struct SnapshotMigrationRewriterTerminalControlFlowTests {
+struct MigrationRewriterControlFlowTests {
   @Test
   func skipsTerminalIfStatementWithBranchReturns() throws {
     let input = """

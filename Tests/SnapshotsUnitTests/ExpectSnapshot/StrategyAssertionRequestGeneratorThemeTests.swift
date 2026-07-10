@@ -8,7 +8,7 @@ import Testing
 /// Regression tests for the AppKit theme fan-out: the theme trait produces `_light`/`_dark`
 /// artifacts, so the rendered pixels must actually differ between the two appearances.
 @MainActor
-struct StrategyAssertionRequestGeneratorThemeTests {
+struct StrategyRequestGeneratorThemeTests {
   @Test
   func lightAndDarkThemesRenderDifferentImageData() throws {
     let lightData = try renderedImageData(request: makeImageRequest(theme: .light))

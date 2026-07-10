@@ -15,7 +15,7 @@ struct AttemptScopePassthroughTrait: SnapshotTestScoping {
   }
 }
 
-struct SnapshotExecutionContextAttemptScopingTests {
+struct SnapshotContextAttemptScopingTests {
   /// (R2) A new attempt of the same test — the runner invoking `provideScope` again — must get
   /// a fresh execution context: the first unnamed assertion resolves the *unsuffixed* base name
   /// again instead of drifting to "-2".
