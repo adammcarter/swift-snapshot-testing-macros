@@ -19,18 +19,35 @@ public struct ScannedFile: Equatable {
 public struct ScanResult: Equatable {
   public let filesScanned: Int
   public let candidateFiles: [ScannedFile]
+  /// Relative paths of Swift files that could not be read as UTF-8 text (sorted).
+  public let unreadableFiles: [String]
+  /// Relative paths of Swift files that exceed the maximum file size (sorted).
+  public let oversizeFiles: [String]
 
-  public init(filesScanned: Int, candidateFiles: [ScannedFile]) {
+  public init(
+    filesScanned: Int,
+    candidateFiles: [ScannedFile],
+    unreadableFiles: [String] = [],
+    oversizeFiles: [String] = []
+  ) {
     self.filesScanned = filesScanned
     self.candidateFiles = candidateFiles
+    self.unreadableFiles = unreadableFiles
+    self.oversizeFiles = oversizeFiles
   }
 }
 
 public struct ProjectScanner {
+  /// Exact tool/dependency directories only. Generic names such as `build`, `dist`,
+  /// or `vendor` are legitimate consumer source directories and must be scanned.
   private static let excludedDirectories: Set<String> = [
-    ".git", ".build", ".swiftpm", "DerivedData", "Pods", "Carthage",
-    "node_modules", ".venv", "vendor", "build", "dist",
+    ".git", ".build", ".swiftpm", "DerivedData", "Pods", "Carthage", "node_modules",
   ]
+
+  /// Matches module-qualified legacy attributes such as `@SnapshotsModule.SnapshotTest`,
+  /// which the plain `@SnapshotTest` substring check cannot see.
+  private static let qualifiedAttributePattern =
+    "@[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*\\.Snapshot(Suite|Test)\\b"
 
   public init() {}
 
@@ -44,19 +61,30 @@ public struct ProjectScanner {
 
     var filesScanned = 0
     var candidates: [ScannedFile] = []
+    var unreadableFiles: [String] = []
+    var oversizeFiles: [String] = []
 
     for file in swiftFiles {
       filesScanned += 1
 
       guard
         let resourceValues = try? file.url.resourceValues(forKeys: [.fileSizeKey]),
-        (resourceValues.fileSize ?? 0) <= maxFileSizeBytes
+        let fileSize = resourceValues.fileSize
       else {
+        unreadableFiles.append(file.relativePath)
         continue
       }
 
-      guard let contents = try? String(contentsOf: file.url, encoding: .utf8) else { continue }
-      guard contents.contains("@SnapshotSuite") || contents.contains("@SnapshotTest") else { continue }
+      guard fileSize <= maxFileSizeBytes else {
+        oversizeFiles.append(file.relativePath)
+        continue
+      }
+
+      guard let contents = try? String(contentsOf: file.url, encoding: .utf8) else {
+        unreadableFiles.append(file.relativePath)
+        continue
+      }
+      guard isCandidate(contents) else { continue }
 
       candidates.append(
         ScannedFile(
@@ -68,7 +96,19 @@ public struct ProjectScanner {
     }
 
     let sortedCandidates = candidates.sorted { $0.relativePath < $1.relativePath }
-    return ScanResult(filesScanned: filesScanned, candidateFiles: sortedCandidates)
+    return ScanResult(
+      filesScanned: filesScanned,
+      candidateFiles: sortedCandidates,
+      unreadableFiles: unreadableFiles.sorted(),
+      oversizeFiles: oversizeFiles.sorted()
+    )
+  }
+
+  private func isCandidate(_ contents: String) -> Bool {
+    if contents.contains("@SnapshotSuite") || contents.contains("@SnapshotTest") {
+      return true
+    }
+    return contents.range(of: Self.qualifiedAttributePattern, options: .regularExpression) != nil
   }
 
   private func validateProjectRoot(_ rootURL: URL, originalProjectRoot: String, fileManager: FileManager) throws {

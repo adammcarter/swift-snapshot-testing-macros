@@ -22,6 +22,8 @@ struct ConsoleReporterTests {
       filesApplyFailed: 0,
       filesPreconditionFailed: 0,
       filesUnsafeNonRegular: 0,
+      filesUnreadable: 2,
+      filesOversize: 1,
       issueLines: [],
       timings: .init(
         total: .init(wallSeconds: 1.423, cpuSeconds: 0.981),
@@ -34,6 +36,7 @@ struct ConsoleReporterTests {
     #expect(
       ConsoleReporter().summaryLines(report: report) == [
         "files scanned: 3",
+        "files unreadable/oversize: 2/1",
         "candidate declarations: 2",
         "migrated/skipped/failed: 1/1/0",
         "migration percentage: 50%",

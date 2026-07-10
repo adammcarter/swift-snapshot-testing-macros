@@ -227,7 +227,7 @@ struct ApplySafetyTests {
     let updated = try String(contentsOfFile: filePath, encoding: .utf8)
 
     #expect(outcome.exitCode == .success)
-    #expect(outcome.report.reportSchemaVersion == 2)
+    #expect(outcome.report.reportSchemaVersion == 3)
     #expect(outcome.report.timings.total.wallSeconds > 0)
     #expect(outcome.report.timings.rewriteStage.wallSeconds >= 0)
     #expect(outcome.report.timings.apply.wallSeconds == 0)

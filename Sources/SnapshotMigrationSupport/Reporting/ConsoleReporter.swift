@@ -6,6 +6,7 @@ public struct ConsoleReporter {
   public func summaryLines(report: MigrationReport) -> [String] {
     [
       "files scanned: \(report.filesScanned)",
+      "files unreadable/oversize: \(report.filesUnreadable)/\(report.filesOversize)",
       "candidate declarations: \(report.candidateDeclarations)",
       "migrated/skipped/failed: \(report.migratedDeclarations)/\(report.skippedDeclarations)/\(report.failedDeclarations)",
       "migration percentage: \(report.migrationPercentage)%",

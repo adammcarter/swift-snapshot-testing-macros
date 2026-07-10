@@ -76,6 +76,55 @@ struct MigrationReportTests {
   }
 
   @Test
+  func strictSkipFailureCoversUnreadableAndOversizeFiles() {
+    let unreadable = MigrationReport(
+      reportSchemaVersion: 3,
+      runID: "r4",
+      projectRoot: "/tmp/project",
+      filesScanned: 2,
+      candidateFiles: 1,
+      candidateDeclarations: 1,
+      migratedDeclarations: 1,
+      skippedDeclarations: 0,
+      failedDeclarations: 0,
+      migrationPercentage: 100,
+      filesAttemptedApply: 0,
+      filesApplied: 0,
+      filesApplyFailed: 0,
+      filesPreconditionFailed: 0,
+      filesUnsafeNonRegular: 0,
+      filesUnreadable: 1,
+      filesOversize: 0
+    )
+
+    #expect(unreadable.resolveExitCode(failOnSkips: true) == .strictSkipFailure)
+    #expect(unreadable.resolveExitCode(failOnSkips: false) == .success)
+
+    let oversize = MigrationReport(
+      reportSchemaVersion: 3,
+      runID: "r5",
+      projectRoot: "/tmp/project",
+      filesScanned: 2,
+      candidateFiles: 1,
+      candidateDeclarations: 1,
+      migratedDeclarations: 1,
+      skippedDeclarations: 0,
+      failedDeclarations: 0,
+      migrationPercentage: 100,
+      filesAttemptedApply: 0,
+      filesApplied: 0,
+      filesApplyFailed: 0,
+      filesPreconditionFailed: 0,
+      filesUnsafeNonRegular: 0,
+      filesUnreadable: 0,
+      filesOversize: 1
+    )
+
+    #expect(oversize.resolveExitCode(failOnSkips: true) == .strictSkipFailure)
+    #expect(oversize.resolveExitCode(failOnSkips: false) == .success)
+  }
+
+  @Test
   func timingsRoundTripThroughCodableAndEquality() throws {
     let report = MigrationReport(
       reportSchemaVersion: 2,

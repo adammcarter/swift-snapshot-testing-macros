@@ -100,6 +100,96 @@ struct ProjectScannerTests {
   }
 
   @Test
+  func scansConsumerSourceDirectoriesNamedBuildDistAndVendor() throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    try fixture.write(path: "build/Sources/BuildLegacy.swift", contents: "@SnapshotTest func build() {}")
+    try fixture.write(path: "dist/DistLegacy.swift", contents: "@SnapshotSuite struct Dist {}")
+    try fixture.write(path: "vendor/VendorLegacy.swift", contents: "@SnapshotTest func vendor() {}")
+    try fixture.write(path: ".build/Ignored.swift", contents: "@SnapshotTest func ignored() {}")
+    try fixture.write(path: ".git/Ignored.swift", contents: "@SnapshotTest func ignored() {}")
+
+    let scanner = ProjectScanner()
+    let result = try scanner.scan(projectRoot: fixture.root, maxFileSizeBytes: 2_000_000)
+
+    #expect(result.filesScanned == 3)
+    #expect(
+      result.candidateFiles.map(\.relativePath) == [
+        "build/Sources/BuildLegacy.swift",
+        "dist/DistLegacy.swift",
+        "vendor/VendorLegacy.swift",
+      ]
+    )
+  }
+
+  @Test
+  func reportsNonUTF8FilesAsUnreadable() throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    try fixture.write(path: "Tests/Readable.swift", contents: "@SnapshotSuite struct Readable {}")
+    // Latin-1 encoded "@SnapshotTest func café() {}" — 0xE9 is invalid UTF-8.
+    var latin1Bytes = Data("@SnapshotTest func caf".utf8)
+    latin1Bytes.append(0xE9)
+    latin1Bytes.append(contentsOf: Data("() {}".utf8))
+    try fixture.write(path: "Tests/Latin1.swift", data: latin1Bytes)
+
+    let scanner = ProjectScanner()
+    let result = try scanner.scan(projectRoot: fixture.root, maxFileSizeBytes: 2_000_000)
+
+    #expect(result.filesScanned == 2)
+    #expect(result.candidateFiles.map(\.relativePath) == ["Tests/Readable.swift"])
+    #expect(result.unreadableFiles == ["Tests/Latin1.swift"])
+    #expect(result.oversizeFiles.isEmpty)
+  }
+
+  @Test
+  func reportsOversizedFilesAsOversize() throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    try fixture.write(path: "Tests/Small.swift", contents: "@SnapshotSuite struct Small {}")
+    let oversized = "@SnapshotSuite struct Huge {}\n" + String(repeating: "x", count: 4_096)
+    try fixture.write(path: "Tests/Huge.swift", contents: oversized)
+
+    let scanner = ProjectScanner()
+    let result = try scanner.scan(projectRoot: fixture.root, maxFileSizeBytes: 256)
+
+    #expect(result.filesScanned == 2)
+    #expect(result.candidateFiles.map(\.relativePath) == ["Tests/Small.swift"])
+    #expect(result.oversizeFiles == ["Tests/Huge.swift"])
+    #expect(result.unreadableFiles.isEmpty)
+  }
+
+  @Test
+  func flagsModuleQualifiedAttributeFilesAsCandidates() throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    try fixture.write(
+      path: "Tests/Qualified.swift",
+      contents: "@SnapshotsModule.SnapshotTest func qualified() {}"
+    )
+    try fixture.write(
+      path: "Tests/QualifiedSuite.swift",
+      contents: "@SnapshotsModule.SnapshotSuite struct Qualified {}"
+    )
+    try fixture.write(path: "Tests/Plain.swift", contents: "struct Plain {}")
+
+    let scanner = ProjectScanner()
+    let result = try scanner.scan(projectRoot: fixture.root, maxFileSizeBytes: 2_000_000)
+
+    #expect(result.filesScanned == 3)
+    #expect(
+      result.candidateFiles.map(\.relativePath) == [
+        "Tests/Qualified.swift",
+        "Tests/QualifiedSuite.swift",
+      ]
+    )
+  }
+
+  @Test
   func throwsDedicatedErrorWhenProjectRootDoesNotExist() {
     let missingRoot = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
       .appendingPathComponent("missing-root-\(UUID().uuidString)", isDirectory: true).path

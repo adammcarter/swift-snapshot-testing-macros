@@ -14,6 +14,8 @@ public struct MigrationReport: Codable, Equatable, Sendable {
   public let filesApplyFailed: Int
   public let filesPreconditionFailed: Int
   public let filesUnsafeNonRegular: Int
+  public let filesUnreadable: Int
+  public let filesOversize: Int
   public let issueLines: [String]
   public let timings: MigrationTimings
 
@@ -33,6 +35,8 @@ public struct MigrationReport: Codable, Equatable, Sendable {
     filesApplyFailed: Int,
     filesPreconditionFailed: Int,
     filesUnsafeNonRegular: Int,
+    filesUnreadable: Int = 0,
+    filesOversize: Int = 0,
     issueLines: [String] = [],
     timings: MigrationTimings = .zero
   ) {
@@ -51,6 +55,8 @@ public struct MigrationReport: Codable, Equatable, Sendable {
     self.filesApplyFailed = filesApplyFailed
     self.filesPreconditionFailed = filesPreconditionFailed
     self.filesUnsafeNonRegular = filesUnsafeNonRegular
+    self.filesUnreadable = filesUnreadable
+    self.filesOversize = filesOversize
     self.issueLines = issueLines
     self.timings = timings
   }
@@ -62,7 +68,7 @@ public struct MigrationReport: Codable, Equatable, Sendable {
     if failedDeclarations > 0 {
       return .migrationFailure
     }
-    if failOnSkips && skippedDeclarations > 0 {
+    if failOnSkips && (skippedDeclarations > 0 || filesUnreadable > 0 || filesOversize > 0) {
       return .strictSkipFailure
     }
     return .success

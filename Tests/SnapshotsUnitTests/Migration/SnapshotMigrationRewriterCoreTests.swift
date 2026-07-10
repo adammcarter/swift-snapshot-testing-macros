@@ -5,6 +5,26 @@ import Testing
 @Suite
 struct SnapshotMigrationRewriterCoreTests {
   @Test
+  func moduleQualifiedAttributesProduceSkipReasonInsteadOfSilentNoChange() throws {
+    let input = """
+    @SnapshotsModule.SnapshotSuite
+    struct ProfileSnapshots {
+      @SnapshotsModule.SnapshotTest("Default")
+      func profileCard() -> some View {
+        ProfileCard()
+      }
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(!result.changed)
+    let qualifiedReasons = result.reasons.filter { $0.code == "qualified-attribute-unsupported" }
+    #expect(qualifiedReasons.count == 2)
+    #expect(qualifiedReasons.map(\.line) == [1, 3])
+  }
+
+  @Test
   func rewritesSimpleSuiteAndNamedTest() throws {
     let input = """
     @Suite

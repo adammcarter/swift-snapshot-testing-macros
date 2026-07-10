@@ -61,6 +61,18 @@ public struct MigrationRunner {
     var filesPreconditionFailed = 0
     var filesUnsafeNonRegular = 0
     var issueLines: [String] = []
+
+    for relativePath in scan.unreadableFiles {
+      issueLines.append(
+        "\(relativePath):1 <unknown> file-unreadable file could not be read as UTF-8 text and was excluded from migration"
+      )
+    }
+    for relativePath in scan.oversizeFiles {
+      issueLines.append(
+        "\(relativePath):1 <unknown> file-oversize file exceeds --max-file-size-bytes and was excluded from migration"
+      )
+    }
+
     let rewriteTimingStart = try startPhase(clock: clock)
 
     for file in scan.candidateFiles {
@@ -194,7 +206,7 @@ public struct MigrationRunner {
     let totalTiming = try finishPhase(from: totalTimingStart, clock: clock)
 
     let report = MigrationReport(
-      reportSchemaVersion: 2,
+      reportSchemaVersion: 3,
       runID: runID,
       projectRoot: options.projectRoot,
       filesScanned: scan.filesScanned,
@@ -209,6 +221,8 @@ public struct MigrationRunner {
       filesApplyFailed: filesApplyFailed,
       filesPreconditionFailed: filesPreconditionFailed,
       filesUnsafeNonRegular: filesUnsafeNonRegular,
+      filesUnreadable: scan.unreadableFiles.count,
+      filesOversize: scan.oversizeFiles.count,
       issueLines: issueLines,
       timings: .init(
         total: totalTiming,

@@ -40,6 +40,19 @@ public struct SnapshotMigrationRewriter {
     var reasons: [RewriteReason] = []
     var edits: [TextEdit] = collector.suiteAttributeEdits
 
+    for qualifiedAttribute in collector.qualifiedSnapshotAttributes {
+      reasons.append(
+        makeReason(
+          code: "qualified-attribute-unsupported",
+          message: "Module-qualified @\(qualifiedAttribute.name) attributes are not supported "
+            + "for automatic migration; migrate this declaration manually.",
+          utf8Offset: qualifiedAttribute.utf8Offset,
+          converter: converter,
+          source: source
+        )
+      )
+    }
+
     for legacyFunction in collector.legacyFunctions {
       if let parseIssue = legacyFunction.parseIssue {
         reasons.append(
@@ -964,9 +977,15 @@ public struct SnapshotMigrationRewriter {
   }
 }
 
+struct QualifiedSnapshotAttribute: Equatable {
+  let name: String
+  let utf8Offset: Int
+}
+
 private struct RewriteCollector {
   private(set) var suiteAttributeEdits: [TextEdit] = []
   private(set) var legacyFunctions: [LegacyFunction] = []
+  private(set) var qualifiedSnapshotAttributes: [QualifiedSnapshotAttribute] = []
 
   init(viewMode: SyntaxTreeViewMode) {
     self.visitor = RewriteCollectorVisitor(viewMode: viewMode)
@@ -978,12 +997,14 @@ private struct RewriteCollector {
     visitor.walk(tree)
     suiteAttributeEdits = visitor.suiteAttributeEdits
     legacyFunctions = visitor.legacyFunctions
+    qualifiedSnapshotAttributes = visitor.qualifiedSnapshotAttributes
   }
 }
 
 private final class RewriteCollectorVisitor: SyntaxVisitor {
   private(set) var suiteAttributeEdits: [TextEdit] = []
   private(set) var legacyFunctions: [LegacyFunction] = []
+  private(set) var qualifiedSnapshotAttributes: [QualifiedSnapshotAttribute] = []
 
   override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
     removeDuplicateSuiteAttributeIfNeeded(in: node.attributes)
@@ -1007,6 +1028,19 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
 
   override func visit(_ node: AttributeSyntax) -> SyntaxVisitorContinueKind {
     guard let identifier = node.attributeName.as(IdentifierTypeSyntax.self)?.name.text else {
+      // Module-qualified legacy attributes (e.g. `@SnapshotsModule.SnapshotTest`) are not
+      // rewritable by the identifier-based matching below; record them so the migration
+      // surfaces an explicit skip reason instead of silently reporting the file unchanged.
+      if let memberName = node.attributeName.as(MemberTypeSyntax.self)?.name.trimmed.text,
+        memberName == "SnapshotSuite" || memberName == "SnapshotTest"
+      {
+        qualifiedSnapshotAttributes.append(
+          QualifiedSnapshotAttribute(
+            name: memberName,
+            utf8Offset: node.positionAfterSkippingLeadingTrivia.utf8Offset
+          )
+        )
+      }
       return .visitChildren
     }
 
