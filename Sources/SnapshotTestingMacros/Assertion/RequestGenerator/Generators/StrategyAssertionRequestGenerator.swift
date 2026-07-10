@@ -88,14 +88,19 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
 
     return Snapshotting<SnapshotView, String>.recursiveDescription
       .pullback { viewController in
+        let box = MainActorResultBox<SnapshotView>()
         MainActor.assumeIsolated {
           let view = viewController.view
           view.appearance = theme
           view.frame.size = size
           view.needsLayout = true
           view.layoutSubtreeIfNeeded()
-          return view
+          box.value = view
         }
+        guard let view = box.value else {
+          preconditionFailure("AppKit recursive-description preparation returned no view.")
+        }
+        return view
       }
     #endif
   }
@@ -122,8 +127,9 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
 
     return Snapshotting<NSImage, NSImage>.image
       .pullback { viewController in
+        let box = MainActorResultBox<NSImage>()
         MainActor.assumeIsolated {
-          AppKitImageRenderer.render(
+          box.value = AppKitImageRenderer.render(
             viewController: viewController,
             size: size,
             displayScale: displayScale,
@@ -131,7 +137,21 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
             backgroundColor: backgroundColor
           )
         }
+        guard let image = box.value else {
+          preconditionFailure("AppKit snapshot render returned no image.")
+        }
+        return image
       }
+  }
+
+  /// Smuggles a non-`Sendable` AppKit result out of `MainActor.assumeIsolated`.
+  ///
+  /// Until Swift 6.2, `assumeIsolated` requires its result to be `Sendable`, and AppKit types
+  /// like `NSView`/`NSImage` never qualify — Xcode 16.x toolchains reject returning them
+  /// directly. The closure runs synchronously on the current (main) thread, so no value
+  /// actually crosses a concurrency boundary.
+  private final class MainActorResultBox<T>: @unchecked Sendable {
+    var value: T?
   }
   #endif
 
