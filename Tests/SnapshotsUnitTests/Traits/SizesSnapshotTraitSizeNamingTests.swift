@@ -51,7 +51,10 @@ struct SizesSnapshotTraitSizeNamingTests {
   func fractionalValuesStayDeterministicAndFileNameSafe() {
     let size = SizesSnapshotTrait.Size(width: .fixed(100.5), height: .fixed(200), scale: 2.5)
 
-    #expect(size.testNameDescription == "fixed-100-5x200-2-5x")
+    // Fractional dimensions/scale encode their decimal point as `p` (a word character) so the
+    // `-` field delimiters can never be produced by a value — keeping distinct geometries from
+    // colliding across the dimension/scale boundary.
+    #expect(size.testNameDescription == "fixed-100p5x200-2p5x")
   }
 
   @Test
@@ -63,5 +66,17 @@ struct SizesSnapshotTraitSizeNamingTests {
     ]
 
     #expect(Set(sizes.map(\.testNameDescription)).count == sizes.count)
+  }
+
+  /// Regression: a fractional dimension and a fractional scale must not fold their decimal points
+  /// into the `-` field delimiters and collide across the dimension/scale boundary. These two
+  /// genuinely distinct geometries previously produced the identical name `fixed-100x2-5-5x`,
+  /// reverting reference mapping to the order-dependent positional `.N` counter.
+  @Test
+  func fractionalDimensionAndFractionalScaleDoNotCollide() {
+    let first = SizesSnapshotTrait.Size(width: .fixed(100), height: .fixed(2), scale: 5.5)
+    let second = SizesSnapshotTrait.Size(width: .fixed(100), height: .fixed(2.5), scale: 5)
+
+    #expect(first.testNameDescription != second.testNameDescription)
   }
 }

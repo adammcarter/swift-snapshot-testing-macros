@@ -62,27 +62,29 @@ extension SizesSnapshotTrait {
       self.testNameDescription = description + scaleSuffix
     }
 
-    /// Formats a dimension or scale value for use inside a reference file name: integral values
-    /// drop their fraction (`100.0` → `100`) and any remaining non-word characters are folded to
-    /// hyphens (`100.5` → `100-5`) so the emitted name already matches what the file-name
-    /// sanitisation would produce.
+    /// Formats a dimension or scale value for use inside a reference file name.
+    ///
+    /// Integral values drop their fraction (`100.0` → `100`). A fractional value must encode its
+    /// decimal point as a *word* character (`100.5` → `100p5`) rather than folding it to `-`:
+    /// the `-` characters that delimit the width/height/scale fields (`fixed-{w}x{h}` and
+    /// `-{scale}x`) must never be producible by a value, or two distinct geometries collide
+    /// across a field boundary (e.g. `fixed(100)×fixed(2)@5.5` and `fixed(100)×fixed(2.5)@5`
+    /// both folding to `fixed-100x2-5-5x`). Any other non-word character a `Double` description
+    /// can emit (the `+`/`-` of scientific notation for extreme magnitudes) is likewise recoded
+    /// to a word character so a value can never emit a `-`. The result stays file-name safe:
+    /// every character is a word character or `p`/`n`.
     private static func lengthValueDescription(_ value: Double) -> String {
-      let formatted: String =
-        if value.isFinite,
-          value == value.rounded(),
-          value.magnitude < 1_000_000_000_000
-        {
-          String(Int(value))
-        }
-        else {
-          String(describing: value)
-        }
+      if value.isFinite,
+        value == value.rounded(),
+        value.magnitude < 1_000_000_000_000
+      {
+        return String(Int(value))
+      }
 
-      return formatted.replacingOccurrences(
-        of: "\\W+",
-        with: "-",
-        options: .regularExpression
-      )
+      return String(describing: value)
+        .replacingOccurrences(of: "+", with: "")
+        .replacingOccurrences(of: "-", with: "n")
+        .replacingOccurrences(of: ".", with: "p")
     }
 
     init(
