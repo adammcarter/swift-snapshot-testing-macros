@@ -132,6 +132,14 @@ For these platform views, the recommended pattern is:
 
 That keeps the call site native while still creating the platform view on the main actor inside the snapshot operation.
 
+Under `.sizes(.minimum)`, views that size themselves through Auto Layout (constraints or an
+intrinsic content size) are measured by compressing them to their smallest fitting size.
+Frame-based views — no constraints and no intrinsic content size, such as a plain view built
+with `init(frame:)` or a controller migrated from pointfree's `assertSnapshot(of:as:)` — are
+measured at their current frame size instead, so they do not need explicit size constraints to
+snapshot. A frame-based view whose frame is zero still fails with a sizing error rather than
+recording an empty artifact.
+
 In v1, UIKit and AppKit support the direct-value overloads only. Closure forms, `SnapshotConfiguration`, and `argument:` helpers remain SwiftUI-only.
 
 ### macOS rendering semantics
