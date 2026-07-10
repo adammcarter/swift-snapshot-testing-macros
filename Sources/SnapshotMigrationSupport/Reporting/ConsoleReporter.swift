@@ -20,13 +20,17 @@ public struct ConsoleReporter {
     ]
   }
 
-  public func printSummary(report: MigrationReport, maxIssues: Int = 50) {
+  public func printSummary(
+    report: MigrationReport,
+    maxIssues: Int = 50,
+    emit: (String) -> Void = { print($0) }
+  ) {
     for line in summaryLines(report: report) {
-      print(line)
+      emit(line)
     }
 
     for issue in report.issueLines.sorted().prefix(maxIssues) {
-      print(issue)
+      emit(issue)
     }
   }
 

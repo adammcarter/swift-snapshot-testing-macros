@@ -55,6 +55,7 @@ public struct MigrationRunner {
     var stagingStore: RunStagingStore?
     var hadMigrationFailures = false
     var hadApplyFailures = false
+    var applyLockAcquisitionFailed = false
     var pendingApplies: [PendingApply] = []
 
     var candidateFiles = 0
@@ -178,6 +179,7 @@ public struct MigrationRunner {
         )
       } catch {
         hadApplyFailures = true
+        applyLockAcquisitionFailed = true
         filesAttemptedApply = pendingApplies.count
         filesApplyFailed = pendingApplies.count
         failedDeclarations += migratedDeclarations
@@ -248,7 +250,7 @@ public struct MigrationRunner {
     let totalTiming = try finishPhase(from: totalTimingStart, clock: clock)
 
     let report = MigrationReport(
-      reportSchemaVersion: 3,
+      reportSchemaVersion: 4,
       runID: runID,
       projectRoot: options.projectRoot,
       filesScanned: scan.filesScanned,
@@ -265,6 +267,7 @@ public struct MigrationRunner {
       filesUnsafeNonRegular: filesUnsafeNonRegular,
       filesUnreadable: scan.unreadableFiles.count,
       filesOversize: scan.oversizeFiles.count,
+      applyLockAcquisitionFailed: applyLockAcquisitionFailed,
       issueLines: issueLines,
       timings: .init(
         total: totalTiming,

@@ -39,7 +39,7 @@ struct MigrationRunnerIntegrationTests {
 
     let current = try String(contentsOfFile: filePath, encoding: .utf8)
     #expect(outcome.exitCode == .success)
-    #expect(outcome.report.reportSchemaVersion == 3)
+    #expect(outcome.report.reportSchemaVersion == 4)
     #expect(outcome.report.timings.total.wallSeconds > 0)
     #expect(outcome.report.timings.total.cpuSeconds >= 0)
     #expect(outcome.report.timings.scan.wallSeconds >= 0)
@@ -138,6 +138,39 @@ struct MigrationRunnerIntegrationTests {
   }
 
   @Test
+  func lockContentionWithNoPendingAppliesStillExitsApplySafetyFailure() async throws {
+    let fixture = try TempProject.make()
+    defer { fixture.cleanup() }
+
+    // No legacy declarations: the apply phase has nothing to write, so every
+    // failure counter stays at zero — but the held lock must still fail the run.
+    try fixture.write(
+      path: "Tests/Modern.swift",
+      contents: "import Testing\n\n@Test func modern() {}\n"
+    )
+
+    let lock = try ApplyLock.acquire(projectRoot: fixture.root, timeoutSeconds: 0)
+    defer { lock.release() }
+
+    let options = MigrationOptions(
+      projectRoot: fixture.root,
+      mode: .apply,
+      jsonReportPath: nil,
+      keepTemp: false,
+      failOnSkips: false,
+      maxFileSizeBytes: 2_000_000,
+      maxStagedBytes: 536_870_912,
+      applyLockTimeoutSeconds: 0
+    )
+
+    let outcome = try await MigrationRunner().runWithOutcome(options: options)
+
+    #expect(outcome.exitCode == .applySafetyFailure)
+    #expect(outcome.report.applyLockAcquisitionFailed)
+    #expect(outcome.report.issueLines.contains { $0.contains("apply-lock-held") })
+  }
+
+  @Test
   func applyModeAppliesChangesAndCleansTempDirectoryOnSuccess() async throws {
     let fixture = try TempProject.make()
     defer { fixture.cleanup() }
@@ -170,7 +203,7 @@ struct MigrationRunnerIntegrationTests {
     let updated = try String(contentsOfFile: filePath, encoding: .utf8)
 
     #expect(outcome.exitCode == .success)
-    #expect(outcome.report.reportSchemaVersion == 3)
+    #expect(outcome.report.reportSchemaVersion == 4)
     #expect(outcome.report.timings.total.wallSeconds > 0)
     #expect(outcome.report.timings.total.cpuSeconds >= 0)
     #expect(outcome.report.timings.scan.wallSeconds >= 0)

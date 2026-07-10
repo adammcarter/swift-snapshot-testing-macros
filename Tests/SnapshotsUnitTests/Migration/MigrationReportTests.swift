@@ -125,6 +125,33 @@ struct MigrationReportTests {
   }
 
   @Test
+  func lockAcquisitionFailureAlwaysResolvesToApplySafetyFailure() {
+    // A lock failure with zero pending applies leaves every failure counter at
+    // zero; the dedicated flag must still force the apply-safety exit code.
+    let report = MigrationReport(
+      reportSchemaVersion: 4,
+      runID: "r6",
+      projectRoot: "/tmp/project",
+      filesScanned: 1,
+      candidateFiles: 0,
+      candidateDeclarations: 0,
+      migratedDeclarations: 0,
+      skippedDeclarations: 0,
+      failedDeclarations: 0,
+      migrationPercentage: 100,
+      filesAttemptedApply: 0,
+      filesApplied: 0,
+      filesApplyFailed: 0,
+      filesPreconditionFailed: 0,
+      filesUnsafeNonRegular: 0,
+      applyLockAcquisitionFailed: true
+    )
+
+    #expect(report.resolveExitCode(failOnSkips: false) == .applySafetyFailure)
+    #expect(report.resolveExitCode(failOnSkips: true) == .applySafetyFailure)
+  }
+
+  @Test
   func timingsRoundTripThroughCodableAndEquality() throws {
     let report = MigrationReport(
       reportSchemaVersion: 2,

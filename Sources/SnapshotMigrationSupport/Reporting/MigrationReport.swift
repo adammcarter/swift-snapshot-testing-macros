@@ -16,6 +16,10 @@ public struct MigrationReport: Codable, Equatable, Sendable {
   public let filesUnsafeNonRegular: Int
   public let filesUnreadable: Int
   public let filesOversize: Int
+  /// `true` when an apply run could not acquire the apply lock. Tracked as its own
+  /// flag because a lock failure with zero pending applies leaves every failure
+  /// counter at zero, yet the run still must not report success.
+  public let applyLockAcquisitionFailed: Bool
   public let issueLines: [String]
   public let timings: MigrationTimings
 
@@ -37,6 +41,7 @@ public struct MigrationReport: Codable, Equatable, Sendable {
     filesUnsafeNonRegular: Int,
     filesUnreadable: Int = 0,
     filesOversize: Int = 0,
+    applyLockAcquisitionFailed: Bool = false,
     issueLines: [String] = [],
     timings: MigrationTimings = .zero
   ) {
@@ -57,12 +62,14 @@ public struct MigrationReport: Codable, Equatable, Sendable {
     self.filesUnsafeNonRegular = filesUnsafeNonRegular
     self.filesUnreadable = filesUnreadable
     self.filesOversize = filesOversize
+    self.applyLockAcquisitionFailed = applyLockAcquisitionFailed
     self.issueLines = issueLines
     self.timings = timings
   }
 
   public func resolveExitCode(failOnSkips: Bool) -> MigrationExitCode {
-    if filesApplyFailed > 0 || filesPreconditionFailed > 0 || filesUnsafeNonRegular > 0 {
+    if applyLockAcquisitionFailed || filesApplyFailed > 0 || filesPreconditionFailed > 0
+      || filesUnsafeNonRegular > 0 {
       return .applySafetyFailure
     }
     if failedDeclarations > 0 {

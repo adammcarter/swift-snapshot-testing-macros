@@ -173,6 +173,18 @@ Every run stages its rewritten sources under a user-private directory (`/tmp/sna
 
 Whenever the directory is kept, the CLI prints `staged rewrites kept at: <path>`.
 
+### Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | Success. |
+| 1 | Migration failure (rewrite/staging failures), and the fallback for a JSON report write failure after an otherwise-successful run. |
+| 2 | Apply safety failure: an apply precondition, atomic replace, or non-regular-file check failed — or the apply lock could not be acquired (even when nothing was pending to apply). |
+| 3 | Invalid usage (bad or missing command-line options). |
+| 4 | Strict skip failure (`--fail-on-skips` with skipped, unreadable, or oversize files). |
+
+If `--json-report` is given and the report cannot be written after the run has finished, the CLI prints to stderr whether files were changed (for `--apply` runs, that changes WERE applied) and exits nonzero: at least 1 (`migration failure`), preserving any more severe exit code the run itself resolved. A report-write failure is never reported as invalid usage (3).
+
 Recommended rollout:
 
 1. Use dry-run first.
