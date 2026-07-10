@@ -119,17 +119,62 @@ enum AppKitImageRenderer {
   /// `cacheDisplay` render at exactly `displayScale` pixels per point, independent of the
   /// backing scale of whatever screen the tests run on.
   private static func drawImage(of view: NSView, size: CGSize, displayScale: Double) -> NSImage {
-    let pixelsWide = Int((size.width * displayScale).rounded())
-    let pixelsHigh = Int((size.height * displayScale).rounded())
+    guard let bitmap = try? makeBitmap(size: size, displayScale: displayScale) else {
+      // Unreachable in practice: `validateRenderable(size:displayScale:)` pre-flights the exact
+      // same allocation at request-generation time and throws a recoverable `SnapshotError`
+      // before any crashing render is produced. Returning an empty image here is a non-crashing
+      // backstop rather than the former `fatalError`, which terminated the whole test process.
+      return NSImage(size: size)
+    }
 
-    // Tagged sRGB before drawing so colors land in a fixed, machine-independent color space:
-    // `bitmapImageRepForCachingDisplay` would inherit the recording screen's display profile.
+    bitmap.size = size
+    view.cacheDisplay(in: view.bounds, to: bitmap)
+
+    let image = NSImage(size: size)
+    image.addRepresentation(bitmap)
+
+    return image
+  }
+
+  /// Pre-flights the render's bitmap allocation for a request's size and scale, throwing a
+  /// recoverable ``SnapshotError`` when the pixel grid is unrenderable — either because
+  /// `size × displayScale` overflows `Int` or because `NSBitmapImageRep` cannot allocate a
+  /// backing that large. Called from request generation (a `throws` context) so a huge-but-finite
+  /// `.fixed` size — which passes positivity/finiteness validation but has no upper bound — is
+  /// recorded as a test issue instead of crashing the entire test process at render time.
+  static func validateRenderable(size: CGSize, displayScale: Double) throws {
+    _ = try makeBitmap(size: size, displayScale: displayScale)
+  }
+
+  /// Allocates the sRGB-tagged bitmap the render draws into, or throws ``SnapshotError`` when the
+  /// pixel dimensions are non-positive, overflow `Int`, or exceed what `NSBitmapImageRep` can
+  /// allocate.
+  ///
+  /// The pixel grid is `size × displayScale`, tagged sRGB before drawing so colors land in a
+  /// fixed, machine-independent color space (`bitmapImageRepForCachingDisplay` would otherwise
+  /// inherit the recording screen's display profile).
+  /// The largest bitmap the renderer will allocate, in bytes. Real UI snapshots stay far below
+  /// this (a full 6K display at 3× is well under 1 GiB of RGBA8), so 2 GiB comfortably admits
+  /// every legitimate request while rejecting pathological ones — a `.fixed(50000)` square at 2×
+  /// asks for ~40 GB, which would OOM-crash the process. The cap is enforced explicitly rather
+  /// than by trusting `NSBitmapImageRep` to return `nil`, whose out-of-range threshold varies by
+  /// OS version (on macOS 27 it lazily accepts a 100000×100000 rep and only crashes when drawn).
+  private static let maximumBitmapByteCount = 2.0 * 1024 * 1024 * 1024
+
+  private static func makeBitmap(size: CGSize, displayScale: Double) throws -> NSBitmapImageRep {
+    let pixelsWideValue = (size.width * displayScale).rounded()
+    let pixelsHighValue = (size.height * displayScale).rounded()
+    let bytesPerPixel = 4.0
+
     guard
-      pixelsWide > 0, pixelsHigh > 0,
+      pixelsWideValue >= 1, pixelsHighValue >= 1,
+      // Guard the `Int` conversion: `Int(_:)` on a `Double` at or beyond `Int.max` traps.
+      pixelsWideValue < Double(Int.max), pixelsHighValue < Double(Int.max),
+      pixelsWideValue * pixelsHighValue * bytesPerPixel <= maximumBitmapByteCount,
       let bitmap = NSBitmapImageRep(
         bitmapDataPlanes: nil,
-        pixelsWide: pixelsWide,
-        pixelsHigh: pixelsHigh,
+        pixelsWide: Int(pixelsWideValue),
+        pixelsHigh: Int(pixelsHighValue),
         bitsPerSample: 8,
         samplesPerPixel: 4,
         hasAlpha: true,
@@ -140,16 +185,15 @@ enum AppKitImageRenderer {
       )?
       .retagging(with: .sRGB)
     else {
-      fatalError("View not renderable to image at size \(size) and scale \(displayScale)")
+      throw SnapshotError(
+        message: """
+          Snapshot size \(size) at scale \(displayScale) is too large to render \
+          (\(pixelsWideValue) × \(pixelsHighValue) pixels). Reduce the requested size or scale.
+          """
+      )
     }
 
-    bitmap.size = size
-    view.cacheDisplay(in: view.bounds, to: bitmap)
-
-    let image = NSImage(size: size)
-    image.addRepresentation(bitmap)
-
-    return image
+    return bitmap
   }
 }
 #endif

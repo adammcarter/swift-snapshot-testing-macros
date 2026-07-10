@@ -48,6 +48,11 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
           column: context.column
         )
         #elseif canImport(AppKit)
+        // Pre-flight the render's bitmap allocation so a huge-but-finite `.fixed` size is
+        // recorded as a recoverable issue here (this is a `throws` context) rather than
+        // `fatalError`-ing the whole test process deep inside the lazy render pass.
+        try AppKitImageRenderer.validateRenderable(size: size, displayScale: displayScale)
+
         request = AssertionRequest(
           view: try context.makeSnapshotView(),
           snapshotting: makeImageSnapshotting(),

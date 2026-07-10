@@ -158,6 +158,26 @@ struct AppKitImageRenderingTests {
     #expect(components(of: lightCorner) != components(of: darkCorner))
   }
 
+  /// A huge-but-finite fixed size must fail recoverably, not crash the whole test process. A
+  /// `.fixed(50000)`×`.fixed(50000)` request at scale 2 asks for a ~100000×100000 pixel bitmap
+  /// (~40 GB), which `NSBitmapImageRep` cannot allocate. The render pass used to `fatalError` on
+  /// that; the size must instead be rejected as a recoverable `SnapshotError` (which the adapter
+  /// records as an issue) before any request that would crash is ever produced.
+  @Test
+  func hugeFixedSizeIsRejectedRecoverablyInsteadOfCrashing() throws {
+    let generator = StrategyAssertionRequestGenerator(
+      context: makeContext { makeFillController(fill: .srgbRed) },
+      size: CGSize(width: 50000, height: 50000),
+      theme: .light,
+      displayScale: 2,
+      testName: "hugeSizeProbe"
+    )
+
+    #expect(throws: SnapshotError.self) {
+      try generator.generateRequestsSync()
+    }
+  }
+
   // MARK: - Request construction
 
   private func makeImageRequest(
