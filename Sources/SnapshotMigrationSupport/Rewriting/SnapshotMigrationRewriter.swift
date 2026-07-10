@@ -1548,11 +1548,32 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
     )
   }
 
-  /// A first argument occupying the legacy `displayName` parameter: a string literal
-  /// (including interpolated ones) or an explicit `nil`. Neither is a suite trait, so neither
-  /// may be folded into the surviving `@Suite` trait list.
+  /// A first argument occupying the legacy `displayName` parameter. The legacy overload types
+  /// that position as `String`/`String?`, so it is a display name — never a suite trait — whether
+  /// it is a string/`nil` literal or a non-literal expression (`Self.suiteName`, `Constants.name`,
+  /// `makeName()`). Only leading-dot implicit-member expressions (`.theme(.light)`, `.sizes(...)`)
+  /// are traits and may fold into the surviving `@Suite`. Folding a non-literal display name as a
+  /// trait produces `@Suite`-variadic type errors, so it must be excluded here.
   private func isDisplayNameArgument(_ expression: ExprSyntax) -> Bool {
-    expression.is(StringLiteralExprSyntax.self) || expression.is(NilLiteralExprSyntax.self)
+    if expression.is(StringLiteralExprSyntax.self) || expression.is(NilLiteralExprSyntax.self) {
+      return true
+    }
+    return !isImplicitMemberTraitExpression(expression)
+  }
+
+  /// True when the expression uses leading-dot implicit-member syntax — `.theme`, `.sizes(...)` —
+  /// the shape a suite trait takes. An expression with an explicit base (`Self.suiteName`) or a
+  /// plain reference/call is not a trait in this position.
+  private func isImplicitMemberTraitExpression(_ expression: ExprSyntax) -> Bool {
+    if let memberAccess = expression.as(MemberAccessExprSyntax.self) {
+      return memberAccess.base == nil
+    }
+    if let call = expression.as(FunctionCallExprSyntax.self),
+       let memberAccess = call.calledExpression.as(MemberAccessExprSyntax.self)
+    {
+      return memberAccess.base == nil
+    }
+    return false
   }
 
   override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {

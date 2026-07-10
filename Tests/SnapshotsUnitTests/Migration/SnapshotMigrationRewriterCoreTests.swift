@@ -174,6 +174,30 @@ struct SnapshotMigrationRewriterCoreTests {
   }
 
   @Test
+  func doesNotFoldNonLiteralLegacyDisplayNameAsSuiteTrait() throws {
+    let input = """
+    @Suite(.serialized)
+    @SnapshotSuite(Self.suiteName, .theme(.light))
+    struct CardSuite {
+      @SnapshotTest
+      func card() -> some View {
+        CardView()
+      }
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    // The non-literal first argument is the legacy display name (typed `String`/`String?` by the
+    // overload), not a suite trait: only the real trait `.theme(.light)` may fold into `@Suite`.
+    #expect(result.output.contains("@Suite(.serialized, .theme(.light))"))
+    #expect(!result.output.contains("Self.suiteName"))
+    #expect(!result.output.contains("@SnapshotSuite"))
+    #expect(result.reasons.isEmpty)
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
   func foldsTraitsIntoSuiteArgumentListEndingInTrailingComma() throws {
     let input = """
     @Suite("Cards", .serialized,)
