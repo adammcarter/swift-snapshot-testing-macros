@@ -16,22 +16,38 @@ import Testing
 /// path component). A non-parameterized case has no argument identity, so it yields `nil` and
 /// the base name is preserved unchanged — keeping every existing non-parameterized reference
 /// valid.
+/// The per-case identity of a parameterized `@Test(arguments:)` case.
+///
+/// `discriminator` is the normalized form folded into unnamed reference names (lossy: `"v1.0"`
+/// and `"v1 0"` both normalize to `"v1-0"`). `rawDescription` is the un-normalized argument
+/// description, kept so the collision guard can tell two genuinely distinct values apart when
+/// their discriminators coincide.
+struct SnapshotCaseIdentity: Sendable {
+  let discriminator: String
+  let rawDescription: String
+}
+
 enum SnapshotCaseDiscriminator {
-  /// Returns the normalized discriminator for `testCase`, or `nil` when the case is not
-  /// parameterized (or its shape cannot be read, in which case naming safely falls back to the
+  /// Returns the per-case identity for `testCase`, or `nil` when the case is not parameterized
+  /// (or its shape cannot be read, in which case naming safely falls back to the
   /// undiscriminated base name).
-  static func value(for testCase: Test.Case?) -> String? {
+  static func identity(for testCase: Test.Case?) -> SnapshotCaseIdentity? {
     guard let testCase, let values = argumentValues(from: testCase) else {
       return nil
     }
 
-    let component =
+    let discriminator =
       values
       .map { normalizedComponent(from: $0) }
       .filter { !$0.isEmpty }
       .joined(separator: "-")
 
-    return component.isEmpty ? nil : component
+    guard !discriminator.isEmpty else {
+      return nil
+    }
+
+    let rawDescription = values.map { description(of: $0) }.joined(separator: "-")
+    return SnapshotCaseIdentity(discriminator: discriminator, rawDescription: rawDescription)
   }
 
   /// Normalizes one argument value into a filesystem-safe component, mirroring

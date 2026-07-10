@@ -27,13 +27,13 @@ final class SnapshotAttemptToken: @unchecked Sendable {
   private let lock = NSLock()
   private var context: SnapshotExecutionContext?
 
-  /// A stable per-case discriminator for the parameterized case this attempt belongs to, or
-  /// `nil` for a non-parameterized test. Captured once when the token is bound, so every
-  /// assertion in the attempt shares it.
-  private let caseDiscriminator: String?
+  /// The stable per-case identity for the parameterized case this attempt belongs to, or `nil`
+  /// for a non-parameterized test. Captured once when the token is bound, so every assertion in
+  /// the attempt shares it.
+  private let caseIdentity: SnapshotCaseIdentity?
 
-  init(caseDiscriminator: String? = nil) {
-    self.caseDiscriminator = caseDiscriminator
+  init(caseIdentity: SnapshotCaseIdentity? = nil) {
+    self.caseIdentity = caseIdentity
   }
 
   /// Returns the attempt's execution context, creating it on first use.
@@ -43,7 +43,7 @@ final class SnapshotAttemptToken: @unchecked Sendable {
         return context
       }
 
-      let created = SnapshotExecutionContext(function: function, caseDiscriminator: caseDiscriminator)
+      let created = SnapshotExecutionContext(function: function, caseIdentity: caseIdentity)
       context = created
       return created
     }
@@ -66,7 +66,7 @@ final class SnapshotAttemptToken: @unchecked Sendable {
       return try await work()
     }
 
-    let token = SnapshotAttemptToken(caseDiscriminator: SnapshotCaseDiscriminator.value(for: testCase))
+    let token = SnapshotAttemptToken(caseIdentity: SnapshotCaseDiscriminator.identity(for: testCase))
     return try await $current.withValue(token) {
       try await work()
     }

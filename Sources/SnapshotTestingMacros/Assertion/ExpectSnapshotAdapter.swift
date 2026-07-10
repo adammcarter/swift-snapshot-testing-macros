@@ -1105,14 +1105,44 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeViewController: @escaping @MainActor (ConfigurationValue) throws -> SnapshotViewController
   ) throws -> [SnapshotFailure] {
+    // An `argument:`/configuration assertion already distinguishes each parameterized case by
+    // its configuration name, so the per-case discriminator is suppressed there to keep those
+    // reference names unchanged; unnamed, non-configuration assertions fold it in.
+    let disambiguatesUnnamedCase = configuration.name == nil
+    let displayName = context.resolvedAssertionName(
+      named: named,
+      disambiguatesUnnamedCase: disambiguatesUnnamedCase
+    )
+
+    // Guard the folded discriminator name against lossy-normalization collisions across cases,
+    // the same way the `argument:` path guards its derived configuration names. The conflict is
+    // returned as a failure (not recorded here) so it surfaces on the test's task past the hop.
+    if named == nil, disambiguatesUnnamedCase,
+      let conflictingDescription = context.conflictingCaseDescription(
+        forResolvedName: displayName,
+        callSite: "\(filePath):\(line):\(column)"
+      )
+    {
+      return [
+        SnapshotFailure(
+          message: """
+            Snapshot reference name collision: this parameterized test's cases described as \
+            '\(conflictingDescription)' and '\(context.caseDescription ?? "")' both derive the \
+            snapshot name '\(displayName)', so they would share one reference file. Give the \
+            assertion an explicit distinct name via #expectSnapshot(..., named:) per case, or \
+            switch to the argument:/SnapshotConfiguration form. The assertion was skipped.
+            """,
+          error: nil,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      ]
+    }
+
     let generator = SnapshotViewGenerator(
-      // An `argument:`/configuration assertion already distinguishes each parameterized case by
-      // its configuration name, so the per-case discriminator is suppressed there to keep those
-      // reference names unchanged; unnamed, non-configuration assertions fold it in.
-      displayName: context.resolvedAssertionName(
-        named: named,
-        disambiguatesUnnamedCase: configuration.name == nil
-      ),
+      displayName: displayName,
       configuration: configuration,
       makeValue: makeViewController,
       fileID: fileID,

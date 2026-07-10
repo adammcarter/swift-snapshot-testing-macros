@@ -16,13 +16,29 @@ final class SnapshotExecutionContext: Sendable {
   /// ``SnapshotCaseDiscriminator``).
   let caseDiscriminator: String?
 
+  /// The un-normalized description of the case's argument value(s), or `nil` for a
+  /// non-parameterized test. ``caseDiscriminator`` is a lossy normalization, so two distinct
+  /// values can fold to one discriminator; this raw form lets the collision guard tell them
+  /// apart in ``conflictingCaseDescription(forResolvedName:callSite:)``.
+  let caseDescription: String?
+
   private let nameState = SnapshotExecutionContextNameState()
 
-  init(function: StaticString, caseDiscriminator: String? = nil) {
+  convenience init(function: StaticString, caseDiscriminator: String? = nil) {
+    self.init(
+      function: function,
+      caseIdentity: caseDiscriminator.map {
+        SnapshotCaseIdentity(discriminator: $0, rawDescription: $0)
+      }
+    )
+  }
+
+  init(function: StaticString, caseIdentity: SnapshotCaseIdentity?) {
     let raw = String(describing: function)
     let candidate = raw.split(separator: "(").first.map(String.init) ?? raw
     self.baseName = candidate.isEmpty ? "snapshot" : candidate
-    self.caseDiscriminator = caseDiscriminator
+    self.caseDiscriminator = caseIdentity?.discriminator
+    self.caseDescription = caseIdentity?.rawDescription
   }
 
   /// Resolves the display name for one assertion, deduplicating repeats within this attempt.
@@ -110,5 +126,36 @@ final class SnapshotExecutionContext: Sendable {
       nameState.occurrenceCounts[key] = next
       return next
     }
+  }
+
+  /// Detects when a *different* parameterized case already resolved `resolvedName` from a
+  /// differently-described value — the same lossy-normalization collision the `argument:` path
+  /// guards, but for the unnamed per-case discriminator path.
+  ///
+  /// Folding the discriminator into the name is lossy (`"v1.0"` and `"v1 0"` both fold to
+  /// `"v1-0"`), so two distinct cases can resolve one reference file: one is compared against
+  /// the other's reference and re-recording overwrites it. Each case runs in its own attempt and
+  /// context, so per-attempt name dedupe cannot see the clash; the process-global
+  /// ``SnapshotConfigurationNameCollisions`` registry does. Returns the conflicting value's
+  /// description when this resolved name was already claimed by a different value at `callSite`,
+  /// or `nil` otherwise (including a non-parameterized context, and repetitions of the same
+  /// case, whose description matches).
+  ///
+  /// The result is returned rather than recorded here so the caller records it on the test's own
+  /// task — recording inside the adapter's main-actor hop would lose test attribution.
+  func conflictingCaseDescription(forResolvedName resolvedName: String, callSite: String) -> String? {
+    guard let caseDescription else {
+      return nil
+    }
+
+    let scopedCallSite = "case-discriminator|\(callSite)"
+    let occurrence = nextOccurrenceIndex(forKey: "\(scopedCallSite)|\(resolvedName)")
+
+    return SnapshotConfigurationNameCollisions.shared.conflictingValueDescription(
+      callSite: scopedCallSite,
+      derivedName: resolvedName,
+      occurrence: occurrence,
+      valueDescription: caseDescription
+    )
   }
 }
