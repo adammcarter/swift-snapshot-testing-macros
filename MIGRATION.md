@@ -154,6 +154,7 @@ Residual caveats:
 
 - Legacy UIKit/AppKit `configurations:` declarations without unique literal case names are still skipped by the migration script (`unsupported-argument-naming`) because their legacy artifacts collided on a single path.
 - Legacy SwiftUI `configurations:` entries with `name: nil` also collided on one un-suffixed artifact per size/theme; the native pipeline derives a per-case name instead, so those references must be re-recorded once after migration.
+- A named `@SnapshotSuite` with two or more `@SnapshotTest` functions lacking per-test display names used to resolve every test to the same suite-named artifact (persistent false failures, or silent overwrites in record mode). The legacy runtime now disambiguates that fallback per test as `<suite display name>/<function name>`, so those previously colliding references must be re-recorded; a suite whose fallback applies to only one test keeps its original suite-named artifacts. The migration script still passes the plain legacy fallback through `named:`.
 
 ## Migration script
 

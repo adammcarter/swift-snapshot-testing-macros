@@ -117,16 +117,6 @@ private func makeSuiteDisplayName(from lexicalContext: [Syntax]) -> String? {
     .flatMap(makeDisplayName)
 }
 
-private func makeDisplayName(from attribute: AttributeSyntax?) -> String? {
-  attribute?
-    .arguments?
-    .as(LabeledExprListSyntax.self)?
-    .first?
-    .expression
-    .as(StringLiteralExprSyntax.self)?
-    .representedLiteralValue
-}
-
 func makeArrayConfigurations(
   configurations: ArrayExprSyntax?,
   configurationGenericType: TupleTypeElementListSyntax

@@ -26,6 +26,28 @@ extension SnapshotViewGenerator {
   }
 }
 
+extension SnapshotViewGenerator {
+  public init(
+    displayName: String,
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    makeValue: @escaping @MainActor (ConfigurationValue) async throws -> any SwiftUI.View,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) {
+    self.init(
+      displayName: displayName,
+      configuration: configuration,
+      makeValue: { try makeSnapshotView(from: await makeValue($0)) },
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+}
+
 @MainActor
 private func makeSnapshotView<V: SwiftUI.View>(from view: V) throws -> SnapshotViewController {
   let controller = SnapshotHostingController(rootView: view)
