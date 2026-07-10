@@ -1,0 +1,62 @@
+name: Record Snapshot References
+
+# Manually-dispatched rebaseline helper.
+#
+# Snapshot references must match the rendering of the environment that verifies them.
+# The macOS unit-test job renders with the CI runner's OS/Xcode, which can differ from any
+# local machine (font metrics, display scale). This workflow deletes the requested reference
+# directories, re-runs the suite twice on the CI runner itself (first run records the missing
+# references, second run must pass against them), and uploads the recorded references as an
+# artifact to download and commit.
+
+on:
+  workflow_dispatch:
+    inputs:
+      scheme:
+        description: Scheme to record
+        required: true
+        default: SnapshotsUnitTests
+        type: choice
+        options:
+          - SnapshotsUnitTests
+      reference_paths:
+        description: Space-separated __Snapshots__ directories to delete and re-record
+        required: true
+        default: Tests/SnapshotsUnitTests/ExpectSnapshot/__Snapshots__
+
+jobs:
+  record:
+    name: Record (${{ inputs.scheme }})
+    runs-on: macos-26
+
+    steps:
+      - name: Select Xcode version (26.3)
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.3'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Delete stale references
+        run: rm -rf ${{ inputs.reference_paths }}
+
+      - name: Record run (writes missing references, expected to fail)
+        continue-on-error: true
+        run: |
+          xcodebuild test \
+            -scheme ${{ inputs.scheme }} \
+            -destination 'platform=macOS'
+
+      - name: Verify run (must pass against recorded references)
+        run: |
+          xcodebuild test \
+            -scheme ${{ inputs.scheme }} \
+            -destination 'platform=macOS'
+
+      - name: Upload recorded references
+        uses: actions/upload-artifact@v4
+        with:
+          name: recorded-references
+          path: Tests/**/__Snapshots__/**
+          if-no-files-found: error
