@@ -3,7 +3,7 @@ import Testing
 @testable import SnapshotMigrationSupport
 
 @Suite
-struct SnapshotMigrationRewriterAttributeFormattingTests {
+struct MigrationAttributeFormattingTests {
   @Test
   func removesWhitespaceOnlyLinesInsideMigratedAttributeBlock() throws {
     let input = "@MainActor" + "\n   \n" + """
