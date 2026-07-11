@@ -34,7 +34,7 @@ expected behavioral reason.
 | Surface | New proof | Why it is valuable |
 |---|---|---|
 | Traitless identity | Two unnamed public macro calls create distinct `L<line>C<column>` references | Pins the new on-disk contract, not only the in-memory resolver |
-| SwiftUI composition | Background-then-padding and padding-then-background | Preserves the renderer-order variation previously covered by legacy integration fixtures |
+| SwiftUI composition | Background with padding through the native helper | Connects native SwiftUI helpers to real trait decoration without restoring redundant permutations |
 | UIKit composition | Public UIView helper with padding, background, and fixed size | Connects native helper overloads to UIKit decoration and sizing |
 | Strategy | Public UIKit helper using `.recursiveDescription` | Proves the textual renderer through the native helper path |
 | AppKit composition | Public NSView helper with padding, background, and fixed size | Connects AppKit renderer internals to the public macro |
@@ -77,5 +77,6 @@ The mutation is discarded and never committed.
 
 - Restoring every deleted legacy SnapshotSuite/SnapshotTest permutation.
 - Exhaustively combining every trait with every platform.
+- Testing padding/background declaration order after recorded references proved both orders byte-identical.
 - Promising deterministic ordering for concurrent unnamed assertions.
 - Re-recording references with local Xcode 27 renderers.

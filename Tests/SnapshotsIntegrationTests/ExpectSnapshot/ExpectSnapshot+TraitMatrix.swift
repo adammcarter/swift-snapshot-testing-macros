@@ -19,16 +19,6 @@ struct TraitMatrixSnapshotTests {
 
   @Test(
     .theme(.light),
-    .sizes(.minimum),
-    .padding(8),
-    .backgroundColor(.red)
-  )
-  func swiftUIPaddingThenBackground() {
-    #expectSnapshot(Text("trait order"), named: "swiftui-padding-background")
-  }
-
-  @Test(
-    .theme(.light),
     .sizes(width: 160, height: 80),
     .backgroundColor(.red),
     .padding(8)

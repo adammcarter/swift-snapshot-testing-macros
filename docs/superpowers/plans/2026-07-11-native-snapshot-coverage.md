@@ -16,7 +16,7 @@
 - Modify: `Tests/SnapshotsUnitTests/ExpectSnapshot/SnapshotExecutionContextAttemptScopingTests.swift`
 - Modify only if red exposes a defect: `Sources/SnapshotTestingMacros/Assertion/SnapshotExecutionContext.swift`
 
-- [ ] **Step 1: Write the concurrent behavioral test**
+- [x] **Step 1: Write the concurrent behavioral test**
 
 Add an async test that launches 256 child tasks against one
 `SnapshotExecutionContext`. Each task requests `resolvedAssertionName(named:
@@ -24,19 +24,19 @@ Add an async test that launches 256 child tasks against one
 returned names equal `shared`, `shared-2` through `shared-256` as an unordered
 set, and identifiers equal `1` through `256` as an unordered set.
 
-- [ ] **Step 2: Run the test through Xcode MCP**
+- [x] **Step 2: Run the test through Xcode MCP**
 
-Run only
-`SnapshotContextAttemptScopingTests/concurrentNameAndReferenceCountersRemainUnique()`.
+Run only the two concurrent counter tests in
+`SnapshotExecutionContextAttemptScopingTests`.
 If it passes immediately, temporarily remove synchronization around both counters
 and rerun until the assertion fails; restore the production file before continuing.
 
-- [ ] **Step 3: Make the minimum production fix if required**
+- [x] **Step 3: Make the minimum production fix if required**
 
 Keep all mutations to `usedNames` and `referenceCounts` inside the existing
 `NSLock.withLock` critical section. Do not add test-only production APIs.
 
-- [ ] **Step 4: Verify green**
+- [x] **Step 4: Verify green**
 
 Run the new test plus the complete `SnapshotContextAttemptScopingTests`,
 `SnapshotExecutionContextOwnershipTests`, and
@@ -48,17 +48,17 @@ Run the new test plus the complete `SnapshotContextAttemptScopingTests`,
 - Create: `Tests/SnapshotsIntegrationTests/ExpectSnapshot/ExpectSnapshot+SourceIdentity.swift`
 - Record: `Tests/SnapshotsIntegrationTests/ExpectSnapshot/__Snapshots__/ExpectSnapshot+SourceIdentity/**`
 
-- [ ] **Step 1: Write the public integration test**
+- [x] **Step 1: Write the public integration test**
 
 Create one traitless `@Test` containing two unnamed `#expectSnapshot(Text(...))`
 calls on distinct source lines. Do not add `named:` or a snapshot trait.
 
-- [ ] **Step 2: Verify red**
+- [x] **Step 2: Verify red**
 
 Run the integration scheme on the pinned iOS environment and require missing
 references whose names contain the two exact source locations.
 
-- [ ] **Step 3: Record and verify canonical references**
+- [x] **Step 3: Record and verify canonical references**
 
 Use the record workflow's iOS 26.2 job. The second run must pass and the recorded
 files must remain distinct.
@@ -70,28 +70,29 @@ files must remain distinct.
 - Modify: `Tests/SnapshotsUnitTests/ExpectSnapshot/ExpectSnapshot+AppKitRuntimeTests.swift`
 - Record: the corresponding integration and AppKit `__Snapshots__` directories
 
-- [ ] **Step 1: Write SwiftUI order tests**
+- [x] **Step 1: Write the SwiftUI composition test**
 
-Add light-theme minimum-size tests for `.backgroundColor(.red), .padding(8)` and
-`.padding(8), .backgroundColor(.red)` with explicit names.
+Add a light-theme minimum-size test for `.backgroundColor(.red), .padding(8)`
+with an explicit name. Do not keep the reverse order when canonical artifacts
+prove the runtime's normalized trait state renders it byte-identically.
 
-- [ ] **Step 2: Write UIKit fixed-size decoration test**
+- [x] **Step 2: Write UIKit fixed-size decoration test**
 
 Snapshot `makeLabel(...)` under `.theme(.light)`, `.sizes(width: 160, height:
 80)`, `.backgroundColor(.red)`, and `.padding(8)`.
 
-- [ ] **Step 3: Write UIKit recursive-description test**
+- [x] **Step 3: Write UIKit recursive-description test**
 
 Snapshot `makeLabel(...)` under `.theme(.light)` and
 `.strategy(.recursiveDescription)` so the native public helper produces a text
 reference.
 
-- [ ] **Step 4: Write AppKit public-helper composition test**
+- [x] **Step 4: Write AppKit public-helper composition test**
 
 Add an NSView case under `.theme(.light)`, `.sizes(width: 160, height: 80)`,
 `.backgroundColor(.red)`, and `.padding(8)`.
 
-- [ ] **Step 5: Verify red, record, and verify green**
+- [x] **Step 5: Verify red, record, and verify green**
 
 Run the affected schemes first without references, then use the pinned record
 workflow and require its second run to pass.
@@ -102,18 +103,18 @@ workflow and require its second run to pass.
 - Modify: `Tests/SnapshotsIntegrationRepetitionTests/ExpectSnapshotRepetitionTests.swift`
 - Record: `Tests/SnapshotsIntegrationRepetitionTests/__Snapshots__/ExpectSnapshotRepetitionTests/**`
 
-- [ ] **Step 1: Write the awaited child-task test**
+- [x] **Step 1: Write the awaited child-task test**
 
 Add an async test that awaits `Task { #expectSnapshot(Text("child task")) }.value`
 inside the existing trait-scoped suite. Keep execution sequential; concurrent
 unnamed assertions are deliberately nondeterministic.
 
-- [ ] **Step 2: Verify red**
+- [x] **Step 2: Verify red**
 
 Run the three-iteration plan and require a missing reference on the first attempt,
 without drift to `-2` or `.2` on later attempts.
 
-- [ ] **Step 3: Record and verify canonical reference**
+- [x] **Step 3: Record and verify canonical reference**
 
 Use the pinned repetition record job and require the verification run to pass all
 three iterations against one stable reference.
@@ -123,11 +124,11 @@ three iterations against one stable reference.
 **Files:**
 - Verify all files changed by Tasks 1-4
 
-- [ ] **Step 1: Run focused Xcode MCP tests**
+- [x] **Step 1: Run focused Xcode MCP tests**
 
 Run all new unit tests and list every expected/pass/fail count.
 
-- [ ] **Step 2: Run formatting and lint**
+- [x] **Step 2: Run formatting and lint**
 
 Run the repository formatting and SwiftLint gates against all changed Swift files.
 
