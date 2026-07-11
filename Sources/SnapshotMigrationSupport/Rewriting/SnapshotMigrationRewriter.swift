@@ -74,6 +74,7 @@ public struct SnapshotMigrationRewriter {
     let converter = SourceLocationConverter(fileName: "", tree: tree)
     var reasons: [RewriteReason] = []
     var edits: [TextEdit] = collector.suiteAttributeEdits
+    var touchedDeclarationKeywordOffsets = collector.suiteDeclarationKeywordOffsets
     var declarations: [RewriteDeclarationOutcome] = []
 
     for qualifiedAttribute in collector.qualifiedSnapshotAttributes {
@@ -142,6 +143,9 @@ public struct SnapshotMigrationRewriter {
 
       if let functionEdits {
         edits.append(contentsOf: functionEdits)
+        touchedDeclarationKeywordOffsets.insert(
+          legacyFunction.function.funcKeyword.positionAfterSkippingLeadingTrivia.utf8Offset
+        )
       }
 
       declarations.append(
@@ -154,7 +158,16 @@ public struct SnapshotMigrationRewriter {
       )
     }
 
-    let output = apply(edits: edits, to: source)
+    let semanticOutput = apply(edits: edits, to: source)
+    let outputKeywordOffsets = Set(
+      touchedDeclarationKeywordOffsets.map {
+        outputUTF8Offset(forOriginalOffset: $0, after: edits)
+      }
+    )
+    let output = MigratedAttributeBlockFormatter().format(
+      source: semanticOutput,
+      declarationKeywordOffsets: outputKeywordOffsets
+    )
     return RewriteResult(
       output: output,
       reasons: reasons,
@@ -1344,6 +1357,13 @@ public struct SnapshotMigrationRewriter {
     return output
   }
 
+  private func outputUTF8Offset(forOriginalOffset offset: Int, after edits: [TextEdit]) -> Int {
+    offset + Set(edits).reduce(into: 0) { delta, edit in
+      guard edit.endUTF8Offset <= offset else { return }
+      delta += edit.replacement.utf8.count - (edit.endUTF8Offset - edit.startUTF8Offset)
+    }
+  }
+
   private func index(atUTF8Offset utf8Offset: Int, in source: String) -> String.Index {
     let clampedOffset = max(0, min(utf8Offset, source.utf8.count))
     let utf8Index = source.utf8.index(source.utf8.startIndex, offsetBy: clampedOffset)
@@ -1358,6 +1378,7 @@ struct QualifiedSnapshotAttribute: Equatable {
 
 private struct RewriteCollector {
   private(set) var suiteAttributeEdits: [TextEdit] = []
+  private(set) var suiteDeclarationKeywordOffsets: Set<Int> = []
   private(set) var legacyFunctions: [LegacyFunction] = []
   private(set) var qualifiedSnapshotAttributes: [QualifiedSnapshotAttribute] = []
 
@@ -1370,6 +1391,7 @@ private struct RewriteCollector {
   mutating func walk(_ tree: SourceFileSyntax) {
     visitor.walk(tree)
     suiteAttributeEdits = visitor.suiteAttributeEdits
+    suiteDeclarationKeywordOffsets = visitor.suiteDeclarationKeywordOffsets
     legacyFunctions = visitor.legacyFunctions
     qualifiedSnapshotAttributes = visitor.qualifiedSnapshotAttributes
   }
@@ -1377,6 +1399,7 @@ private struct RewriteCollector {
 
 private final class RewriteCollectorVisitor: SyntaxVisitor {
   private(set) var suiteAttributeEdits: [TextEdit] = []
+  private(set) var suiteDeclarationKeywordOffsets: Set<Int> = []
   private(set) var legacyFunctions: [LegacyFunction] = []
   private(set) var qualifiedSnapshotAttributes: [QualifiedSnapshotAttribute] = []
 
@@ -1385,22 +1408,34 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
   private var suppressedSnapshotSuiteRenameOffsets: Set<Int> = []
 
   override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-    removeDuplicateSuiteAttributeIfNeeded(in: node.attributes)
+    removeDuplicateSuiteAttributeIfNeeded(
+      in: node.attributes,
+      declarationKeywordOffset: node.structKeyword.positionAfterSkippingLeadingTrivia.utf8Offset
+    )
     return .visitChildren
   }
 
   override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-    removeDuplicateSuiteAttributeIfNeeded(in: node.attributes)
+    removeDuplicateSuiteAttributeIfNeeded(
+      in: node.attributes,
+      declarationKeywordOffset: node.classKeyword.positionAfterSkippingLeadingTrivia.utf8Offset
+    )
     return .visitChildren
   }
 
   override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
-    removeDuplicateSuiteAttributeIfNeeded(in: node.attributes)
+    removeDuplicateSuiteAttributeIfNeeded(
+      in: node.attributes,
+      declarationKeywordOffset: node.actorKeyword.positionAfterSkippingLeadingTrivia.utf8Offset
+    )
     return .visitChildren
   }
 
   override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-    removeDuplicateSuiteAttributeIfNeeded(in: node.attributes)
+    removeDuplicateSuiteAttributeIfNeeded(
+      in: node.attributes,
+      declarationKeywordOffset: node.enumKeyword.positionAfterSkippingLeadingTrivia.utf8Offset
+    )
     return .visitChildren
   }
 
@@ -1439,7 +1474,10 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
     return .visitChildren
   }
 
-  private func removeDuplicateSuiteAttributeIfNeeded(in attributes: AttributeListSyntax) {
+  private func removeDuplicateSuiteAttributeIfNeeded(
+    in attributes: AttributeListSyntax,
+    declarationKeywordOffset: Int
+  ) {
     let attributeSyntaxes = attributes.compactMap { $0.as(AttributeSyntax.self) }
 
     let snapshotSuiteAttributes = attributeSyntaxes.filter {
@@ -1447,6 +1485,10 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
     }
     let suiteAttributes = attributeSyntaxes.filter {
       $0.attributeName.as(IdentifierTypeSyntax.self)?.name.trimmed.text == "Suite"
+    }
+
+    if !snapshotSuiteAttributes.isEmpty {
+      suiteDeclarationKeywordOffsets.insert(declarationKeywordOffset)
     }
 
     guard !snapshotSuiteAttributes.isEmpty, !suiteAttributes.isEmpty else { return }
