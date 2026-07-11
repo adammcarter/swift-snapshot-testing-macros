@@ -263,6 +263,29 @@ struct MigrationAttributeFormattingTests {
     expectParsesCleanly(result.output)
   }
 
+  @Test(arguments: ["\n", "\n\n", "\n \t\n\n", "\r\n\r\n"])
+  func preservesTestableImportBoundaryWhenSuiteEditsOverlap(boundary: String) throws {
+    let prefix = "@testable import MyApp\(boundary)"
+    let input = prefix + """
+      @Suite
+      @SnapshotSuite(.theme(.light))
+      struct CardSnapshots {
+        @SnapshotTest
+        func card() -> some View { CardView() }
+      }
+      """
+
+    let first = try SnapshotMigrationRewriter().rewrite(source: input)
+    let second = try SnapshotMigrationRewriter().rewrite(source: first.output)
+
+    #expect(first.reasons.isEmpty)
+    #expect(first.output.hasPrefix(prefix + "@MainActor"))
+    #expect(first.output.components(separatedBy: "@Suite").count - 1 == 1)
+    #expect(!first.output.contains("MyAppctor"))
+    #expect(second.output == first.output)
+    expectParsesCleanly(first.output)
+  }
+
   @Test
   func doesNotNormalizeUnrelatedAttributeBlocks() throws {
     let unrelatedPrefix = "@available(macOS 15, *)" + "\n   \n" + """

@@ -158,7 +158,7 @@ public struct SnapshotMigrationRewriter {
       )
     }
 
-    let semanticOutput = apply(edits: edits, to: source)
+    let semanticOutput = TextEditApplier.apply(edits: edits, to: source)
     let outputKeywordOffsets = Set(
       touchedDeclarationKeywordOffsets.map {
         outputUTF8Offset(forOriginalOffset: $0, after: edits)
@@ -861,7 +861,7 @@ public struct SnapshotMigrationRewriter {
     }
 
     guard !edits.isEmpty else { return expression }
-    return apply(edits: edits, to: expression)
+    return TextEditApplier.apply(edits: edits, to: expression)
   }
 
   /// The expressions occupying configuration-element position within a `configurations:`
@@ -1338,25 +1338,6 @@ public struct SnapshotMigrationRewriter {
     return String(indentation)
   }
 
-  private func apply(edits: [TextEdit], to source: String) -> String {
-    var output = source
-
-    let uniqueEdits = Array(Set(edits)).sorted { lhs, rhs in
-      if lhs.startUTF8Offset == rhs.startUTF8Offset {
-        return lhs.endUTF8Offset > rhs.endUTF8Offset
-      }
-      return lhs.startUTF8Offset > rhs.startUTF8Offset
-    }
-
-    for edit in uniqueEdits {
-      let start = index(atUTF8Offset: edit.startUTF8Offset, in: output)
-      let end = index(atUTF8Offset: edit.endUTF8Offset, in: output)
-      output.replaceSubrange(start..<end, with: edit.replacement)
-    }
-
-    return output
-  }
-
   private func outputUTF8Offset(forOriginalOffset offset: Int, after edits: [TextEdit]) -> Int {
     offset + Set(edits).reduce(into: 0) { delta, edit in
       guard edit.endUTF8Offset <= offset else { return }
@@ -1521,24 +1502,11 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
     }
   }
 
-  /// Removes an attribute together with its comment-free leading trivia so the deleted
-  /// attribute does not leave a blank line behind. Leading trivia containing comments is kept.
+  /// Removes only the legacy attribute syntax. Leading trivia belongs to the surrounding source
+  /// and must remain byte-identical; migrated attribute-block formatting handles internal gaps.
   private func attributeRemovalEdit(for attribute: AttributeSyntax) -> TextEdit {
-    let leadingTriviaHasComment = attribute.leadingTrivia.contains { piece in
-      switch piece {
-      case .lineComment, .blockComment, .docLineComment, .docBlockComment:
-        return true
-      default:
-        return false
-      }
-    }
-
-    let startUTF8Offset = leadingTriviaHasComment
-      ? attribute.positionAfterSkippingLeadingTrivia.utf8Offset
-      : attribute.position.utf8Offset
-
-    return TextEdit(
-      startUTF8Offset: startUTF8Offset,
+    TextEdit(
+      startUTF8Offset: attribute.positionAfterSkippingLeadingTrivia.utf8Offset,
       endUTF8Offset: attribute.endPositionBeforeTrailingTrivia.utf8Offset,
       replacement: ""
     )
@@ -1813,12 +1781,6 @@ private struct ParameterizedSnapshotArgument: Hashable {
 private struct AttributeParseIssue: Hashable {
   let code: String
   let message: String
-}
-
-private struct TextEdit: Hashable {
-  let startUTF8Offset: Int
-  let endUTF8Offset: Int
-  let replacement: String
 }
 
 private final class TopLevelReturnDetector: SyntaxVisitor {
