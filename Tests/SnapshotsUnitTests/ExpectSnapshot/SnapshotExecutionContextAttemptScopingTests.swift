@@ -92,6 +92,58 @@ struct SnapshotContextAttemptScopingTests {
     #expect(Set(resolutions.map(\.contextID)).count == 1)
   }
 
+  /// Concurrent assertions share one attempt context. Their execution order is deliberately
+  /// unspecified, but every assertion still needs a unique on-disk name.
+  @Test
+  func concurrentNameResolutionReturnsEveryUniqueSuffix() async {
+    let context = SnapshotExecutionContext(function: "concurrent()")
+    let assertionCount = 256
+
+    let names = await withTaskGroup(of: String.self, returning: [String].self) { group in
+      for _ in 0 ..< assertionCount {
+        group.addTask {
+          await Task.yield()
+          return context.resolvedAssertionName(named: "shared")
+        }
+      }
+
+      var names = [String]()
+      for await name in group {
+        names.append(name)
+      }
+      return names
+    }
+
+    let expectedNames = Set(["shared"] + (2 ... assertionCount).map { "shared-\($0)" })
+    #expect(Set(names) == expectedNames)
+  }
+
+  /// Reference identifiers may be allocated in any task order, but the locked counter must hand
+  /// out every value exactly once so concurrent snapshots cannot share a reference file.
+  @Test
+  func concurrentReferenceIdentifiersReturnEverySequenceValue() async {
+    let context = SnapshotExecutionContext(function: "concurrent()")
+    let assertionCount = 256
+
+    let identifiers = await withTaskGroup(of: String.self, returning: [String].self) { group in
+      for _ in 0 ..< assertionCount {
+        group.addTask {
+          await Task.yield()
+          return context.nextReferenceIdentifier(forKey: "shared")
+        }
+      }
+
+      var identifiers = [String]()
+      for await identifier in group {
+        identifiers.append(identifier)
+      }
+      return identifiers
+    }
+
+    let expectedIdentifiers = Set((1 ... assertionCount).map(String.init))
+    #expect(Set(identifiers) == expectedIdentifiers)
+  }
+
   /// Macro-generated tests reach traits through `__TestScopingBox`, so the boxed path must
   /// establish the same attempt scope as direct conformances.
   @Test

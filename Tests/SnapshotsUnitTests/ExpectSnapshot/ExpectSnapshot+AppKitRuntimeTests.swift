@@ -14,6 +14,16 @@ struct ExpectSnapshotAppKitRuntimeTests {
     #expectSnapshot(makeController(labeled: "AppKit controller direct value"))
   }
 
+  @Test(
+    .theme(.light),
+    .sizes(width: 160, height: 80),
+    .backgroundColor(.red),
+    .padding(8)
+  )
+  func decoratedNSViewUsesFixedSize() {
+    #expectSnapshot(makeLabel("AppKit decorated fixed size"), named: "appkit-decorated-fixed")
+  }
+
   /// Mirrors the body shape the migration rewriter emits for legacy
   /// `configurationValues:` tests on AppKit/UIKit platforms; artifacts land in the legacy
   /// layout `<display>/<case>_<display>_<size>_<theme>`.

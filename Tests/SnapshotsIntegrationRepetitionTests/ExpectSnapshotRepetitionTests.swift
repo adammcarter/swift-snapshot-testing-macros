@@ -21,6 +21,14 @@ struct ExpectSnapshotRepetitionTests {
     helperWrappedUnnamedAssertion()
   }
 
+  @Test
+  func awaitedChildTaskSharesTheAttemptContext() async {
+    await Task {
+      #expectSnapshot(Text("awaited child task"))
+    }
+    .value
+  }
+
   @Test(arguments: [
     SnapshotConfiguration(name: "1", value: 1),
     SnapshotConfiguration(name: "2", value: 2),
