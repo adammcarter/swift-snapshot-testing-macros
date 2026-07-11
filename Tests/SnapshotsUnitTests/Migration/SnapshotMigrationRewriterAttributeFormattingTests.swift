@@ -111,4 +111,178 @@ struct SnapshotMigrationRewriterAttributeFormattingTests {
     )
     expectParsesCleanly(result.output)
   }
+
+  @Test
+  func preservesCommentsWhileRemovingBlankAttributeSeparators() throws {
+    let input = """
+    @MainActor
+
+    // Rendering is process-global.
+    """ + "\n  \t\n" + """
+    @SnapshotSuite(.serialized)
+    struct CardSnapshots {
+      @SnapshotTest
+      func card() -> some View { CardView() }
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.reasons.isEmpty)
+    #expect(
+      result.output.hasPrefix(
+        """
+        @MainActor
+        // Rendering is process-global.
+        @Suite(.serialized)
+        struct CardSnapshots
+        """
+      )
+    )
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
+  func preservesTrailingAttributeComment() throws {
+    let input = """
+    @MainActor // UI rendering
+
+    @SnapshotSuite
+    struct CardSnapshots {
+      @SnapshotTest
+      func card() -> some View { CardView() }
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.reasons.isEmpty)
+    #expect(
+      result.output.hasPrefix(
+        """
+        @MainActor // UI rendering
+        @Suite
+        struct CardSnapshots
+        """
+      )
+    )
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
+  func retainsNestedDeclarationIndentation() throws {
+    let input = """
+    enum Namespace {
+        @available(iOS 17, *)
+
+        @SnapshotSuite
+        struct CardSnapshots {
+          @SnapshotTest
+          func card() -> some View { CardView() }
+        }
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.reasons.isEmpty)
+    #expect(
+      result.output.contains(
+        """
+            @MainActor
+            @available(iOS 17, *)
+            @Suite
+            struct CardSnapshots
+        """
+      )
+    )
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
+  func retainsCRLFInMigratedAttributeBlock() throws {
+    let input = [
+      "@MainActor",
+      "",
+      "@SnapshotSuite",
+      "struct CardSnapshots {",
+      "  @SnapshotTest",
+      "  func card() -> some View { CardView() }",
+      "}",
+    ].joined(separator: "\r\n")
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.reasons.isEmpty)
+    #expect(result.output.hasPrefix("@MainActor\r\n@Suite\r\nstruct CardSnapshots"))
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
+  func isIdempotentAfterAttributeNormalization() throws {
+    let input = "@MainActor" + "\n  \t\n" + """
+    @SnapshotSuite
+    struct CardSnapshots {
+      @SnapshotTest
+      func card() -> some View { CardView() }
+    }
+    """
+
+    let first = try SnapshotMigrationRewriter().rewrite(source: input)
+    let second = try SnapshotMigrationRewriter().rewrite(source: first.output)
+
+    #expect(first.reasons.isEmpty)
+    #expect(second.reasons.isEmpty)
+    #expect(second.output == first.output)
+    #expect(!second.changed)
+    expectParsesCleanly(first.output)
+  }
+
+  @Test
+  func normalizesInsertedMainActorWithExistingFunctionAttributes() throws {
+    let input = """
+    @available(macOS 15, *)
+
+    @SnapshotTest
+    func card() -> some View { CardView() }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.reasons.isEmpty)
+    #expect(
+      result.output.hasPrefix(
+        """
+        @MainActor
+        @available(macOS 15, *)
+        @Test
+        func card()
+        """
+      )
+    )
+    expectParsesCleanly(result.output)
+  }
+
+  @Test
+  func doesNotNormalizeUnrelatedAttributeBlocks() throws {
+    let unrelatedPrefix = "@available(macOS 15, *)" + "\n   \n" + """
+    @MainActor
+    struct Unrelated {}
+
+    """
+    let input = unrelatedPrefix + """
+    @SnapshotSuite
+    struct CardSnapshots {
+      @SnapshotTest
+      func card() -> some View { CardView() }
+    }
+    """
+
+    let result = try SnapshotMigrationRewriter().rewrite(source: input)
+
+    #expect(result.reasons.isEmpty)
+    #expect(result.output.hasPrefix(unrelatedPrefix))
+    #expect(result.output.contains("@MainActor\n@Suite\nstruct CardSnapshots"))
+    expectParsesCleanly(result.output)
+  }
 }
