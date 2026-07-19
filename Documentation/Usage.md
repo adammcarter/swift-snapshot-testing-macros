@@ -186,4 +186,4 @@ request. The bitmap is drawn in the sRGB color space at the request's scale:
 
 ## Legacy macros
 
-`@SnapshotSuite` and `@SnapshotTest` are deprecated. See [MIGRATION.md](../MIGRATION.md) for before-and-after examples.
+`@SnapshotSuite` and `@SnapshotTest` are deprecated. [MIGRATION.md](../MIGRATION.md) summarises the mapping; the before-and-after examples and the full guide live in the [migrator repository](https://github.com/adammcarter/swift-snapshot-testing-macros-migrator/blob/main/MIGRATION.md), along with the tool that performs the migration.
