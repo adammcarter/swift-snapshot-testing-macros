@@ -77,11 +77,9 @@ struct RewriterNamingParityTests {
 
     let result = try SnapshotMigrationRewriter().rewrite(source: input)
 
-    #expect(result.output.contains("let snapshotConfiguration = configuration"))
-    #expect(result.output.contains("let state = configuration.value"))
     #expect(
       result.output.contains(
-        #"#expectSnapshot(snapshotConfiguration, named: "Cards") { _ in snapshotValue }"#
+        #"#expectSnapshot(configuration, named: "Cards") { state in CardView(state: state) }"#
       )
     )
     #expect(!result.output.contains(#"+ "/" +"#))
@@ -104,7 +102,7 @@ struct RewriterNamingParityTests {
 
     #expect(
       result.output.contains(
-        #"#expectSnapshot(snapshotConfiguration, named: "Suite Cards") { _ in snapshotValue }"#
+        #"#expectSnapshot(configuration, named: "Suite Cards") { state in CardView(state: state) }"#
       )
     )
     #expect(result.reasons.isEmpty)

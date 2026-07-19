@@ -1168,6 +1168,22 @@ public struct SnapshotMigrationRewriter {
     let extractedValueLine = configurationValueExtractionLine(parameterNames: parameterNames)
     let prelude = renderStatements(preludeStatements, indentation: statementIndent)
 
+    /*
+     A single-expression body over one parameter needs none of the ceremony: the closure can bind
+     the parameter directly and evaluate the original expression as-is. The hoisting only ever
+     bought main-actor evaluation, which the migrated declaration already guarantees — the
+     rewriter always makes it `@MainActor` — so keeping it here would add three redundant locals
+     to code the adopter maintains from now on.
+     */
+    if preludeStatements.isEmpty, parameterNames.count == 1 {
+      return """
+      {
+      \(statementIndent)#expectSnapshot(configuration, named: \(displayNameExpression)) \
+      { \(parameterNames[0]) in \(expression) }
+      \(closingIndent)}
+      """
+    }
+
     return """
     {
     \(statementIndent)let snapshotConfiguration = configuration

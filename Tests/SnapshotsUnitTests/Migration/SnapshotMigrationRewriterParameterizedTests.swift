@@ -17,12 +17,9 @@ struct RewriterParameterizedTests {
 
     #expect(result.output.contains("@Test(arguments: makeStates())"))
     #expect(result.output.contains("func profile(configuration: SnapshotConfiguration<UserState>)"))
-    #expect(result.output.contains("let snapshotConfiguration = configuration"))
-    #expect(result.output.contains("let state = configuration.value"))
-    #expect(result.output.contains("let snapshotValue = UserProfileView(state: state)"))
     #expect(
       result.output.contains(
-        "#expectSnapshot(snapshotConfiguration, named: \"profile\") { _ in snapshotValue }"
+        "#expectSnapshot(configuration, named: \"profile\") { state in UserProfileView(state: state) }"
       )
     )
     #expect(result.output.contains("UserProfileView(state: state)"))

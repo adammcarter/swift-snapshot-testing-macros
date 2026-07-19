@@ -195,7 +195,7 @@ struct SnapshotMigrationRewriterCoreTests {
     #expect(!result.output.contains("@Suite(\"Suite Cards\""))
     #expect(
       result.output.contains(
-        #"#expectSnapshot(snapshotConfiguration, named: "Suite Cards") { _ in snapshotValue }"#
+        #"#expectSnapshot(configuration, named: "Suite Cards")"#
       )
     )
     #expect(result.reasons.isEmpty)
