@@ -51,16 +51,20 @@ For UIKit and AppKit, keep the test itself as a regular `@Test` and pass a helpe
 - [Parameterised tests](Documentation/Parameterised.md)
 - [Migration](MIGRATION.md)
 
-## Migration script
+## Migration
 
-This repository includes a migration helper for adopters moving from `@SnapshotSuite` / `@SnapshotTest` to native `@Suite` / `@Test` / `#expectSnapshot(...)`.
+Adopters moving from `@SnapshotSuite` / `@SnapshotTest` to native `@Suite` / `@Test` / `#expectSnapshot(...)` should use the migrator, which lives in its own repository because it is a one-time tool:
+
+**[swift-snapshot-testing-macros-migrator](https://github.com/adammcarter/swift-snapshot-testing-macros-migrator)**
 
 ```shell
-Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo
-Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo --apply --json-report ./snapshot-migration-report.json
+git clone https://github.com/adammcarter/swift-snapshot-testing-macros-migrator
+cd swift-snapshot-testing-macros-migrator
+Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo            # dry run
+Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo --apply
 ```
 
-It defaults to dry-run mode and prints a summary of migrated, skipped, and failed declarations. It also reports total, scan, rewrite/stage, and apply timings in both the console summary and JSON report. Use `--apply` to write changes.
+It rewrites the sources and renames the checked-in references in the same run. See [MIGRATION.md](MIGRATION.md) for the mapping, and that repository for the full guide — in particular what changes about macOS reference images and why you re-record once.
 
 ## Development
 

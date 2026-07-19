@@ -70,25 +70,12 @@ let package = Package(
       name: "SnapshotSupport"
     ),
 
-    .target(
-      name: "SnapshotMigrationSupport",
-      dependencies: [
-        .product(name: "SwiftParser", package: "swift-syntax"),
-        .product(name: "SwiftSyntax", package: "swift-syntax"),
-      ]
-    ),
 
     // A client of the library, which is able to use the macro in its own code.
     .executableTarget(
       name: "SnapshotsClient",
       dependencies: [
         "SnapshotTestingMacros"
-      ]
-    ),
-    .executableTarget(
-      name: "SnapshotMigrationCLI",
-      dependencies: [
-        "SnapshotMigrationSupport"
       ]
     ),
 
@@ -103,7 +90,6 @@ let package = Package(
         "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
-        "SnapshotMigrationSupport",
 
         .product(name: "SwiftParser", package: "swift-syntax"),
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
