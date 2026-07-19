@@ -40,3 +40,31 @@ struct SnapshotMigrationRewriterSpacingTests {
     #expect(output.contains(") {"))
   }
 }
+
+/// Removing a redundant attribute must take its whole line with it. Deleting only the attribute's
+/// text left the newline behind, so every migrated suite gained a blank line where `@Suite` had
+/// been folded into `@SnapshotSuite`.
+@Suite
+struct SnapshotMigrationRewriterAttributeLineTests {
+  @Test("Folding a bare @Suite into the legacy attribute leaves no blank line")
+  func removingARedundantAttributeRemovesItsLine() throws {
+    let output = try SnapshotMigrationRewriter().rewrite(
+      source: """
+        import Testing
+
+        @Suite
+        @SnapshotSuite(.sizes(.minimum))
+        @MainActor
+        struct Snapshots {
+          @SnapshotTest("Card")
+          func card() -> some View {
+            CardView()
+          }
+        }
+        """
+    ).output
+
+    #expect(!output.contains("\n\n\n"), "migrated output gained a blank line:\n\(output)")
+    #expect(output.contains("@Suite(.sizes(.minimum))\n@MainActor"))
+  }
+}

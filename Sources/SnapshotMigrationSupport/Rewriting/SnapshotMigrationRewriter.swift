@@ -1526,10 +1526,42 @@ private final class RewriteCollectorVisitor: SyntaxVisitor {
 
   /// Removes only the legacy attribute syntax. Leading trivia belongs to the surrounding source
   /// and must remain byte-identical; migrated attribute-block formatting handles internal gaps.
+  /**
+   Removes an attribute along with the rest of the line it occupied.
+
+   Deleting only the attribute's own text leaves its trailing newline behind, so folding a bare
+   `@Suite` into `@SnapshotSuite` left a blank line above every migrated declaration. The trailing
+   trivia is consumed up to and including the first newline; when the attribute shares its line
+   with another (`@Suite @MainActor`), there is no newline to find and only the separating spaces
+   go, which keeps the survivors on one line.
+   */
   private func attributeRemovalEdit(for attribute: AttributeSyntax) -> TextEdit {
-    TextEdit(
+    func bytesThroughFirstNewline(of trivia: Trivia) -> (bytes: Int, foundNewline: Bool) {
+      var bytes = 0
+      for piece in trivia {
+        bytes += piece.sourceLength.utf8Length
+        switch piece {
+        case .newlines, .carriageReturnLineFeeds, .carriageReturns:
+          return (bytes, true)
+        default:
+          continue
+        }
+      }
+      return (bytes, false)
+    }
+
+    // The newline ending an attribute's line is the *next* token's leading trivia, not this
+    // attribute's trailing trivia, so both have to be walked to reach it.
+    let trailing = bytesThroughFirstNewline(of: attribute.trailingTrivia)
+    var consumed = trailing.bytes
+
+    if !trailing.foundNewline, let nextToken = attribute.nextToken(viewMode: .sourceAccurate) {
+      consumed += bytesThroughFirstNewline(of: nextToken.leadingTrivia).bytes
+    }
+
+    return TextEdit(
       startUTF8Offset: attribute.positionAfterSkippingLeadingTrivia.utf8Offset,
-      endUTF8Offset: attribute.endPositionBeforeTrailingTrivia.utf8Offset,
+      endUTF8Offset: attribute.endPositionBeforeTrailingTrivia.utf8Offset + consumed,
       replacement: ""
     )
   }
