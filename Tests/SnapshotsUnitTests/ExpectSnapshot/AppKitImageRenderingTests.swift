@@ -11,11 +11,18 @@ import Testing
 /// `.backgroundColor` decorator must actually paint on macOS.
 @MainActor
 struct AppKitImageRenderingTests {
-  /// An unspecified scale must render deterministically at one pixel per point. Inheriting the
-  /// machine's `NSScreen` backing scale would make committed references differ between Retina
-  /// and non-Retina machines running the same tests.
+  /**
+   An unspecified scale must render deterministically at two pixels per point.
+
+   Determinism requires only that the scale is *fixed* rather than inherited — following the
+   machine's `NSScreen` backing scale would make committed references differ between Retina and
+   non-Retina machines. Which fixed value to pick is a separate, fidelity question, and every
+   shipping Mac is Retina: rendering at 1x tests a configuration no user sees, and makes the
+   hairlines, single-pixel borders and text antialiasing that snapshots exist to catch
+   unrepresentable.
+   */
   @Test
-  func unspecifiedScaleRendersOnePixelPerPoint() throws {
+  func unspecifiedScaleRendersTwoPixelsPerPoint() throws {
     let request = try makeThemeFanOutRequest(
       traitSize: .init(width: .fixed(100), height: .fixed(50)),
       size: CGSize(width: 100, height: 50)
@@ -23,8 +30,8 @@ struct AppKitImageRenderingTests {
 
     let bitmap = try renderedBitmap(request: request)
 
-    #expect(bitmap.pixelsWide == 100)
-    #expect(bitmap.pixelsHigh == 50)
+    #expect(bitmap.pixelsWide == 200)
+    #expect(bitmap.pixelsHigh == 100)
   }
 
   /// `.sizes(width:height:scale:)` documents an explicit scale factor; the AppKit render must

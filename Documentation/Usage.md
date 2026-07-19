@@ -175,9 +175,12 @@ and running a full Auto Layout pass before drawing — mirroring how the UIKit p
 request. The bitmap is drawn in the sRGB color space at the request's scale:
 
 - `.sizes(..., scale:)` and device scales are honoured exactly (`scale: 2.0` produces @2x pixels).
-- An unspecified scale renders at one pixel per point. Unlike iOS, macOS has no deterministic
+- An unspecified scale renders at two pixels per point. Unlike iOS, macOS has no deterministic
   device scale to inherit — following the screen's backing scale would make committed references
-  differ between Retina and non-Retina machines.
+  differ between Retina and non-Retina machines — so the scale is fixed rather than inherited.
+  It is fixed at `2` because every shipping Mac is Retina: rendering at `1` would test a density
+  no user sees, and would make hairlines, single-pixel borders and text antialiasing
+  unrepresentable. Pass `scale:` explicitly for any other density.
 - `WKWebView`-specific capture (pointfree's `takeSnapshot` special case) does not apply to the
   macOS image strategy; web views render like any other view via `cacheDisplay`.
 

@@ -16,6 +16,13 @@ import Testing
 /// invisible zero-sized payload inside it.
 @MainActor
 struct FrameBasedViewSizingTests {
+  /// These tests assert a *point* size, which the renderer multiplies by the unspecified-scale
+  /// default. Expressing the expectations in points keeps them about sizing rather than density,
+  /// so they survive a change to that default.
+  private static let defaultScale = 2
+
+  private static func pixels(_ points: Int) -> Int { points * defaultScale }
+
   @Test
   func frameBasedViewMeasuresAtItsFrameSize() throws {
     let payload = SnapshotViewController()
@@ -24,11 +31,11 @@ struct FrameBasedViewSizingTests {
     let request = try firstImageRequest { payload }
     let bitmap = try renderedBitmap(request: request)
 
-    #expect(bitmap.pixelsWide == 200)
-    #expect(bitmap.pixelsHigh == 100)
-    try expectColor(in: bitmap, atX: 100, y: 50, isApproximately: .srgbRed)
-    try expectColor(in: bitmap, atX: 2, y: 2, isApproximately: .srgbRed)
-    try expectColor(in: bitmap, atX: 197, y: 97, isApproximately: .srgbRed)
+    #expect(bitmap.pixelsWide == Self.pixels(200))
+    #expect(bitmap.pixelsHigh == Self.pixels(100))
+    try expectColor(in: bitmap, atX: Self.pixels(100), y: Self.pixels(50), isApproximately: .srgbRed)
+    try expectColor(in: bitmap, atX: Self.pixels(2), y: Self.pixels(2), isApproximately: .srgbRed)
+    try expectColor(in: bitmap, atX: Self.pixels(197), y: Self.pixels(97), isApproximately: .srgbRed)
   }
 
   /// The padded case is the silent one: the decorator's container measured as insets-only
@@ -45,12 +52,12 @@ struct FrameBasedViewSizingTests {
     let request = try firstImageRequest { container }
     let bitmap = try renderedBitmap(request: request)
 
-    #expect(bitmap.pixelsWide == 232)
-    #expect(bitmap.pixelsHigh == 132)
+    #expect(bitmap.pixelsWide == Self.pixels(232))
+    #expect(bitmap.pixelsHigh == Self.pixels(132))
     // The payload must actually be visible inside the padding, not a zero-sized ghost.
-    try expectColor(in: bitmap, atX: 116, y: 66, isApproximately: .srgbRed)
-    try expectColor(in: bitmap, atX: 20, y: 20, isApproximately: .srgbRed)
-    try expectColor(in: bitmap, atX: 211, y: 111, isApproximately: .srgbRed)
+    try expectColor(in: bitmap, atX: Self.pixels(116), y: Self.pixels(66), isApproximately: .srgbRed)
+    try expectColor(in: bitmap, atX: Self.pixels(20), y: Self.pixels(20), isApproximately: .srgbRed)
+    try expectColor(in: bitmap, atX: Self.pixels(211), y: Self.pixels(111), isApproximately: .srgbRed)
   }
 
   /// Views that size themselves through Auto Layout must keep doing so: the frame-size pin must
@@ -67,8 +74,8 @@ struct FrameBasedViewSizingTests {
     let request = try firstImageRequest { payload }
     let bitmap = try renderedBitmap(request: request)
 
-    #expect(bitmap.pixelsWide == 120)
-    #expect(bitmap.pixelsHigh == 60)
+    #expect(bitmap.pixelsWide == Self.pixels(120))
+    #expect(bitmap.pixelsHigh == Self.pixels(60))
   }
 
   /// Views with an intrinsic content size (labels, etc.) must keep measuring intrinsically.
@@ -84,8 +91,8 @@ struct FrameBasedViewSizingTests {
     let request = try firstImageRequest { payload }
     let bitmap = try renderedBitmap(request: request)
 
-    #expect(bitmap.pixelsWide == Int(intrinsicSize.width.rounded()))
-    #expect(bitmap.pixelsHigh == Int(intrinsicSize.height.rounded()))
+    #expect(bitmap.pixelsWide == Self.pixels(Int(intrinsicSize.width.rounded())))
+    #expect(bitmap.pixelsHigh == Self.pixels(Int(intrinsicSize.height.rounded())))
   }
 
   /// A genuinely zero-sized frame-based payload must still fail loudly rather than record.

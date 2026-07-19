@@ -8,8 +8,9 @@ extension SizesSnapshotTrait {
 
     /**
      When `nil`, inherit the scale from the device on which the tests are being run. On macOS
-     there is no deterministic device scale to inherit, so `nil` renders at one pixel per point,
-     keeping committed references independent of the recording machine's screen.
+     there is no deterministic device scale to inherit, so `nil` renders at a fixed two pixels
+     per point, keeping committed references independent of the recording machine's screen while
+     still matching the Retina density every shipping Mac actually renders at.
 
      This allows for backwards compatability to avoid breaking changes while allowing for a custom override when wanting to use a specific setup.
      */
@@ -25,7 +26,7 @@ extension SizesSnapshotTrait {
     ///   - width: The width of the snapshot.
     ///   - height: The height of the snapshot.
     ///   - scale: The scale factor (e.g., 2.0 or 3.0). If `nil`, inherits from the device
-    ///     (on macOS, `nil` renders at one pixel per point).
+    ///     (on macOS, `nil` renders at two pixels per point).
     public init(
       width: SizesSnapshotTrait.Length,
       height: SizesSnapshotTrait.Length,

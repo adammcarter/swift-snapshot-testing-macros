@@ -7,7 +7,7 @@ extension Testing.Trait where Self == SizesSnapshotTrait {
   /// - Parameters:
   ///   - width: The width to use.
   ///   - height: The height to use.
-  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at one pixel per point, keeping references machine-independent).
+  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at two pixels per point, keeping references machine-independent).
   /// - Returns: A trait that applies the specific size.
   ///
   /// Example:
@@ -56,7 +56,7 @@ extension Testing.Trait where Self == SizesSnapshotTrait {
   ///
   /// - Parameters:
   ///   - width: The width to use.
-  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at one pixel per point, keeping references machine-independent).
+  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at two pixels per point, keeping references machine-independent).
   /// - Returns: A trait that applies the width with minimum height.
   ///
   /// Example:
@@ -100,7 +100,7 @@ extension Testing.Trait where Self == SizesSnapshotTrait {
   ///
   /// - Parameters:
   ///   - height: The height to use.
-  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at one pixel per point, keeping references machine-independent).
+  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at two pixels per point, keeping references machine-independent).
   /// - Returns: A trait that applies the height with minimum width.
   ///
   /// Example:
@@ -144,7 +144,7 @@ extension Testing.Trait where Self == SizesSnapshotTrait {
   ///
   /// - Parameters:
   ///   - length: The length to use for both width and height. Defaults to `.minimum`.
-  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at one pixel per point, keeping references machine-independent).
+  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at two pixels per point, keeping references machine-independent).
   /// - Returns: A trait that applies minimum sizing.
   ///
   /// Example:
