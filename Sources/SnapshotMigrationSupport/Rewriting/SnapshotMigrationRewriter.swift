@@ -239,7 +239,10 @@ public struct SnapshotMigrationRewriter {
 
       functionEdits.append(
         TextEdit(
-          startUTF8Offset: returnClause.positionAfterSkippingLeadingTrivia.utf8Offset,
+          // Start at the end of the previous token's text, not the return clause's own position:
+          // the space before `->` is the `)` token's *trailing* trivia, so anchoring at the return
+          // clause leaves it stranded against the body's brace (`func f(...)  {`).
+          startUTF8Offset: (returnClause.previousToken(viewMode: .sourceAccurate)?.endPositionBeforeTrailingTrivia ?? returnClause.position).utf8Offset,
           endUTF8Offset: returnClause.endPositionBeforeTrailingTrivia.utf8Offset,
           replacement: ""
         )
@@ -373,7 +376,10 @@ public struct SnapshotMigrationRewriter {
         replacement: "arguments"
       ),
       TextEdit(
-        startUTF8Offset: returnClause.positionAfterSkippingLeadingTrivia.utf8Offset,
+        // Start at the end of the previous token's text, not the return clause's own position:
+        // the space before `->` is the `)` token's *trailing* trivia, so anchoring at the return
+        // clause leaves it stranded against the body's brace (`func f(...)  {`).
+        startUTF8Offset: (returnClause.previousToken(viewMode: .sourceAccurate)?.endPositionBeforeTrailingTrivia ?? returnClause.position).utf8Offset,
         endUTF8Offset: returnClause.endPositionBeforeTrailingTrivia.utf8Offset,
         replacement: ""
       ),
