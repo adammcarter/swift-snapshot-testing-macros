@@ -19,7 +19,7 @@ struct RewriterParameterizedTests {
     #expect(result.output.contains("func profile(configuration: SnapshotConfiguration<UserState>)"))
     #expect(
       result.output.contains(
-        "#expectSnapshot(configuration, named: \"profile\") { state in UserProfileView(state: state) }"
+        "#expectSnapshot(configuration, named: \"profile\") {"
       )
     )
     #expect(result.output.contains("UserProfileView(state: state)"))

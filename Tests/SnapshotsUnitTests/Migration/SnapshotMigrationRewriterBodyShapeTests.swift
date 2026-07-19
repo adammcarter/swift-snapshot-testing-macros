@@ -34,7 +34,8 @@ struct SnapshotMigrationRewriterBodyShapeTests {
       """
     )
 
-    #expect(output.contains(#"#expectSnapshot(configuration, named: "Entities") { snapshot in snapshot.makeView() }"#))
+    #expect(output.contains(#"#expectSnapshot(configuration, named: "Entities") {"#))
+    #expect(output.contains("$0.makeView()"))
     #expect(!output.contains("let snapshotConfiguration = configuration"))
     #expect(!output.contains("let snapshotValue ="))
   }
@@ -57,6 +58,25 @@ struct SnapshotMigrationRewriterBodyShapeTests {
     )
 
     #expect(!output.contains("snapshotConfiguration"))
+  }
+
+  @Test("A parameter used more than once keeps its name rather than repeating $0")
+  func repeatedParameterKeepsANamedBinding() throws {
+    let output = try migrate(
+      """
+      @Suite
+      @SnapshotSuite
+      struct Snapshots {
+        @SnapshotTest("Pair", configurations: pairConfigurations)
+        func pair(snapshot: PairSnapshot) -> some View {
+          PairView(before: snapshot.before, after: snapshot.after)
+        }
+      }
+      """
+    )
+
+    #expect(output.contains("{ snapshot in"))
+    #expect(!output.contains("$0"))
   }
 
   /// A body whose value depends on earlier statements keeps them, and keeps evaluating them in

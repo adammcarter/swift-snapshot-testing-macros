@@ -79,7 +79,7 @@ struct RewriterNamingParityTests {
 
     #expect(
       result.output.contains(
-        #"#expectSnapshot(configuration, named: "Cards") { state in CardView(state: state) }"#
+        #"#expectSnapshot(configuration, named: "Cards") {"#
       )
     )
     #expect(!result.output.contains(#"+ "/" +"#))
@@ -102,7 +102,7 @@ struct RewriterNamingParityTests {
 
     #expect(
       result.output.contains(
-        #"#expectSnapshot(configuration, named: "Suite Cards") { state in CardView(state: state) }"#
+        #"#expectSnapshot(configuration, named: "Suite Cards") {"#
       )
     )
     #expect(result.reasons.isEmpty)

@@ -1176,10 +1176,26 @@ public struct SnapshotMigrationRewriter {
      to code the adopter maintains from now on.
      */
     if preludeStatements.isEmpty, parameterNames.count == 1 {
+      let parameterName = parameterNames[0]
+      let closureIndent = statementIndent + "  "
+
+      /*
+       `$0` reads well for the overwhelmingly common single-use body (`$0.makeView()`), but a
+       parameter used several times reads worse as a repeated `$0` than under its original name,
+       so the explicit binding survives there.
+       */
+      let usesParameterOnce = Self.identifierOccurrences(of: parameterName, in: expression) == 1
+      let closureHeader = usesParameterOnce ? "{" : "{ \(parameterName) in"
+      let closureBody =
+        usesParameterOnce
+        ? Self.replacingIdentifier(parameterName, with: "$0", in: expression)
+        : expression
+
       return """
       {
-      \(statementIndent)#expectSnapshot(configuration, named: \(displayNameExpression)) \
-      { \(parameterNames[0]) in \(expression) }
+      \(statementIndent)#expectSnapshot(configuration, named: \(displayNameExpression)) \(closureHeader)
+      \(closureIndent)\(closureBody)
+      \(statementIndent)}
       \(closingIndent)}
       """
     }
@@ -1285,6 +1301,26 @@ public struct SnapshotMigrationRewriter {
   /// `"\(value)"` stringification legacy used, so derived case names stay byte-identical.
   private func configurationValuesConfigurationLine(parameterName: String) -> String {
     "let snapshotConfiguration = SnapshotConfiguration(name: \"\\(\(parameterName))\", value: \(parameterName))"
+  }
+
+  /// Matches `name` only as a whole identifier, so a parameter called `snapshot` is not found
+  /// inside `snapshotCount` or `makeSnapshot()`.
+  private static func identifierPattern(for name: String) -> NSRegularExpression? {
+    try? NSRegularExpression(pattern: "(?<![A-Za-z0-9_$])\(NSRegularExpression.escapedPattern(for: name))(?![A-Za-z0-9_])")
+  }
+
+  private static func identifierOccurrences(of name: String, in text: String) -> Int {
+    guard let regex = identifierPattern(for: name) else { return 0 }
+    return regex.numberOfMatches(in: text, range: NSRange(text.startIndex..., in: text))
+  }
+
+  private static func replacingIdentifier(_ name: String, with replacement: String, in text: String) -> String {
+    guard let regex = identifierPattern(for: name) else { return text }
+    return regex.stringByReplacingMatches(
+      in: text,
+      range: NSRange(text.startIndex..., in: text),
+      withTemplate: NSRegularExpression.escapedTemplate(for: replacement)
+    )
   }
 
   private func configurationAssertionLine(displayNameExpression: String) -> String {
