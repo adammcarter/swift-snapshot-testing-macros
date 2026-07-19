@@ -272,6 +272,26 @@ public struct MigrationRunner {
         hadApplyFailures = true
         issueLines.append("\(failure)")
       }
+
+      /*
+       A reference nobody resolves is invisible: never compared, never failed, never reported. It
+       survives every run looking exactly like coverage, so the run says so explicitly rather than
+       leaving the adopter to notice. Neither is an apply failure — the migration succeeded — so
+       they are reported without changing the exit code, and `--fail-on-skips` escalates them for
+       callers that want a hard gate.
+       */
+      for straggler in referenceMigrator.unmigratedReferences(projectRoot: options.projectRoot) {
+        issueLines.append(
+          "\(straggler):1 <reference> unmigrated-reference still in the 2.x layout after apply; "
+            + "migrated assertions will not resolve it and a miss records rather than fails"
+        )
+      }
+      for orphan in referenceMigrator.orphanedReferences(projectRoot: options.projectRoot) {
+        issueLines.append(
+          "\(orphan):1 <reference> orphaned-reference no test file of that name exists; "
+            + "nothing resolves this artifact"
+        )
+      }
     } else if options.mode == .apply {
       // Apply was requested but skipped because an earlier file failed to migrate/stage. The
       // staged rewrites never reached disk, so — mirroring the apply-lock-failure path (which

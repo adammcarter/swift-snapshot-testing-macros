@@ -96,6 +96,71 @@ public struct SnapshotReferenceMigrator: Sendable {
     return Outcome(planned: planned, applied: applied, failures: failures)
   }
 
+  // MARK: - Orphan detection
+
+  /**
+   References whose owning test file no longer exists.
+
+   The reference folder is named after the test file, so a folder with no matching `.swift`
+   anywhere in the project belongs to a test that was deleted or renamed. Nothing resolves these
+   images, so they are never compared and never fail — they simply persist, inflating the
+   repository and implying coverage that no longer exists.
+   */
+  public func orphanedReferences(projectRoot: String) -> [String] {
+    let testFileNames = Set(
+      Self.swiftFileNames(projectRoot: projectRoot).map { ($0 as NSString).deletingPathExtension }
+    )
+
+    return Self.referencePaths(projectRoot: projectRoot).filter { path in
+      guard let owner = Self.owningTestFileName(of: path) else { return false }
+      return !testFileNames.contains(owner)
+    }
+  }
+
+  /**
+   References still in the 2.x layout after an apply run.
+
+   The rename should have moved every one of these. Any that remain will not be resolved by the
+   migrated assertions, and because a missing reference records rather than fails, the suite
+   would report green while comparing against artifacts it had just written.
+   */
+  public func unmigratedReferences(projectRoot: String) -> [String] {
+    SnapshotReferenceRenamePlanner()
+      .plan(referencePaths: Self.referencePaths(projectRoot: projectRoot))
+      .map(\.from)
+  }
+
+  private static func owningTestFileName(of path: String) -> String? {
+    let components = path.split(separator: "/", omittingEmptySubsequences: true).map(String.init)
+
+    guard
+      let snapshotsIndex = components.lastIndex(of: snapshotsDirectoryName),
+      components.index(after: snapshotsIndex) < components.endIndex
+    else {
+      return nil
+    }
+
+    return components[components.index(after: snapshotsIndex)]
+  }
+
+  private static func swiftFileNames(projectRoot: String) -> [String] {
+    let rootURL = URL(fileURLWithPath: projectRoot).standardizedFileURL
+    guard
+      let enumerator = FileManager.default.enumerator(
+        at: rootURL,
+        includingPropertiesForKeys: nil,
+        options: [.skipsHiddenFiles]
+      )
+    else {
+      return []
+    }
+
+    return enumerator.compactMap { element in
+      guard let url = element as? URL, url.pathExtension == "swift" else { return nil }
+      return url.lastPathComponent
+    }
+  }
+
   // MARK: - Discovery
 
   private static func referencePaths(projectRoot: String) -> [String] {
