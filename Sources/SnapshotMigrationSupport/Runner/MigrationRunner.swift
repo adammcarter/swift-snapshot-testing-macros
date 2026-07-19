@@ -254,6 +254,24 @@ public struct MigrationRunner {
         }
       }
       applyTiming = try finishPhase(from: applyTimingStart, clock: clock)
+
+      /*
+       Rename the checked-in references to match the layout the rewritten sources now expect.
+       This runs only after the sources are on disk, so a failed apply never leaves the two out
+       of step. Skipping it would leave every reference unreachable, and because a missing
+       reference records rather than fails, the adopter's first run would report green while
+       comparing against artifacts it had just written.
+       */
+      let referenceMigrator = SnapshotReferenceMigrator()
+      let referenceOutcome = referenceMigrator.migrate(
+        projectRoot: options.projectRoot,
+        sizeTokensByTestFile: referenceMigrator.sizeTokensByTestFile(scannedFiles: scan.candidateFiles),
+        dryRun: false
+      )
+      for failure in referenceOutcome.failures {
+        hadApplyFailures = true
+        issueLines.append("\(failure)")
+      }
     } else if options.mode == .apply {
       // Apply was requested but skipped because an earlier file failed to migrate/stage. The
       // staged rewrites never reached disk, so — mirroring the apply-lock-failure path (which
