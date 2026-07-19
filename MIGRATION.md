@@ -167,9 +167,36 @@ func card(configuration: SnapshotConfiguration<CardState>) {
 
 The `argument:` convenience builder remains SwiftUI-only in v1.
 
+## macOS references recorded before v3 must be re-recorded
+
+**If you are upgrading a macOS suite from 2.x, expect every reference image to change, and plan to re-record once.** This is by design, not a regression — but it is unavoidable, so budget for it rather than being surprised by a wall of red on the first run.
+
+Three v3 changes each alter macOS output on their own. Any one of them is enough to make an old reference mismatch:
+
+| Change | Effect on a 2.x reference | Why |
+| --- | --- | --- |
+| Colour space is tagged sRGB | **Every pixel differs**, including flat background | 2.x produced Generic RGB, which is device-dependent. sRGB is deterministic, so the same view records identically on any machine. |
+| Unspecified scale is a fixed 2x | Dimensions match a 2.x reference recorded on a Retina Mac; a non-Retina one halves | 2.x followed the recording machine's screen, so references were never reproducible across machines or on CI. See [Documentation/Usage.md](Documentation/Usage.md). |
+| Theme traits are applied per theme | Light references change; dark ones do not | 2.x recorded byte-identical files for `.light` and `.dark` — the theme was never applied, so every "light" reference was a duplicate of its dark twin and proved nothing. |
+
+The colour-space change alone re-records everything, so there is no combination of renaming or configuration that preserves a 2.x macOS baseline. What the migration *does* preserve is the ability to **review** the change: references keep resolving (see naming parity below), so the first run reports real, inspectable mismatches instead of silently recording new artifacts over a baseline that no longer resolves.
+
+Recommended once-only sequence:
+
+1. Migrate the source and rename references so assertions resolve their existing artifacts.
+2. Run the suite and read the failures as a diff of your whole baseline.
+3. Spot-check a representative sample — especially any `.light` references, which were never valid under 2.x.
+4. Re-record, and commit the re-recorded references as their own reviewable commit, separate from the code migration.
+
+iOS suites are unaffected by the scale and colour-space items: they inherit a real device scale and already recorded in the device's colour space.
+
 ## Artifact naming parity
 
-Legacy parameterised artifacts live at `__Snapshots__/<TestFile>/<display>/<case>_<display>_<size>_<theme>.<n>.<ext>`. The native configuration pipeline produces exactly that layout, so migrated parameterised tests keep resolving the checked-in legacy references as long as:
+Legacy parameterised artifacts live at `__Snapshots__/<TestFile>/<case>/<display>_<size>_<theme>.<n>.<ext>`. v3 moved them to `__Snapshots__/<TestFile>/<display>/<case>_<display>_<size>_<theme>.<n>.<ext>` — the case name moved out of the folder and into the file-name prefix, and the folder became the test's display name.
+
+Migrated tests therefore do **not** resolve 2.x references until those files are renamed into the v3 layout. A missing reference records rather than fails, so an unmigrated baseline produces a green run that compares nothing. Rename the files as part of the migration; the mapping is mechanical and derivable from the old path alone.
+
+Once the references are in the v3 layout, naming stays stable as long as:
 
 - the legacy display name is passed through `named:` unchanged (the migration script applies the legacy fallback chain: test display name → suite display name → function name), and
 - the case naming goes through the configuration — explicit `SnapshotConfiguration(name:)` entries for `configurations:`, or `SnapshotConfiguration(name: "\(value)", value: value)` for `configurationValues:`.
