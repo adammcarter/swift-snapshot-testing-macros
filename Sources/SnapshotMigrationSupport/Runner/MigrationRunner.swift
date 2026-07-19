@@ -213,7 +213,7 @@ public struct MigrationRunner {
         filesApplyFailed = pendingApplies.count
         failedDeclarations += migratedDeclarations
         migratedDeclarations = 0
-        issueLines.append(".snapshot-migration.lock:1 <lock> apply-lock-held failed to acquire apply lock")
+        issueLines.append("\(ApplyLock.lockPath(forProjectRoot: options.projectRoot)):1 <lock> apply-lock-held failed to acquire apply lock")
       }
       defer { applyLock?.release() }
 

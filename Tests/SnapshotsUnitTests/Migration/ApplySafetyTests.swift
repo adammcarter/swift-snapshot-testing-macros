@@ -37,7 +37,7 @@ struct ApplySafetyTests {
     let fixture = try TempProject.make()
     defer { fixture.cleanup() }
 
-    let lockPath = URL(fileURLWithPath: fixture.root).appendingPathComponent(".snapshot-migration.lock").path
+    let lockPath = ApplyLock.lockPath(forProjectRoot: fixture.root)
     let stalePID = findUnusedPID()
     try "\(stalePID)".write(toFile: lockPath, atomically: true, encoding: .utf8)
 
@@ -50,7 +50,7 @@ struct ApplySafetyTests {
     let fixture = try TempProject.make()
     defer { fixture.cleanup() }
 
-    let lockPath = URL(fileURLWithPath: fixture.root).appendingPathComponent(".snapshot-migration.lock").path
+    let lockPath = ApplyLock.lockPath(forProjectRoot: fixture.root)
     let lock = try ApplyLock.acquire(projectRoot: fixture.root, timeoutSeconds: 0)
 
     // Simulate another process replacing the lock file behind this lock object.
@@ -69,7 +69,7 @@ struct ApplySafetyTests {
     let fixture = try TempProject.make()
     defer { fixture.cleanup() }
 
-    let lockPath = URL(fileURLWithPath: fixture.root).appendingPathComponent(".snapshot-migration.lock").path
+    let lockPath = ApplyLock.lockPath(forProjectRoot: fixture.root)
 
     let first = try ApplyLock.acquire(projectRoot: fixture.root, timeoutSeconds: 0)
     first.release()

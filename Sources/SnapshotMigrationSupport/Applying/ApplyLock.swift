@@ -34,9 +34,52 @@ public final class ApplyLock: @unchecked Sendable {
     self.fileDescriptor = fileDescriptor
   }
 
+  /**
+   The lock file for a project root, in a user-private directory outside that project.
+
+   Since the file is never unlinked (see above), keeping it in the project root would leave an
+   artifact in the adopter's working tree that shows up in `git status` right after migrating and
+   can be committed by accident. Hashing the standardized root keeps one stable lock per project
+   — however that root is spelled — without writing anything into it.
+   */
+  public static func lockPath(forProjectRoot projectRoot: String) -> String {
+    let standardizedRoot = URL(fileURLWithPath: projectRoot).standardizedFileURL.resolvingSymlinksInPath().path
+
+    return locksDirectoryURL
+      .appendingPathComponent("\(SHA256Hasher.hash(standardizedRoot)).lock")
+      .path
+  }
+
+  private static let locksDirectoryURL = URL(fileURLWithPath: "/tmp", isDirectory: true)
+    .appendingPathComponent("snapshot-migration", isDirectory: true)
+    .appendingPathComponent("locks", isDirectory: true)
+
+  /// Mirrors the staging store's layout: both levels are created `0700` so another user on the
+  /// machine cannot read, replace, or pre-create a lock file this process will then trust.
+  private static func createLocksDirectory() throws {
+    let fileManager = FileManager.default
+
+    for directory in [locksDirectoryURL.deletingLastPathComponent(), locksDirectoryURL] {
+      if !fileManager.fileExists(atPath: directory.path) {
+        try fileManager.createDirectory(
+          at: directory,
+          withIntermediateDirectories: true,
+          attributes: [.posixPermissions: 0o700]
+        )
+      }
+      try fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+    }
+  }
+
   public static func acquire(projectRoot: String, timeoutSeconds: Int) throws -> ApplyLock {
-    let lockPath = URL(fileURLWithPath: projectRoot).appendingPathComponent(".snapshot-migration.lock").path
+    let lockPath = lockPath(forProjectRoot: projectRoot)
     let deadline = Date().addingTimeInterval(TimeInterval(max(0, timeoutSeconds)))
+
+    do {
+      try createLocksDirectory()
+    } catch {
+      throw ApplyLockError.lockCreateFailed(lockPath)
+    }
 
     while true {
       let fileDescriptor = open(lockPath, O_CREAT | O_RDWR | O_CLOEXEC, mode_t(0o600))
