@@ -101,3 +101,26 @@ struct SnapshotMigrationRewriterBodyShapeTests {
     #expect(output.contains("#expectSnapshot("))
   }
 }
+
+/// `configurationValues:` must read like `configurations:` does. Its `snapshotConfiguration` is
+/// genuine construction rather than an alias and stays, but hoisting the value into a local only
+/// to return it from a closure that ignores its argument is the same ceremony, and goes.
+@Suite
+struct SnapshotMigrationRewriterValuesShapeTests {
+  @Test("A single-expression configurationValues body migrates to one assertion")
+  func singleExpressionValuesBodyIsEmittedTightly() throws {
+    let output = try SnapshotMigrationRewriter().rewrite(
+      source: """
+        @SnapshotTest(configurationValues: makeUserStates())
+        func userProfile(state: UserState) -> some View {
+          UserProfileView(state: state)
+        }
+        """
+    ).output
+
+    #expect(output.contains(#"let snapshotConfiguration = SnapshotConfiguration(name: "\(state)", value: state)"#))
+    #expect(output.contains(#"#expectSnapshot(snapshotConfiguration, named: "userProfile") {"#))
+    #expect(output.contains("UserProfileView(state: $0)"))
+    #expect(!output.contains("let snapshotValue"))
+  }
+}

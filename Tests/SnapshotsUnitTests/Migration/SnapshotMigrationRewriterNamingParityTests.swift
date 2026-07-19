@@ -31,7 +31,7 @@ struct RewriterNamingParityTests {
     )
     #expect(
       result.output.contains(
-        #"#expectSnapshot(snapshotConfiguration, named: "Legacy configuration values test") { _ in snapshotValue }"#
+        #"#expectSnapshot(snapshotConfiguration, named: "Legacy configuration values test") {"#
       )
     )
     #expect(!result.output.contains(#"+ "/" +"#))
@@ -56,7 +56,7 @@ struct RewriterNamingParityTests {
     )
     #expect(
       result.output.contains(
-        #"#expectSnapshot(snapshotConfiguration, named: "configurationValues") { _ in snapshotValue }"#
+        #"#expectSnapshot(snapshotConfiguration, named: "configurationValues") {"#
       )
     )
     #expect(!result.output.contains(#"+ "/" +"#))

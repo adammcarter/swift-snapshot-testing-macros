@@ -22,7 +22,7 @@ struct RewriterParameterizedTests {
         "#expectSnapshot(configuration, named: \"profile\") {"
       )
     )
-    #expect(result.output.contains("UserProfileView(state: state)"))
+    #expect(result.output.contains("UserProfileView(state: $0)"))
     #expect(result.reasons.isEmpty)
   }
 
@@ -69,13 +69,12 @@ struct RewriterParameterizedTests {
         #"let snapshotConfiguration = SnapshotConfiguration(name: "\(state)", value: state)"#
       )
     )
-    #expect(result.output.contains("let snapshotValue = UserProfileView(state: state)"))
     #expect(
       result.output.contains(
-        "#expectSnapshot(snapshotConfiguration, named: \"profile\") { _ in snapshotValue }"
+        "#expectSnapshot(snapshotConfiguration, named: \"profile\") {"
       )
     )
-    #expect(result.output.contains("UserProfileView(state: state)"))
+    #expect(result.output.contains("UserProfileView(state: $0)"))
     #expect(result.reasons.isEmpty)
   }
 

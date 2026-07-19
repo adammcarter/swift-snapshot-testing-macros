@@ -1246,6 +1246,32 @@ public struct SnapshotMigrationRewriter {
     let statementIndent = statementIndentation(for: body, closingIndent: closingIndent, source: source)
     let prelude = renderStatements(preludeStatements, indentation: statementIndent)
 
+    /*
+     Same reasoning as the `configurations:` path: with no prelude, hoisting the value into a
+     local only to return it from a closure that ignores its argument is ceremony, and the
+     migrated declaration is already `@MainActor` so the hoist buys no isolation. The
+     `snapshotConfiguration` line stays either way — there it was a redundant alias, here it is
+     genuine construction of the configuration from the argument.
+     */
+    if preludeStatements.isEmpty {
+      let closureIndent = statementIndent + "  "
+      let usesParameterOnce = Self.identifierOccurrences(of: parameterName, in: expression) == 1
+      let closureHeader = usesParameterOnce ? "{" : "{ \(parameterName) in"
+      let closureBody =
+        usesParameterOnce
+        ? Self.replacingIdentifier(parameterName, with: "$0", in: expression)
+        : expression
+
+      return """
+      {
+      \(statementIndent)\(configurationValuesConfigurationLine(parameterName: parameterName))
+      \(statementIndent)#expectSnapshot(snapshotConfiguration, named: \(displayNameExpression)) \(closureHeader)
+      \(closureIndent)\(closureBody)
+      \(statementIndent)}
+      \(closingIndent)}
+      """
+    }
+
     return """
     {
     \(statementIndent)\(configurationValuesConfigurationLine(parameterName: parameterName))
@@ -1303,10 +1329,19 @@ public struct SnapshotMigrationRewriter {
     "let snapshotConfiguration = SnapshotConfiguration(name: \"\\(\(parameterName))\", value: \(parameterName))"
   }
 
-  /// Matches `name` only as a whole identifier, so a parameter called `snapshot` is not found
-  /// inside `snapshotCount` or `makeSnapshot()`.
+  /**
+   Matches `name` only where it reads the parameter.
+
+   Whole-identifier boundaries keep a parameter called `snapshot` from matching inside
+   `snapshotCount` or `makeSnapshot()`. The trailing `:` exclusion keeps an argument *label* from
+   matching: in `UserProfileView(state: state)` only the second `state` reads the parameter.
+   Without it the label inflates the use count, and — worse, if the count ever fell the other way
+   — substitution would rewrite the label too and emit `UserProfileView($0: $0)`.
+   */
   private static func identifierPattern(for name: String) -> NSRegularExpression? {
-    try? NSRegularExpression(pattern: "(?<![A-Za-z0-9_$])\(NSRegularExpression.escapedPattern(for: name))(?![A-Za-z0-9_])")
+    try? NSRegularExpression(
+      pattern: "(?<![A-Za-z0-9_$])\(NSRegularExpression.escapedPattern(for: name))(?![A-Za-z0-9_])(?!\\s*:)"
+    )
   }
 
   private static func identifierOccurrences(of name: String, in text: String) -> Int {
