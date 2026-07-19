@@ -183,7 +183,7 @@ The colour-space change alone re-records everything, so there is no combination 
 
 Recommended once-only sequence:
 
-1. Migrate the source and rename references so assertions resolve their existing artifacts.
+1. Run `Tools/migrate-snapshot-tests --apply`, which migrates the source and renames the references together, so assertions resolve their existing artifacts.
 2. Run the suite and read the failures as a diff of your whole baseline.
 3. Spot-check a representative sample — especially any `.light` references, which were never valid under 2.x.
 4. Re-record, and commit the re-recorded references as their own reviewable commit, separate from the code migration.
@@ -194,7 +194,11 @@ iOS suites are unaffected by the scale and colour-space items: they inherit a re
 
 Legacy parameterised artifacts live at `__Snapshots__/<TestFile>/<case>/<display>_<size>_<theme>.<n>.<ext>`. v3 moved them to `__Snapshots__/<TestFile>/<display>/<case>_<display>_<size>_<theme>.<n>.<ext>` — the case name moved out of the folder and into the file-name prefix, and the folder became the test's display name.
 
-Migrated tests therefore do **not** resolve 2.x references until those files are renamed into the v3 layout. A missing reference records rather than fails, so an unmigrated baseline produces a green run that compares nothing. Rename the files as part of the migration; the mapping is mechanical and derivable from the old path alone.
+Migrated tests do **not** resolve 2.x references until those files are renamed into the v3 layout, and a missing reference records rather than fails — so an unrenamed baseline produces a green run that compares nothing.
+
+`Tools/migrate-snapshot-tests --apply` renames them for you, in the same run that rewrites the sources, so the two never go out of step. It applies both changes: the case/display swap above, and the explicit-size token (`fixed-size` becomes `fixed-<width>x<height>`, read from the suite declaration it just migrated). A dry run reports the renames without performing them.
+
+A rename whose destination already exists is reported rather than overwritten — that means the reference is already migrated, or two legacy artifacts collapse onto one v3 name, and silently clobbering either would destroy the evidence you are about to review.
 
 Once the references are in the v3 layout, naming stays stable as long as:
 
