@@ -8,42 +8,38 @@ struct AsserterTests {
 
   @Test
   func testSnapshotErrorIsReportedAsMessageNotError() async throws {
-    var capturedMessage: String?
-    var capturedError: Error?
+    var captured = [SnapshotFailure]()
 
-    let asserter = IssueRecordingAsserter(
-      base: MockAsserter(errorToThrow: SnapshotError(message: "Expected failure message")),
-      recordIssue: { message, error, _, _, _, _ in
-        capturedMessage = message
-        capturedError = error
-      }
-    )
+    let asserter = FailureCollectingAsserter(
+      base: MockAsserter(errorToThrow: SnapshotError(message: "Expected failure message"))
+    ) { failure in
+      captured.append(failure)
+    }
 
     asserter.assertSnapshot(MockRequest())
 
-    #expect(capturedMessage == "Expected failure message")
-    #expect(capturedError == nil)
+    #expect(captured.count == 1)
+    #expect(captured.first?.message == "Expected failure message")
+    #expect(captured.first?.error == nil)
   }
 
   @Test
   func testUnexpectedErrorIsReportedAsError() async throws {
     struct SomeError: Error, Equatable {}
 
-    var capturedMessage: String?
-    var capturedError: Error?
+    var captured = [SnapshotFailure]()
 
-    let asserter = IssueRecordingAsserter(
-      base: MockAsserter(errorToThrow: SomeError()),
-      recordIssue: { message, error, _, _, _, _ in
-        capturedMessage = message
-        capturedError = error
-      }
-    )
+    let asserter = FailureCollectingAsserter(
+      base: MockAsserter(errorToThrow: SomeError())
+    ) { failure in
+      captured.append(failure)
+    }
 
     asserter.assertSnapshot(MockRequest())
 
-    #expect(capturedMessage == nil)
-    #expect(capturedError is SomeError)
+    #expect(captured.count == 1)
+    #expect(captured.first?.message == nil)
+    #expect(captured.first?.error is SomeError)
   }
 }
 
