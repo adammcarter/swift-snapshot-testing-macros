@@ -17,7 +17,10 @@ private func makeTraitExpressions(node: AttributeSyntax?) -> [ExprSyntax]? {
     .arguments?
     .as(LabeledExprListSyntax.self)?
     .filter {
+      // String and nil literals can only ever be the optional display name — never a trait.
+      // Boxing a `nil` display name as a trait generates non-compiling code.
       $0.expression.is(StringLiteralExprSyntax.self) == false
+        && $0.expression.is(NilLiteralExprSyntax.self) == false
         && $0.label == nil
     }
     .compactMap(\.expression)

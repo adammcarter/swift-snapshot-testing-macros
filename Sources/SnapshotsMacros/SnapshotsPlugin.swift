@@ -6,5 +6,6 @@ struct SnapshotsPlugin: CompilerPlugin {
   let providingMacros: [Macro.Type] = [
     SnapshotSuiteMacro.self,
     SnapshotTestMacro.self,
+    ExpectSnapshotMacro.self,
   ]
 }

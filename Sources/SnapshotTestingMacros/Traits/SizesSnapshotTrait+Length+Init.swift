@@ -1,34 +1,43 @@
 import Foundation
+import Testing
 
-extension SnapshotTrait where Self == SizesSnapshotTrait {
+extension Testing.Trait where Self == SizesSnapshotTrait {
   /// Allows the snapshot to render to the specific width and height.
   ///
   /// - Parameters:
   ///   - width: The width to use.
   ///   - height: The height to use.
-  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device.
+  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at two pixels per point, keeping references machine-independent).
   /// - Returns: A trait that applies the specific size.
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
   ///   // explicit `.fixed()`
-  ///   @SnapshotTest(.sizes(width: .fixed(300), height: .fixed(200)))
-  ///   func fixedLength() -> some View { ... }
+  ///   @Test(.sizes(width: .fixed(300), height: .fixed(200)))
+  ///   func fixedLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // integer literal
-  ///   @SnapshotTest(.sizes(width: 300, height: 200))
-  ///   func integerLiteralLength() -> some View { ... }
+  ///   @Test(.sizes(width: 300, height: 200))
+  ///   func integerLiteralLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // float literal
-  ///   @SnapshotTest(.sizes(width: 300.0, height: 200.0))
-  ///   func floatingPointLiteralLength() -> some View { ... }
+  ///   @Test(.sizes(width: 300.0, height: 200.0))
+  ///   func floatingPointLiteralLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // explicit scale
-  ///   @SnapshotTest(.sizes(width: 300, height: 200, scale: 2.0))
-  ///   func scaledLength() -> some View { ... }
+  ///   @Test(.sizes(width: 300, height: 200, scale: 2.0))
+  ///   func scaledLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func sizes(
@@ -47,29 +56,37 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
   ///
   /// - Parameters:
   ///   - width: The width to use.
-  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device.
+  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at two pixels per point, keeping references machine-independent).
   /// - Returns: A trait that applies the width with minimum height.
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
   ///   // explicit `.fixed()`
-  ///   @SnapshotTest(.sizes(width: .fixed(300)))
-  ///   func fixedLengthWidth() -> some View { ... }
+  ///   @Test(.sizes(width: .fixed(300)))
+  ///   func fixedLengthWidth() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // integer literal
-  ///   @SnapshotTest(.sizes(width: 300))
-  ///   func integerLiteralWidth() -> some View { ... }
+  ///   @Test(.sizes(width: 300))
+  ///   func integerLiteralWidth() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // float literal
-  ///   @SnapshotTest(.sizes(width: 300.0))
-  ///   func floatingPointLiteralWidth() -> some View { ... }
+  ///   @Test(.sizes(width: 300.0))
+  ///   func floatingPointLiteralWidth() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // explicit scale
-  ///   @SnapshotTest(.sizes(width: 300, scale: 2.0))
-  ///   func scaledWidth() -> some View { ... }
+  ///   @Test(.sizes(width: 300, scale: 2.0))
+  ///   func scaledWidth() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func sizes(
@@ -83,29 +100,37 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
   ///
   /// - Parameters:
   ///   - height: The height to use.
-  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device.
+  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at two pixels per point, keeping references machine-independent).
   /// - Returns: A trait that applies the height with minimum width.
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
   ///   // explicit `.fixed()`
-  ///   @SnapshotTest(.sizes(height: .fixed(200)))
-  ///   func fixedLengthHeight() -> some View { ... }
+  ///   @Test(.sizes(height: .fixed(200)))
+  ///   func fixedLengthHeight() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // integer literal
-  ///   @SnapshotTest(.sizes(height: 200))
-  ///   func integerLiteralHeight() -> some View { ... }
+  ///   @Test(.sizes(height: 200))
+  ///   func integerLiteralHeight() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // float literal
-  ///   @SnapshotTest(.sizes(height: 200.0))
-  ///   func floatingPointLiteralHeight() -> some View { ... }
+  ///   @Test(.sizes(height: 200.0))
+  ///   func floatingPointLiteralHeight() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // explicit scale
-  ///   @SnapshotTest(.sizes(height: 200, scale: 2.0))
-  ///   func scaledHeight() -> some View { ... }
+  ///   @Test(.sizes(height: 200, scale: 2.0))
+  ///   func scaledHeight() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func sizes(
@@ -119,20 +144,24 @@ extension SnapshotTrait where Self == SizesSnapshotTrait {
   ///
   /// - Parameters:
   ///   - length: The length to use for both width and height. Defaults to `.minimum`.
-  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device.
+  ///   - scale: A scale to apply to the sizing. Use `2.0` for @2x, `3.0` for @3x. Set to `nil` to inherit from the test device (on macOS, `nil` renders at two pixels per point, keeping references machine-independent).
   /// - Returns: A trait that applies minimum sizing.
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.sizes(.minimum))
-  ///   func minimumLength() -> some View { ... }
+  ///   @Test(.sizes(.minimum))
+  ///   func minimumLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   ///
   ///   // explicit scale
-  ///   @SnapshotTest(.sizes(.minimum, scale: 2.0))
-  ///   func scaledMinimumLength() -> some View { ... }
+  ///   @Test(.sizes(.minimum, scale: 2.0))
+  ///   func scaledMinimumLength() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func sizes(

@@ -15,6 +15,18 @@ extension DiagnosticProtocol where Self == DiagnosticFactory {
     )
   }
 
+  static func generalErrorMessage(
+    message: String,
+    node: some SyntaxProtocol,
+    fixIts: [FixIt] = []
+  ) -> Diagnostic {
+    .init(
+      node: node,
+      message: .generalErrorMessage(message),
+      fixIts: fixIts
+    )
+  }
+
   static func missingAttribute(
     _ attribute: String,
     suffix: String? = nil,
@@ -189,6 +201,14 @@ extension DiagnosticMessage where Self == DiagnosticWarningMessage {
   }
 }
 
+extension DiagnosticMessage where Self == DiagnosticErrorMessage {
+  static func generalErrorMessage(
+    _ message: String
+  ) -> DiagnosticErrorMessage {
+    .init(message: message)
+  }
+}
+
 extension FixItMessage where Self == FixItWarning {
   static func generalMessage(
     _ message: String
@@ -245,6 +265,15 @@ struct DiagnosticFactory: DiagnosticProtocol {
 struct DiagnosticWarningMessage: DiagnosticMessage {
   let message: String
   let severity: DiagnosticSeverity = .warning
+
+  var diagnosticID: MessageID {
+    .init(domain: "SnapshotsMacro", id: message)
+  }
+}
+
+struct DiagnosticErrorMessage: DiagnosticMessage {
+  let message: String
+  let severity: DiagnosticSeverity = .error
 
   var diagnosticID: MessageID {
     .init(domain: "SnapshotsMacro", id: message)
