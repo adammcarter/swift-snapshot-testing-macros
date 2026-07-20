@@ -9,6 +9,7 @@ import SnapshotTestingMacros
 import SwiftUI
 import Testing
 
+@MainActor
 @Suite(.theme(.all), .sizes(.minimum))
 struct MySnapshots {
   @Test
@@ -17,6 +18,12 @@ struct MySnapshots {
   }
 }
 ```
+
+Mark the suite `@MainActor`. A SwiftUI `View`'s initialiser is main-actor isolated, so building
+one in a non-isolated test warns under Swift 6 (`call to main actor-isolated initializer … in a
+synchronous nonisolated context`). Standard-library views like `Text` above happen not to, which
+makes the warning easy to miss until a custom view appears. Rendering is on the main actor either
+way — this only quiets the diagnostic.
 
 ## Named snapshots
 
