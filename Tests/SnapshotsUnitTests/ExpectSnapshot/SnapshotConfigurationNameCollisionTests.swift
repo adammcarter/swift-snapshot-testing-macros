@@ -172,6 +172,93 @@ struct SnapshotConfigurationNameCollisionTests {
   }
 
   @Test
+  func derivedNamesDifferingOnlyByCaseCollideAcrossAttempts() {
+    // Sanitization preserves case but the filesystem does not: "Card" and "card" reach one
+    // reference file, so the second case must be surfaced rather than silently overwrite.
+    let first = ExpectSnapshotAdapter.resolvedConfiguration(
+      from: SnapshotConfiguration(name: nil, value: "Card"),
+      context: SnapshotExecutionContext(function: "myView()"),
+      fileID: "SnapshotsUnitTests/CollisionCase.swift",
+      filePath: "/tmp/CollisionCase.swift",
+      line: 10,
+      column: 5
+    )
+
+    #expect(first?.name == "Card")
+
+    var second: SnapshotConfiguration<String>?
+    withKnownIssue {
+      second = ExpectSnapshotAdapter.resolvedConfiguration(
+        from: SnapshotConfiguration(name: nil, value: "card"),
+        context: SnapshotExecutionContext(function: "myView()"),
+        fileID: "SnapshotsUnitTests/CollisionCase.swift",
+        filePath: "/tmp/CollisionCase.swift",
+        line: 10,
+        column: 5
+      )
+    }
+
+    #expect(second == nil)
+  }
+
+  @Test
+  func caseDifferencesSurvivingSanitizationCollideAcrossAttempts() {
+    // "Min Size" and "min-size" sanitize to different strings — only case-folding catches
+    // that they share one reference file.
+    let first = ExpectSnapshotAdapter.resolvedConfiguration(
+      from: SnapshotConfiguration(name: nil, value: "Min Size"),
+      context: SnapshotExecutionContext(function: "myView()"),
+      fileID: "SnapshotsUnitTests/CollisionSanitized.swift",
+      filePath: "/tmp/CollisionSanitized.swift",
+      line: 10,
+      column: 5
+    )
+
+    #expect(first?.name == "Min-Size")
+
+    var second: SnapshotConfiguration<String>?
+    withKnownIssue {
+      second = ExpectSnapshotAdapter.resolvedConfiguration(
+        from: SnapshotConfiguration(name: nil, value: "min-size"),
+        context: SnapshotExecutionContext(function: "myView()"),
+        fileID: "SnapshotsUnitTests/CollisionSanitized.swift",
+        filePath: "/tmp/CollisionSanitized.swift",
+        line: 10,
+        column: 5
+      )
+    }
+
+    #expect(second == nil)
+  }
+
+  @Test
+  func derivedNamesDifferingOnlyByCaseWithinOneAttemptAreNotACollision() {
+    // A loop, not two cases: the occurrence index must fold case the same way the registry
+    // key does, or the second iteration is misreported as a collision.
+    let context = SnapshotExecutionContext(function: "myView()")
+
+    let first = ExpectSnapshotAdapter.resolvedConfiguration(
+      from: SnapshotConfiguration(name: nil, value: "Card"),
+      context: context,
+      fileID: "SnapshotsUnitTests/CollisionCaseLoop.swift",
+      filePath: "/tmp/CollisionCaseLoop.swift",
+      line: 10,
+      column: 5
+    )
+    let second = ExpectSnapshotAdapter.resolvedConfiguration(
+      from: SnapshotConfiguration(name: nil, value: "card"),
+      context: context,
+      fileID: "SnapshotsUnitTests/CollisionCaseLoop.swift",
+      filePath: "/tmp/CollisionCaseLoop.swift",
+      line: 10,
+      column: 5
+    )
+
+    #expect(first?.name == "Card")
+    #expect(second?.name == "card")
+  }
+
+  @Test
   func repeatingTheSameCaseValueAcrossAttemptsIsNotACollision() {
     // Xcode repetitions and retries re-run the same case with the same value.
     for _ in 1 ... 3 {

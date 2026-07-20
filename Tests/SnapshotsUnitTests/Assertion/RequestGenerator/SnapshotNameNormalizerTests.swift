@@ -16,6 +16,18 @@ struct SnapshotNameNormalizerTests {
   }
 
   @Test(arguments: [
+    ("Card", "card"),
+    ("card", "card"),
+    ("Min Size", "min-size"),
+    ("min-size", "min-size"),
+    ("---Trim---", "trim"),
+    ("", ""),
+  ])
+  func referenceFileKey(input: String, expected: String) {
+    #expect(SnapshotNameNormalizer.referenceFileKey(from: input) == expected)
+  }
+
+  @Test(arguments: [
     ("Some name", "Some-name"),
     ("Menu/Item", "Menu/Item"),
     ("dealer is verified/has reply/view", "dealer-is-verified/has-reply/view"),
