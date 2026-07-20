@@ -20,6 +20,19 @@ extension SnapshotTestTests {
           }
         }
         """
+      } diagnostics: {
+        """
+        @MainActor
+        @Suite
+        enum MyTests {
+          @SnapshotTest
+          ┬────────────
+          ╰─ ⚠️ '@SnapshotTest' has no effect without an enclosing '@SnapshotSuite' type; no snapshot test will be generated.
+          func aTest() -> some View {
+            Text("test")
+          }
+        }
+        """
       } expansion: {
         """
         @MainActor
@@ -27,23 +40,6 @@ extension SnapshotTestTests {
         enum MyTests {
           func aTest() -> some View {
             Text("test")
-          }
-
-          enum __generator_container_aTest {
-            @MainActor
-            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
-              SnapshotTestingMacros.SnapshotViewGenerator<Void>(
-                displayName: "aTest",
-                configuration: configuration,
-                makeValue: {
-                  MyTests().aTest()
-                },
-                fileID: #fileID,
-                filePath: #filePath,
-                line: 4,
-                column: 3
-              )
-            }
           }
         }
         """
