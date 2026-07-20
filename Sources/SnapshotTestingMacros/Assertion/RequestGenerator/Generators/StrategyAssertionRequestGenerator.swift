@@ -90,6 +90,10 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
     // representation in `_subtreeDescription`, so it cannot affect the artifact.
     let size = size
     let theme = theme
+    let fileID = context.fileID
+    let filePath = context.filePath
+    let line = context.line
+    let column = context.column
 
     return Snapshotting<SnapshotView, String>.recursiveDescription
       .pullback { viewController in
@@ -102,10 +106,15 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
           view.layoutSubtreeIfNeeded()
           box.value = view
         }
-        guard let view = box.value else {
-          preconditionFailure("AppKit recursive-description preparation returned no view.")
-        }
-        return view
+        return SnapshotRuntimePreconditions.requireMainActorResult(
+          box.value,
+          fallback: SnapshotView(frame: .init(origin: .zero, size: size)),
+          message: "AppKit recursive-description preparation returned no view.",
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
       }
     #endif
   }
@@ -125,6 +134,10 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
     let size = size
     let theme = theme
     let displayScale = displayScale
+    let fileID = context.fileID
+    let filePath = context.filePath
+    let line = context.line
+    let column = context.column
     // Captured now, while the decorator trait's task-local is still bound; the render itself
     // runs outside that scope. Re-applying the color per render (under the themed appearance)
     // lets dynamic colors resolve differently for the light and dark artifacts.
@@ -142,10 +155,15 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
             backgroundColor: backgroundColor
           )
         }
-        guard let image = box.value else {
-          preconditionFailure("AppKit snapshot render returned no image.")
-        }
-        return image
+        return SnapshotRuntimePreconditions.requireMainActorResult(
+          box.value,
+          fallback: NSImage(size: size),
+          message: "AppKit snapshot render returned no image.",
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
       }
   }
 

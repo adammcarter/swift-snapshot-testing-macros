@@ -48,4 +48,47 @@ struct SnapshotRuntimePreconditionTests {
     #expect(test?.id == currentTest.id)
     #expect(recordedComments.isEmpty)
   }
+
+  @Test
+  func missingMainActorResultRecordsFailureAtTheAssertionInsteadOfTrapping() {
+    var recordedFailures: [SnapshotFailure] = []
+
+    let value = SnapshotRuntimePreconditions.requireMainActorResult(
+      String?.none,
+      fallback: "fallback",
+      message: "AppKit snapshot render returned no image.",
+      fileID: "Module/File.swift",
+      filePath: "/tmp/File.swift",
+      line: 42,
+      column: 7,
+      recordFailure: { recordedFailures.append($0) }
+    )
+
+    #expect(value == "fallback")
+    #expect(recordedFailures.count == 1)
+    #expect(recordedFailures.first?.message == "AppKit snapshot render returned no image.")
+    #expect(recordedFailures.first?.error == nil)
+    #expect(recordedFailures.first?.fileID.description == "Module/File.swift")
+    #expect(recordedFailures.first?.line == 42)
+    #expect(recordedFailures.first?.column == 7)
+  }
+
+  @Test
+  func presentMainActorResultPassesThroughWithoutRecording() {
+    var recordedFailures: [SnapshotFailure] = []
+
+    let value = SnapshotRuntimePreconditions.requireMainActorResult(
+      "rendered",
+      fallback: "fallback",
+      message: "AppKit snapshot render returned no image.",
+      fileID: "Module/File.swift",
+      filePath: "/tmp/File.swift",
+      line: 42,
+      column: 7,
+      recordFailure: { recordedFailures.append($0) }
+    )
+
+    #expect(value == "rendered")
+    #expect(recordedFailures.isEmpty)
+  }
 }
