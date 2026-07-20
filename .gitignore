@@ -1,6 +1,7 @@
 .DS_Store
 /.build
 /Packages
+/.worktrees/
 xcuserdata/
 Derived/
 
@@ -9,6 +10,11 @@ DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
 .vscode/
+/docs/superpowers/
 swift-snapshot-testing-macros.xcodeproj/project.pbxproj
 swift-snapshot-testing-macros.xcodeproj/project.xcworkspace/contents.xcworkspacedata
 /Tests/SnapshotsPlayground/__Snapshots__/
+
+# Agent working artifacts: audits, plans and specs are session records, not
+# published documentation. Documentation/ (capital D) is the shipped guide set.
+docs/
