@@ -19,6 +19,12 @@ struct SnapshotFailure: Sendable {
   /// The underlying error for failures that are not snapshot verification failures.
   let error: (any Error)?
 
+  /// The mismatch's reference and newly-taken images, attached alongside the issue.
+  ///
+  /// `nil` whenever there was nothing to compare — a missing reference on first record — or
+  /// when the failure was not a snapshot verification failure at all.
+  var artifacts: SnapshotFailureArtifacts?
+
   let fileID: StaticString
   let filePath: StaticString
   let line: UInt
@@ -51,6 +57,23 @@ struct SnapshotFailure: Sendable {
         sourceLocation: sourceLocation
       )
     }
+
+    /*
+     Attached from here — the test's task — for the same reason the issue is: an attachment
+     recorded inside the adapter's main-queue callout has no task to attribute it to.
+
+     Swift Testing gained `Attachment` in 6.2, and this package supports toolchains that predate
+     it. Older toolchains keep the message, which already carries the reference and failure
+     paths, so the diagnostic degrades rather than disappearing.
+     */
+    #if compiler(>=6.2)
+    for attachment in artifacts?.attachments() ?? [] {
+      Attachment.record(
+        Attachment(attachment.data, named: attachment.name),
+        sourceLocation: sourceLocation
+      )
+    }
+    #endif
     #else
     XCTFail(message ?? error.map { "\($0)" } ?? "", file: filePath, line: line)
     #endif
