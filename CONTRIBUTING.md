@@ -33,17 +33,12 @@ swift test --filter SnapshotTestTests
 ```
 
 ### Integration Tests
-Integration tests require a specific simulator (iPhone 17, iOS 26.2) to match reference snapshots.
+Integration tests render against committed references, so run them on the same Xcode CI records
+on. That toolchain and the simulator destination are defined once in `mise.toml` (`[env]`), so use
+the mise task rather than a hand-written `xcodebuild` line — it always uses the single source:
 
-Run via command line:
 ```bash
 mise run test-integration
-```
-or
-```bash
-xcodebuild test \
-  -scheme SnapshotsIntegrationTests \
-  -destination "platform=iOS Simulator,name=iPhone 17"
 ```
 
 ## Code Style

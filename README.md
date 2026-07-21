@@ -112,10 +112,11 @@ xcodebuild test \
   -destination 'platform=macOS'
 ```
 
+Integration tests render against committed references, so the Xcode and simulator destination are
+pinned once in `mise.toml`; run them through the mise task so they always use that single source:
+
 ```shell
-xcodebuild test \
-  -scheme SnapshotsIntegrationTests \
-  -destination "platform=iOS Simulator,name=iPhone 17"
+mise run test-integration
 ```
 
 Latest-Xcode CI also runs fast macOS build-for-testing smoke checks on 26.4 and 26.5:

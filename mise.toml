@@ -1,8 +1,16 @@
 [tools]
 swiftlint = "0.59.0"
 
+[env]
+# Single source of truth for snapshot rendering. CI pulls these into the job environment via the
+# .github/actions/snapshot-config composite action; the freshness check in run-tests.yaml warns
+# when SNAPSHOT_XCODE falls behind the runner's newest. The simulator runtime is intentionally
+# absent from the destination: the pinned Xcode's own newest runtime is the source of truth.
+SNAPSHOT_XCODE = "26.6"
+IOS_SIM_DESTINATION = "platform=iOS Simulator,name=iPhone 17"
+
 [tasks]
 lint = ["./Tools/format-check", "./Tools/check-packages"]
 format = "./Tools/format"
 test = "swift test"
-test-integration = "xcodebuild test -scheme SnapshotsIntegrationTests -destination 'platform=iOS Simulator,name=iPhone 17'"
+test-integration = "xcodebuild test -scheme SnapshotsIntegrationTests -destination \"$IOS_SIM_DESTINATION\""

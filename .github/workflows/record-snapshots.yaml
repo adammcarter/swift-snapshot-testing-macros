@@ -18,13 +18,10 @@ on:
       - 'record/**'
   workflow_dispatch:
 
-env:
-  # Keep in sync with run-tests.yaml. References are recorded here and verified there, so both
-  # must use the same Xcode. The freshness check in run-tests.yaml warns when this is behind the
-  # runner's newest.
-  SNAPSHOT_XCODE: '26.6'
-
 jobs:
+  # SNAPSHOT_XCODE and IOS_SIM_DESTINATION come from mise.toml [env] via the snapshot-config
+  # composite action — the same single source run-tests.yaml verifies against, so records and
+  # verifies can never drift onto different toolchains or simulators.
   record:
     name: Record (${{ matrix.scheme }})
     runs-on: macos-26
@@ -33,25 +30,36 @@ jobs:
       matrix:
         include:
           - scheme: SnapshotsUnitTests
-            destination: platform=macOS
+            platform: macos
             reference_paths: Tests/SnapshotsUnitTests/ExpectSnapshot/__Snapshots__
-          # iOS simulator runtime is deliberately unpinned: the latest Xcode's own newest runtime
-          # is the source of truth, so references track whatever it ships rather than a fixed OS.
           - scheme: SnapshotsIntegrationTests
-            destination: platform=iOS Simulator,name=iPhone 17
+            platform: ios
             reference_paths: Tests/SnapshotsIntegrationTests/ExpectSnapshot/__Snapshots__
           - scheme: SnapshotsIntegrationRepetitionTests
-            destination: platform=iOS Simulator,name=iPhone 17
+            platform: ios
             reference_paths: Tests/SnapshotsIntegrationRepetitionTests/__Snapshots__
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load snapshot config
+        uses: ./.github/actions/snapshot-config
+
       - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: ${{ env.SNAPSHOT_XCODE }}
 
-      - name: Checkout
-        uses: actions/checkout@v4
+      # macOS needs no simulator; iOS uses the single-sourced destination. The runtime is
+      # unpinned so references track whatever the pinned Xcode's newest simulator ships.
+      - name: Resolve destination
+        run: |
+          if [ "${{ matrix.platform }}" = "ios" ]; then
+            echo "DESTINATION=$IOS_SIM_DESTINATION" >> "$GITHUB_ENV"
+          else
+            echo "DESTINATION=platform=macOS" >> "$GITHUB_ENV"
+          fi
 
       - name: Disable prebuilts
         run: |
@@ -66,13 +74,13 @@ jobs:
         run: |
           xcodebuild test \
             -scheme ${{ matrix.scheme }} \
-            -destination '${{ matrix.destination }}'
+            -destination "$DESTINATION"
 
       - name: Verify run (must pass against recorded references)
         run: |
           xcodebuild test \
             -scheme ${{ matrix.scheme }} \
-            -destination '${{ matrix.destination }}'
+            -destination "$DESTINATION"
 
       - name: Upload recorded references
         uses: actions/upload-artifact@v4

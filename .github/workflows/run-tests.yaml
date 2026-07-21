@@ -13,19 +13,21 @@ concurrency:
   group: run-tests-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  # The single Xcode that records AND verifies every snapshot reference. Snapshot rendering is
-  # bound to the toolchain, so references are recorded on this exact version (record-snapshots.yaml
-  # must match) and verified here. Bump this — and re-record — when the freshness check below warns
-  # the runner offers a newer one. Version-independent logic and build jobs deliberately do NOT use
-  # this; they run across the whole supported range.
-  SNAPSHOT_XCODE: '26.6'
-
 jobs:
+  # SNAPSHOT_XCODE and IOS_SIM_DESTINATION are the single source of truth in mise.toml [env]. The
+  # snapshot-rendering jobs below pull them via the .github/actions/snapshot-config composite
+  # action. Version-independent logic and build jobs deliberately do NOT use them; they run across
+  # the whole supported range.
   xcode-freshness:
     name: Xcode Freshness
     runs-on: macos-26
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load snapshot config
+        uses: ./.github/actions/snapshot-config
+
       # Non-failing on purpose: a hard gate here would block an unrelated hotfix the day GitHub
       # bumps the runner's Xcode. The warning surfaces on the run summary instead.
       - name: Warn if the runner offers a newer Xcode than the snapshot pin
@@ -35,7 +37,7 @@ jobs:
           echo "snapshot pin: $SNAPSHOT_XCODE | newest on runner: ${latest:-none}"
           if [ -n "$latest" ] && [ "$latest" != "$SNAPSHOT_XCODE" ] \
              && [ "$(printf '%s\n%s\n' "$SNAPSHOT_XCODE" "$latest" | sort -V | tail -1)" = "$latest" ]; then
-            echo "::warning title=Newer Xcode available::Snapshots are pinned to Xcode $SNAPSHOT_XCODE but the runner offers $latest — bump SNAPSHOT_XCODE in run-tests.yaml and record-snapshots.yaml, then re-record references."
+            echo "::warning title=Newer Xcode available::Snapshots are pinned to Xcode $SNAPSHOT_XCODE (mise.toml) but the runner offers $latest — bump SNAPSHOT_XCODE and re-record references."
           fi
 
   format-and-lint:
@@ -88,13 +90,16 @@ jobs:
     runs-on: macos-26
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load snapshot config
+        uses: ./.github/actions/snapshot-config
+
       - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: ${{ env.SNAPSHOT_XCODE }}
-
-      - name: Checkout
-        uses: actions/checkout@v4
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -110,7 +115,7 @@ jobs:
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationTests \
-            -destination "platform=iOS Simulator,name=iPhone 17"
+            -destination "$IOS_SIM_DESTINATION"
     
   ios-integration-repetition-tests:
     name: Integration Repetition Tests
@@ -118,13 +123,16 @@ jobs:
     runs-on: macos-26
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load snapshot config
+        uses: ./.github/actions/snapshot-config
+
       - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: ${{ env.SNAPSHOT_XCODE }}
-
-      - name: Checkout
-        uses: actions/checkout@v4
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -140,7 +148,7 @@ jobs:
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationRepetitionTests \
-            -destination "platform=iOS Simulator,name=iPhone 17"
+            -destination "$IOS_SIM_DESTINATION"
 
   macos-unit-tests:
     name: Unit Tests
@@ -148,13 +156,16 @@ jobs:
     runs-on: macos-26
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load snapshot config
+        uses: ./.github/actions/snapshot-config
+
       - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: ${{ env.SNAPSHOT_XCODE }}
-
-      - name: Checkout
-        uses: actions/checkout@v4
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -182,8 +193,10 @@ jobs:
         platform:
           - name: macOS
             destination: 'platform=macOS'
+          # A generic destination: this only builds (never runs), so it needs no specific device
+          # or simulator runtime, and stays independent of the snapshot destination in mise.toml.
           - name: iOS
-            destination: 'platform=iOS Simulator,name=iPhone 17'
+            destination: 'generic/platform=iOS Simulator'
 
     steps:
       - name: Select Xcode version (${{ matrix.xcode }})
