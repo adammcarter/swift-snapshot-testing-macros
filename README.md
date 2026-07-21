@@ -115,7 +115,7 @@ xcodebuild test \
 ```shell
 xcodebuild test \
   -scheme SnapshotsIntegrationTests \
-  -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64"
+  -destination "platform=iOS Simulator,name=iPhone 17"
 ```
 
 Latest-Xcode CI also runs fast macOS build-for-testing smoke checks on 26.4 and 26.5:

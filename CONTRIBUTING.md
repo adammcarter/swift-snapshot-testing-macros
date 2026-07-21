@@ -43,7 +43,7 @@ or
 ```bash
 xcodebuild test \
   -scheme SnapshotsIntegrationTests \
-  -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64"
+  -destination "platform=iOS Simulator,name=iPhone 17"
 ```
 
 ## Code Style

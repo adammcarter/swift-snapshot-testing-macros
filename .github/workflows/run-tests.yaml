@@ -13,7 +13,31 @@ concurrency:
   group: run-tests-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # The single Xcode that records AND verifies every snapshot reference. Snapshot rendering is
+  # bound to the toolchain, so references are recorded on this exact version (record-snapshots.yaml
+  # must match) and verified here. Bump this — and re-record — when the freshness check below warns
+  # the runner offers a newer one. Version-independent logic and build jobs deliberately do NOT use
+  # this; they run across the whole supported range.
+  SNAPSHOT_XCODE: '26.6'
+
 jobs:
+  xcode-freshness:
+    name: Xcode Freshness
+    runs-on: macos-26
+    steps:
+      # Non-failing on purpose: a hard gate here would block an unrelated hotfix the day GitHub
+      # bumps the runner's Xcode. The warning surfaces on the run summary instead.
+      - name: Warn if the runner offers a newer Xcode than the snapshot pin
+        run: |
+          latest=$(ls -d /Applications/Xcode_*.app 2>/dev/null \
+            | sed -nE 's|.*/Xcode_([0-9]+\.[0-9]+).*\.app|\1|p' | sort -V | tail -1)
+          echo "snapshot pin: $SNAPSHOT_XCODE | newest on runner: ${latest:-none}"
+          if [ -n "$latest" ] && [ "$latest" != "$SNAPSHOT_XCODE" ] \
+             && [ "$(printf '%s\n%s\n' "$SNAPSHOT_XCODE" "$latest" | sort -V | tail -1)" = "$latest" ]; then
+            echo "::warning title=Newer Xcode available::Snapshots are pinned to Xcode $SNAPSHOT_XCODE but the runner offers $latest — bump SNAPSHOT_XCODE in run-tests.yaml and record-snapshots.yaml, then re-record references."
+          fi
+
   format-and-lint:
     name: Format and Lint
     runs-on: macos-26
@@ -59,19 +83,15 @@ jobs:
           swift test --filter SnapshotTestTests
     
   ios-integration-tests:
-    name: Integration Tests (${{ matrix.xcode }})
+    name: Integration Tests
     needs: [format-and-lint, swift-build-matrix]
     runs-on: macos-26
-    strategy:
-      fail-fast: false
-      matrix:
-        xcode: ['26.3', '26.5']
 
     steps:
-      - name: Select Xcode version (${{ matrix.xcode }})
+      - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: ${{ matrix.xcode }}
+          xcode-version: ${{ env.SNAPSHOT_XCODE }}
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -86,14 +106,11 @@ jobs:
           defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
           defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
 
-      - name: List available simulator runtimes
-        run: xcrun simctl list runtimes
-
       - name: Run SnapshotsIntegrationTests (iOS)
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationTests \
-            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64"
+            -destination "platform=iOS Simulator,name=iPhone 17"
     
   ios-integration-repetition-tests:
     name: Integration Repetition Tests
@@ -101,10 +118,10 @@ jobs:
     runs-on: macos-26
 
     steps:
-      - name: Select Xcode version (26.3)
+      - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '26.3'
+          xcode-version: ${{ env.SNAPSHOT_XCODE }}
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -123,7 +140,7 @@ jobs:
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationRepetitionTests \
-            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64"
+            -destination "platform=iOS Simulator,name=iPhone 17"
 
   macos-unit-tests:
     name: Unit Tests
@@ -131,10 +148,10 @@ jobs:
     runs-on: macos-26
 
     steps:
-      - name: Select Xcode version (26.3)
+      - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '26.3'
+          xcode-version: ${{ env.SNAPSHOT_XCODE }}
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -166,7 +183,7 @@ jobs:
           - name: macOS
             destination: 'platform=macOS'
           - name: iOS
-            destination: 'platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64'
+            destination: 'platform=iOS Simulator,name=iPhone 17'
 
     steps:
       - name: Select Xcode version (${{ matrix.xcode }})

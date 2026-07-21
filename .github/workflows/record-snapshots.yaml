@@ -18,6 +18,12 @@ on:
       - 'record/**'
   workflow_dispatch:
 
+env:
+  # Keep in sync with run-tests.yaml. References are recorded here and verified there, so both
+  # must use the same Xcode. The freshness check in run-tests.yaml warns when this is behind the
+  # runner's newest.
+  SNAPSHOT_XCODE: '26.6'
+
 jobs:
   record:
     name: Record (${{ matrix.scheme }})
@@ -29,18 +35,20 @@ jobs:
           - scheme: SnapshotsUnitTests
             destination: platform=macOS
             reference_paths: Tests/SnapshotsUnitTests/ExpectSnapshot/__Snapshots__
+          # iOS simulator runtime is deliberately unpinned: the latest Xcode's own newest runtime
+          # is the source of truth, so references track whatever it ships rather than a fixed OS.
           - scheme: SnapshotsIntegrationTests
-            destination: platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64
-            reference_paths: Tests/SnapshotsIntegrationTests/ExpectSnapshot/__Snapshots__ Tests/SnapshotsIntegrationTests/SnapshotTest/__Snapshots__ Tests/SnapshotsIntegrationTests/SnapshotSuite/__Snapshots__
+            destination: platform=iOS Simulator,name=iPhone 17
+            reference_paths: Tests/SnapshotsIntegrationTests/ExpectSnapshot/__Snapshots__
           - scheme: SnapshotsIntegrationRepetitionTests
-            destination: platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64
+            destination: platform=iOS Simulator,name=iPhone 17
             reference_paths: Tests/SnapshotsIntegrationRepetitionTests/__Snapshots__
 
     steps:
-      - name: Select Xcode version (26.3)
+      - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '26.3'
+          xcode-version: ${{ env.SNAPSHOT_XCODE }}
 
       - name: Checkout
         uses: actions/checkout@v4
