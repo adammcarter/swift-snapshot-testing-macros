@@ -1,0 +1,25 @@
+name: PR Create Test
+on:
+  push:
+    branches: [test/pr-create]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch="pr-create-test-${{ github.run_id }}"
+          git checkout -b "$branch"
+          date > .pr-create-test-marker
+          git add -A && git commit -m "test: pr-create mechanism"
+          git push origin "$branch"
+          url=$(gh pr create --base "${{ github.ref_name }}" --head "$branch" --title "TEST: pr-create (delete me)" --body "Throwaway — verifying Actions can open PRs.")
+          echo "PR_URL=$url"
