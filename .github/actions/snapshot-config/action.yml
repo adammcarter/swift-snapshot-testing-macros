@@ -13,4 +13,5 @@ runs:
       shell: bash
       run: |
         echo "SNAPSHOT_XCODE=$(mise exec -- printenv SNAPSHOT_XCODE)" >> "$GITHUB_ENV"
+        echo "SNAPSHOT_MACOS=$(mise exec -- printenv SNAPSHOT_MACOS)" >> "$GITHUB_ENV"
         echo "IOS_SIM_DESTINATION=$(mise exec -- printenv IOS_SIM_DESTINATION)" >> "$GITHUB_ENV"

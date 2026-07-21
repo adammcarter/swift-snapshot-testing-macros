@@ -18,8 +18,8 @@ jobs:
   # snapshot-rendering jobs below pull them via the .github/actions/snapshot-config composite
   # action. Version-independent logic and build jobs deliberately do NOT use them; they run across
   # the whole supported range.
-  xcode-freshness:
-    name: Xcode Freshness
+  snapshot-environment:
+    name: Snapshot Environment
     runs-on: macos-26
     steps:
       - name: Checkout
@@ -28,16 +28,27 @@ jobs:
       - name: Load snapshot config
         uses: ./.github/actions/snapshot-config
 
-      # Non-failing on purpose: a hard gate here would block an unrelated hotfix the day GitHub
-      # bumps the runner's Xcode. The warning surfaces on the run summary instead.
+      # Both checks are non-failing on purpose: a hard gate would block an unrelated hotfix the day
+      # GitHub bumps the runner. The warnings surface on the run summary instead.
       - name: Warn if the runner offers a newer Xcode than the snapshot pin
         run: |
           latest=$(ls -d /Applications/Xcode_*.app 2>/dev/null \
             | sed -nE 's|.*/Xcode_([0-9]+\.[0-9]+).*\.app|\1|p' | sort -V | tail -1)
-          echo "snapshot pin: $SNAPSHOT_XCODE | newest on runner: ${latest:-none}"
+          echo "snapshot Xcode: $SNAPSHOT_XCODE | newest on runner: ${latest:-none}"
           if [ -n "$latest" ] && [ "$latest" != "$SNAPSHOT_XCODE" ] \
              && [ "$(printf '%s\n%s\n' "$SNAPSHOT_XCODE" "$latest" | sort -V | tail -1)" = "$latest" ]; then
             echo "::warning title=Newer Xcode available::Snapshots are pinned to Xcode $SNAPSHOT_XCODE (mise.toml) but the runner offers $latest — bump SNAPSHOT_XCODE and re-record references."
+          fi
+
+      # macOS is not selectable (the macos-26 runner provides whatever point release GitHub ships),
+      # so this compares the runner's actual macOS against the version references were recorded on.
+      # AppKit text rendering is OS-bound, so any change here silently invalidates macOS references.
+      - name: Warn if the runner's macOS differs from the recorded snapshot OS
+        run: |
+          runner_macos=$(sw_vers -productVersion | cut -d. -f1,2)
+          echo "snapshot macOS: $SNAPSHOT_MACOS | runner macOS: $runner_macos"
+          if [ "$runner_macos" != "$SNAPSHOT_MACOS" ]; then
+            echo "::warning title=Runner macOS changed::References were recorded on macOS $SNAPSHOT_MACOS but the runner is on $runner_macos — AppKit references are OS-bound and may fail; re-record and update SNAPSHOT_MACOS in mise.toml."
           fi
 
   format-and-lint:
