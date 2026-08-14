@@ -39,4 +39,46 @@ enum SnapshotRuntimePreconditions {
 
     return currentTest
   }
+
+  /// Unwraps a result smuggled out of a `MainActor.assumeIsolated` closure, recording a failure
+  /// against the invoking assertion and falling back instead of trapping when it is missing.
+  ///
+  /// Nothing can currently leave such a box empty: `assumeIsolated` either runs its closure
+  /// synchronously on the calling thread or traps before the unwrap is ever reached, and the
+  /// AppKit values those closures store are non-optional. The unwrap exists only because the box
+  /// must declare its storage optional. That makes this a defence-in-depth path, not a
+  /// recoverable error — but a test library must degrade rather than abort: `preconditionFailure`
+  /// here would take the whole suite down with a crash log instead of failing the one assertion
+  /// whose render misbehaved.
+  ///
+  /// The caller supplies a `fallback` because the render strategies this guards are non-throwing
+  /// closures that must return a value; the recorded failure, not the fallback artifact, is the
+  /// diagnostic.
+  static func requireMainActorResult<T>(
+    _ value: T?,
+    fallback: @autoclosure () -> T,
+    message: String,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    recordFailure: (SnapshotFailure) -> Void = { $0.record() }
+  ) -> T {
+    guard let value else {
+      recordFailure(
+        SnapshotFailure(
+          message: message,
+          error: nil,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      )
+
+      return fallback()
+    }
+
+    return value
+  }
 }

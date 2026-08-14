@@ -762,11 +762,16 @@ enum ExpectSnapshotAdapter {
     let derivedName = DerivedSnapshotNames.argumentName(from: configuration.value)
     let valueDescription = String(describing: configuration.value)
     let callSite = "\(filePath):\(line):\(column)"
-    let occurrence = context.nextOccurrenceIndex(forKey: "\(callSite)|\(derivedName)")
+
+    // Collisions are decided on the reference file the name reaches, not on the name itself:
+    // the default macOS filesystem is case-insensitive, so "Card" and "card" are one file.
+    // Both keys fold, or a case-differing loop iteration would be misreported as a collision.
+    let nameKey = SnapshotNameNormalizer.referenceFileKey(from: derivedName)
+    let occurrence = context.nextOccurrenceIndex(forKey: "\(callSite)|\(nameKey)")
 
     let conflictingDescription = SnapshotConfigurationNameCollisions.shared.conflictingValueDescription(
       callSite: callSite,
-      derivedName: derivedName,
+      derivedName: nameKey,
       occurrence: occurrence,
       valueDescription: valueDescription
     )

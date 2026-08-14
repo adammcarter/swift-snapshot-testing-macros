@@ -73,12 +73,14 @@ final class SnapshotExecutionContext: Sendable {
   /// every non-word character collapsed to `-` (`SnapshotNameNormalizer` here, pointfree's
   /// `sanitizePathComponent` downstream), so raw names that sanitize identically — e.g.
   /// "menu view" vs "menu-view" — would silently share one reference file if deduped raw.
+  /// Case folds for the same reason: the default macOS filesystem is case-insensitive, so
+  /// "Card" and "card" are also one file.
   /// Slash-separated path segments are normalized individually and keep their `/` because
   /// they resolve to distinct subdirectories, not to one filename component.
   private static func dedupKey(for name: String) -> String {
     name
       .split(separator: "/", omittingEmptySubsequences: true)
-      .map { SnapshotNameNormalizer.folderComponent(from: String($0)) }
+      .map { SnapshotNameNormalizer.referenceFileKey(from: String($0)) }
       .joined(separator: "/")
   }
 

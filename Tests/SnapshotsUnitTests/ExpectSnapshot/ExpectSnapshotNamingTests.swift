@@ -22,6 +22,26 @@ struct ExpectSnapshotNamingTests {
   }
 
   @Test
+  func namesDifferingOnlyByCaseGetDistinctSuffixes() {
+    let context = SnapshotExecutionContext(function: "menu()")
+
+    // macOS filesystems are case-insensitive by default, so "Card.1.png" and "card.1.png"
+    // are one file: the second assertion must be suffixed or it overwrites the first.
+    #expect(context.resolvedAssertionName(named: "Card") == "Card")
+    #expect(context.resolvedAssertionName(named: "card") == "card-2")
+  }
+
+  @Test
+  func caseDifferencesThatSurviveSanitizationStillCollide() {
+    let context = SnapshotExecutionContext(function: "menu()")
+
+    // Sanitization preserves case, so "Min Size" and "min-size" stay distinct strings while
+    // still landing on one reference file.
+    #expect(context.resolvedAssertionName(named: "Min Size") == "Min Size")
+    #expect(context.resolvedAssertionName(named: "min-size") == "min-size-2")
+  }
+
+  @Test
   func suffixSkipsCandidatesWhoseSanitizedFormIsAlreadyTaken() {
     let context = SnapshotExecutionContext(function: "menu()")
 

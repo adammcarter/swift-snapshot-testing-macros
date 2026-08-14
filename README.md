@@ -20,6 +20,7 @@ import SnapshotTestingMacros
 import SwiftUI
 import Testing
 
+@MainActor
 @Suite(.theme(.all), .sizes(.minimum))
 struct ProfileCardSnapshots {
   @Test
@@ -28,6 +29,25 @@ struct ProfileCardSnapshots {
   }
 }
 ```
+
+`@MainActor` on the suite is worth adding from the start. A SwiftUI `View`'s initialiser is
+main-actor isolated, so constructing one inside a non-isolated test produces
+`call to main actor-isolated initializer … in a synchronous nonisolated context` warnings under
+Swift 6. Snapshots always render on the main actor regardless; the annotation just stops the
+compiler pointing it out at every call site.
+
+### Running under xcodebuild
+
+`swift test` needs nothing special. Building through `xcodebuild` does:
+
+```shell
+xcodebuild test -scheme YourScheme -destination 'platform=macOS' -skipMacroValidation
+```
+
+Without `-skipMacroValidation`, xcodebuild refuses to expand the macro until it has been
+approved — *"Macro 'SnapshotsMacros' … must be enabled before it can be used"*. Locally that is
+a **Trust & Enable** prompt in Xcode. On CI there is nobody to click it, so the flag is required
+rather than optional.
 
 ## Supported platforms
 

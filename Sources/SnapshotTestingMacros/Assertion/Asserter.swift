@@ -1,5 +1,10 @@
 import Foundation
-import SnapshotTesting
+// SPI dependency: capturing the mismatch's image paths means wrapping the configured diff tool,
+// which first requires resolving the tool the assertion would otherwise have used — the same
+// `SnapshotTestingConfiguration.current?.diffTool ?? _diffTool` chain pointfree resolves in
+// `withSnapshotTesting` — so the wrapped tool leaves the failure message unchanged. Pointfree
+// exposes both only under `@_spi(Internals)`; the dependency version is pinned.
+@_spi(Internals) import SnapshotTesting
 
 /// Top level asserter - allows us to change the base and internals without updating the top level call site
 struct Asserter {
@@ -70,6 +75,7 @@ struct FailureCollectingAsserter: SnapshotAsserting {
         SnapshotFailure(
           message: error.message,
           error: nil,
+          artifacts: error.artifacts,
           fileID: request.fileID,
           filePath: request.filePath,
           line: request.line,
@@ -82,6 +88,7 @@ struct FailureCollectingAsserter: SnapshotAsserting {
         SnapshotFailure(
           message: nil,
           error: error,
+          artifacts: nil,
           fileID: request.fileID,
           filePath: request.filePath,
           line: request.line,
@@ -104,22 +111,32 @@ private struct PointfreeAsserter: SnapshotAsserting {
   #warning("TODO: Allow timeout customisation via new trait")
 
   private func verifySnapshot(request: some AssertionRequesting) throws {
-    let message = SnapshotTesting.verifySnapshot(
-      of: request.view,
-      as: request.snapshotting,
-      named: referenceIdentifier(for: request),
-      snapshotDirectory: request.snapshotDirectory,
-      timeout: 5,
-      fileID: request.fileID,
-      file: request.filePath,
-      testName: request.testName,
-      line: request.line,
-      column: request.column
-    )
+    let capture = DiffPathCapture()
+
+    let message = SnapshotTesting.withSnapshotTesting(diffTool: capture.wrapping(resolvedDiffTool)) {
+      SnapshotTesting.verifySnapshot(
+        of: request.view,
+        as: request.snapshotting,
+        named: referenceIdentifier(for: request),
+        snapshotDirectory: request.snapshotDirectory,
+        timeout: 5,
+        fileID: request.fileID,
+        file: request.filePath,
+        testName: request.testName,
+        line: request.line,
+        column: request.column
+      )
+    }
 
     if let message {
-      throw SnapshotError(message: message)
+      throw SnapshotError(message: message, artifacts: capture.artifacts)
     }
+  }
+
+  /// The diff tool the assertion would otherwise have used, resolved the same way pointfree
+  /// resolves it, so wrapping it leaves the failure message byte-identical.
+  private var resolvedDiffTool: SnapshotTestingConfiguration.DiffTool {
+    SnapshotTestingConfiguration.current?.diffTool ?? SnapshotTesting._diffTool
   }
 
   /// Resolves the `.N` reference-file identifier from the attempt-scoped execution context.
@@ -164,7 +181,47 @@ private struct PointfreeAsserter: SnapshotAsserting {
   }
 }
 
+// MARK: - DiffPathCapture
+
+/// Captures the reference and newly-taken image paths for one `verifySnapshot` call.
+///
+/// pointfree hands both paths to the configured `diffTool` — the only place it exposes them as
+/// values rather than as text inside the failure message — and calls it exactly once, only
+/// after a genuine mismatch. Wrapping that closure therefore reads the paths structurally and
+/// self-guards the missing-reference case: pointfree returns before the diff when no reference
+/// exists, so the tool is never invoked and ``artifacts`` stays nil.
+///
+/// The wrapper is `@Sendable` and pointfree may invoke it from its own context, hence the lock.
+private final class DiffPathCapture: @unchecked Sendable {
+  private let lock = NSLock()
+  private var captured: SnapshotFailureArtifacts?
+
+  var artifacts: SnapshotFailureArtifacts? {
+    lock.withLock { captured }
+  }
+
+  /// Returns `base` with the paths teed off, so the failure message is unchanged.
+  func wrapping(
+    _ base: SnapshotTestingConfiguration.DiffTool
+  ) -> SnapshotTestingConfiguration.DiffTool {
+    .init { [self] currentFilePath, failedFilePath in
+      lock.withLock {
+        captured = SnapshotFailureArtifacts(
+          referencePath: currentFilePath,
+          failedPath: failedFilePath
+        )
+      }
+
+      return base(currentFilePath: currentFilePath, failedFilePath: failedFilePath)
+    }
+  }
+}
+
 struct SnapshotError: LocalizedError {
   let message: String
+
+  /// The mismatch's images, when the failure was a mismatch against an existing reference.
+  var artifacts: SnapshotFailureArtifacts?
+
   var errorDescription: String? { message }
 }
