@@ -8,7 +8,7 @@ import Testing
 @Suite
 struct ThemeAssertionRequestGeneratorTests {
   @Test(arguments: configuredThemeCases)
-  func `returns requests for configured theme`(entry: ConfiguredThemeCase) async throws {
+  func returnsRequestsForConfiguredTheme(entry: ConfiguredThemeCase) async throws {
     let requests = try await generateRequests(
       contextTheme: entry.contextTheme,
       taskLocalTheme: nil
@@ -20,7 +20,7 @@ struct ThemeAssertionRequestGeneratorTests {
   }
 
   @Test
-  func `ignores task local theme when configured theme is set`() async throws {
+  func ignoresTaskLocalThemeWhenConfiguredThemeIsSet() async throws {
     let requests = try await generateRequests(
       contextTheme: .all,
       taskLocalTheme: .dark

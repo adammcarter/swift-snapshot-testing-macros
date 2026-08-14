@@ -1,0 +1,2 @@
+<_TtGC7SwiftUI14_UIHostingViewVS_4Text_; frame = (0 0; 299 20.3333); gestureRecognizers = <NSArray>; layer = <CALayer>>
+   | <_TtC7SwiftUIP33_863CCF9D49B535DAEB1C7D61BEE53B5914CGDrawingLayer> (layer)
