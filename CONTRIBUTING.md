@@ -32,18 +32,45 @@ swift test --filter SnapshotSuiteTests
 swift test --filter SnapshotTestTests
 ```
 
-### Integration Tests
-Integration tests require a specific simulator (iPhone 17, iOS 26.2) to match reference snapshots.
+### Snapshot references and the recording environment
+Snapshot references are pixel-exact and **bound to the environment that rendered them** — image
+rendering depends on the toolchain *and* the OS, not just your code. CI is the source of truth,
+and it records with a fixed environment declared once in `mise.toml` (`[env]`):
 
-Run via command line:
+| Variable | Value | Selectable? |
+| --- | --- | --- |
+| `SNAPSHOT_XCODE` | Xcode version | Yes — pinned, and `setup-xcode` selects it |
+| `SNAPSHOT_MACOS` | macOS version references were recorded on | **No** — set by GitHub's `macos-26` runner image |
+
+To reproduce references **locally you need both**: the same Xcode *and* the same macOS. Matching
+only Xcode is not enough — AppKit/`NSTextField` text rasterises differently across macOS point
+releases, so a machine on a different macOS will see AppKit snapshot diffs even with the right
+Xcode. When your machine differs from CI, don't commit local renders — regenerate on CI.
+
+The `Snapshot Environment` CI job warns when the runner drifts from either value; a macOS drift
+means GitHub bumped the runner and references need re-recording (bump `SNAPSHOT_MACOS` then).
+
+### Regenerating references on CI
+
+When references need updating — you changed something that alters rendering, or the runner's macOS
+moved — don't record locally if your machine differs from CI. Instead, from your branch:
+
+1. Push your branch.
+2. **Actions → Regenerate Snapshot References → Run workflow → pick your branch.**
+3. It clears every reference (via `Tools/remove-snapshots`, so deleted or renamed tests drop their
+   orphans), re-records every suite on the CI runner, bumps `SNAPSHOT_MACOS` to that runner's
+   macOS, and **commits the result straight onto your branch**. It refuses the default branch —
+   references reach it through your normal PR.
+4. `git pull`, then re-run your PR's checks (a bot push does not re-trigger them automatically).
+
+Your local macOS never matters; you only review the committed diff.
+
+### Integration Tests
+The toolchain and the simulator destination are defined once in `mise.toml` (`[env]`), so use the
+mise task rather than a hand-written `xcodebuild` line — it always uses the single source:
+
 ```bash
 mise run test-integration
-```
-or
-```bash
-xcodebuild test \
-  -scheme SnapshotsIntegrationTests \
-  -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64"
 ```
 
 ## Code Style

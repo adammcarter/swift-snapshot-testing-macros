@@ -14,6 +14,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # SNAPSHOT_XCODE and IOS_SIM_DESTINATION are the single source of truth in mise.toml [env]. The
+  # snapshot-rendering jobs below pull them via the .github/actions/snapshot-config composite
+  # action. Version-independent logic and build jobs deliberately do NOT use them; they run across
+  # the whole supported range.
+  snapshot-environment:
+    name: Snapshot Environment
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load snapshot config
+        uses: ./.github/actions/snapshot-config
+
+      # Both checks are non-failing on purpose: a hard gate would block an unrelated hotfix the day
+      # GitHub bumps the runner. The warnings surface on the run summary instead.
+      - name: Warn if the runner offers a newer Xcode than the snapshot pin
+        run: |
+          latest=$(ls -d /Applications/Xcode_*.app 2>/dev/null \
+            | sed -nE 's|.*/Xcode_([0-9]+\.[0-9]+).*\.app|\1|p' | sort -V | tail -1)
+          echo "snapshot Xcode: $SNAPSHOT_XCODE | newest on runner: ${latest:-none}"
+          if [ -n "$latest" ] && [ "$latest" != "$SNAPSHOT_XCODE" ] \
+             && [ "$(printf '%s\n%s\n' "$SNAPSHOT_XCODE" "$latest" | sort -V | tail -1)" = "$latest" ]; then
+            echo "::warning title=Newer Xcode available::Snapshots are pinned to Xcode $SNAPSHOT_XCODE (mise.toml) but the runner offers $latest — bump SNAPSHOT_XCODE and re-record references."
+          fi
+
+      # macOS is not selectable (the macos-26 runner provides whatever point release GitHub ships),
+      # so this compares the runner's actual macOS against the version references were recorded on.
+      # AppKit text rendering is OS-bound, so any change here silently invalidates macOS references.
+      - name: Warn if the runner's macOS differs from the recorded snapshot OS
+        run: |
+          runner_macos=$(sw_vers -productVersion | cut -d. -f1,2)
+          echo "snapshot macOS: $SNAPSHOT_MACOS | runner macOS: $runner_macos"
+          if [ "$runner_macos" != "$SNAPSHOT_MACOS" ]; then
+            echo "::warning title=Runner macOS changed::References were recorded on macOS $SNAPSHOT_MACOS but the runner is on $runner_macos — AppKit references are OS-bound and may fail; re-record and update SNAPSHOT_MACOS in mise.toml."
+          fi
+
   format-and-lint:
     name: Format and Lint
     runs-on: macos-26
@@ -59,22 +96,24 @@ jobs:
           swift test --filter SnapshotTestTests
     
   ios-integration-tests:
-    name: Integration Tests (${{ matrix.xcode }})
+    name: Integration Tests
     needs: [format-and-lint, swift-build-matrix]
     runs-on: macos-26
-    strategy:
-      fail-fast: false
-      matrix:
-        xcode: ['26.3', '26.5']
 
     steps:
-      - name: Select Xcode version (${{ matrix.xcode }})
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: ${{ matrix.xcode }}
-
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Load snapshot config
+        uses: ./.github/actions/snapshot-config
+
+      - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.SNAPSHOT_XCODE }}
+
+      - name: Ensure iOS simulator
+        uses: ./.github/actions/ensure-ios-simulator
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -86,14 +125,11 @@ jobs:
           defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
           defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
 
-      - name: List available simulator runtimes
-        run: xcrun simctl list runtimes
-
       - name: Run SnapshotsIntegrationTests (iOS)
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationTests \
-            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64"
+            -destination "$IOS_SIM_DESTINATION"
     
   ios-integration-repetition-tests:
     name: Integration Repetition Tests
@@ -101,13 +137,19 @@ jobs:
     runs-on: macos-26
 
     steps:
-      - name: Select Xcode version (26.3)
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '26.3'
-
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Load snapshot config
+        uses: ./.github/actions/snapshot-config
+
+      - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.SNAPSHOT_XCODE }}
+
+      - name: Ensure iOS simulator
+        uses: ./.github/actions/ensure-ios-simulator
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -123,7 +165,7 @@ jobs:
         run: |
           xcodebuild test \
             -scheme SnapshotsIntegrationRepetitionTests \
-            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64"
+            -destination "$IOS_SIM_DESTINATION"
 
   macos-unit-tests:
     name: Unit Tests
@@ -131,13 +173,16 @@ jobs:
     runs-on: macos-26
 
     steps:
-      - name: Select Xcode version (26.3)
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '26.3'
-
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Load snapshot config
+        uses: ./.github/actions/snapshot-config
+
+      - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.SNAPSHOT_XCODE }}
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -165,8 +210,10 @@ jobs:
         platform:
           - name: macOS
             destination: 'platform=macOS'
+          # A generic destination: this only builds (never runs), so it needs no specific device
+          # or simulator runtime, and stays independent of the snapshot destination in mise.toml.
           - name: iOS
-            destination: 'platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64'
+            destination: 'generic/platform=iOS Simulator'
 
     steps:
       - name: Select Xcode version (${{ matrix.xcode }})

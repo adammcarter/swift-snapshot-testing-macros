@@ -23,6 +23,16 @@ That repository's `MIGRATION.md` carries the full detail this file used to hold:
   tagging, the fixed 2x unspecified scale, and theme traits now being applied per theme
 - artifact naming parity, and the reference renames the tool performs alongside the source rewrite
 
+### Re-recording references
+
+Snapshot references are bound to the environment that rendered them — image output depends on the
+Xcode **and** macOS version, not just your code. So re-record on the environment that *verifies*
+them (your CI), not a developer machine that may differ, or the references will fail for everyone
+else. This library records its own references on CI via a **Regenerate Snapshot References**
+workflow that re-records everything on the runner and commits the result to the branch — a pattern
+worth mirroring in your own repo if your contributors' machines vary. Contributing to this library
+directly? See [CONTRIBUTING.md](CONTRIBUTING.md#regenerating-references-on-ci).
+
 ## Quick mapping
 
 Kept here so the shape of the change is visible without leaving the library:

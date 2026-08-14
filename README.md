@@ -112,11 +112,18 @@ xcodebuild test \
   -destination 'platform=macOS'
 ```
 
+Integration tests render against committed references, so the Xcode and simulator destination are
+pinned once in `mise.toml`; run them through the mise task so they always use that single source:
+
 ```shell
-xcodebuild test \
-  -scheme SnapshotsIntegrationTests \
-  -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64"
+mise run test-integration
 ```
+
+Snapshot references are bound to the recording environment (Xcode **and** macOS), so if your machine
+differs from CI you cannot produce matching references locally. Instead, run the **Regenerate
+Snapshot References** workflow (Actions → Run workflow) on your branch — it re-records everything on
+the CI runner and commits the result onto your branch. See
+[CONTRIBUTING.md](CONTRIBUTING.md#regenerating-references-on-ci) for the full flow.
 
 Latest-Xcode CI also runs fast macOS build-for-testing smoke checks on 26.4 and 26.5:
 
