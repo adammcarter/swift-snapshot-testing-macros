@@ -8,11 +8,12 @@ import Testing
 ///
 /// Example:
 /// ```swift
-/// @SnapshotSuite
+/// @Suite
 /// struct MySnapshotSuite {
-///
-///   @SnapshotTest(.theme(.dark))
-///   func myView() -> some View { ... }
+///   @Test(.theme(.dark))
+///   func myView() {
+///     #expectSnapshot(MyView())
+///   }
 /// }
 /// ```
 public struct ThemeSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {

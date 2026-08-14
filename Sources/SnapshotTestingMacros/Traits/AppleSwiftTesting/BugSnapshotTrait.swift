@@ -7,5 +7,5 @@ extension Testing.Bug: @retroactive CustomDebugStringConvertible {
   }
 }
 
-/// Enable `.bug` to be used with `@SnapshotTest` and `@SnapshotSuite`.
+/// Enable `.bug` to compose with snapshot traits on `@Test` and `@Suite`.
 extension Testing.Bug: SnapshotSuiteTrait, SnapshotTestTrait {}

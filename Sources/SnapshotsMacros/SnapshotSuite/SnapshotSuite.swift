@@ -98,6 +98,8 @@ struct SnapshotSuite {
 
     let suiteMacroArguments = SnapshotMacroArguments(node: macroContext.node)
 
+    diagnoseDuplicateDisplayNames(macroContext: macroContext)
+
     self.testBlocks = macroContext
       .declaration
       .memberBlock

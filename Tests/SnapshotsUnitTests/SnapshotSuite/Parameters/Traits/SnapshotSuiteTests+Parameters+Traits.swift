@@ -205,7 +205,7 @@ extension SnapshotSuiteTests.Parameters {
             Text("input")
           }
 
-          enum __generator_container_makeView {
+          enum __generator_container_makeView_cf56db6f {
             @MainActor
             static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(Int)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
               SnapshotTestingMacros.SnapshotViewGenerator<(Int)>(
@@ -232,7 +232,7 @@ extension SnapshotSuiteTests.Parameters {
                 SnapshotConfiguration(name: "2", value: 2),
               ]))
             func makeView_snapshotTest(configuration: SnapshotConfiguration<(Int)>) async throws {
-              let generator = __generator_container_makeView.makeGenerator(configuration: configuration)
+              let generator = __generator_container_makeView_cf56db6f.makeGenerator(configuration: configuration)
 
               try await SnapshotTestingMacros.assertSnapshot(with: generator)
             }

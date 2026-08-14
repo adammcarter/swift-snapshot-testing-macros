@@ -6,8 +6,14 @@ import Testing
 public struct DiffToolSnapshotTrait: SnapshotSuiteTrait, SnapshotTestTrait, SnapshotTestScoping {
   let diffTool: DiffTool
 
+  /// The diff tool explicitly set by a `.diffTool` trait, or `nil` when no trait is present.
+  ///
+  /// `nil` means "unset": the asserter passes it through to pointfree's
+  /// `withSnapshotTesting(diffTool:)`, which then falls back to ambient pointfree-native
+  /// configuration (a consumer's own `withSnapshotTesting` or pointfree's `.snapshots` trait)
+  /// before pointfree's default. A non-nil default here would clobber those sources.
   @TaskLocal
-  static var current = DiffTool.default
+  static var current: DiffTool?
 
   public var debugDescription: String {
     "diffTool: \(diffTool)"

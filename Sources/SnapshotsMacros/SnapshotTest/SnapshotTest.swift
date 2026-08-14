@@ -1,30 +1,54 @@
+import SnapshotSupport
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 struct SnapshotTest {
   var expression: DeclSyntax {
-    """
-    enum \(containerName) {
-      @MainActor
-      static func makeGenerator(\(.Parameters.configuration): \(snapshotConfigurationType)) -> \(snapshotViewGeneratorType) {
-        \(snapshotViewInitialiser)(
-          displayName: \(snapshotViewGenerator.displayNameExpr),
-          \(.Parameters.configuration): \(.Parameters.configuration),
-          makeValue: \(snapshotViewGenerator.makeValueExpr),
-          fileID: #fileID,
-          filePath: #filePath,
-          line: \(snapshotViewGenerator.lineExpr),
-          column: \(snapshotViewGenerator.columnExpr)
-        )
+    let baseExpression: DeclSyntax = """
+      enum \(containerName) {
+        @MainActor
+        static func makeGenerator(\(.Parameters.configuration): \(snapshotConfigurationType)) -> \(snapshotViewGeneratorType) {
+          \(snapshotViewInitialiser)(
+            displayName: \(snapshotViewGenerator.displayNameExpr),
+            \(.Parameters.configuration): \(.Parameters.configuration),
+            makeValue: \(snapshotViewGenerator.makeValueExpr),
+            fileID: #fileID,
+            filePath: #filePath,
+            line: \(snapshotViewGenerator.lineExpr),
+            column: \(snapshotViewGenerator.columnExpr)
+          )
+        }
+      }
+      """
+
+    /*
+     Forward `@available` from the test function onto the container: its `makeValue` calls the
+     gated function, so an unannotated container would trip availability checking at the
+     deployment target even though the generated test itself is correctly annotated.
+     */
+    guard
+      availabilityAttributes.isEmpty == false,
+      var enumDecl = baseExpression.as(EnumDeclSyntax.self)
+    else {
+      return baseExpression
+    }
+
+    enumDecl.attributes = .init {
+      availabilityAttributes.map {
+        with($0.trimmed) {
+          $0.trailingTrivia = .newline
+        }
       }
     }
-    """
+
+    return DeclSyntax(enumDecl)
   }
 
   private let snapshotViewGenerator: SnapshotViewGenerator
   private let containerName: TokenSyntax
   private let returnType: TypeSyntax
+  private let availabilityAttributes: [AttributeListSyntax.Element]
 
   private var snapshotConfigurationType: TypeSyntax {
     "\(.TypeName.snapshotConfiguration.namespaced)<\(returnType)>"
@@ -42,13 +66,108 @@ struct SnapshotTest {
     guard
       let snapshotTestFunctionDecl = macroContext.declaration.as(FunctionDeclSyntax.self)
     else {
-      #warning("TODO: Fail with good error/warnings")
+      macroContext.context.diagnose(
+        DiagnosticFactory.generalErrorMessage(
+          message: "'@SnapshotTest' can only be applied to functions.",
+          node: macroContext.node
+        )
+      )
       return nil
     }
 
+    /*
+     Without an enclosing `@SnapshotSuite`, no generated suite ever references the container:
+     emitting one would leave a dead — and for non-initialisable enclosing types, non-compiling
+     — enum behind while the function silently never runs as a test.
+     */
     guard
-      let suiteName = macroContext.context.lexicalContext.first?.identifierName?.trimmed
+      let enclosingDecl = macroContext.context.lexicalContext.first,
+      enclosingDecl.attributesList?.first(attributeNamed: Constants.AttributeName.snapshotSuite) != nil
     else {
+      macroContext.context.diagnose(
+        DiagnosticFactory.generalMessage(
+          message:
+            "'@SnapshotTest' has no effect without an enclosing '@SnapshotSuite' type; no snapshot test will be generated.",
+          node: macroContext.node
+        )
+      )
+      return nil
+    }
+
+    guard let suiteName = enclosingDecl.identifierName?.trimmed else {
+      // e.g. `@SnapshotSuite` on an extension — the suite macro rejects that with an error.
+      return nil
+    }
+
+    guard snapshotTestFunctionDecl.hasSupportedReturnType else {
+      let returnType =
+        snapshotTestFunctionDecl.signature.returnClause?.type.trimmedDescription ?? "Void"
+      let supportedReturnTypes =
+        Constants.Configuration.supportedReturnTypes.sorted().joined(separator: ", ")
+
+      /*
+       Warn and skip rather than hard-error. The supported set only recognises the exact spelling
+       `some View`, but SwiftUI's runtime generator accepts any `View` — `Text`, `AnyView`,
+       `some SwiftUI.View`, view typealiases — all of which previously compiled as a dead-but-valid
+       no-op. A view-shaped concrete type or typealias cannot be told apart from a genuinely
+       unsupported one at expansion time, so a hard error would break in-progress migrations that
+       still build. A warning surfaces the skipped test without breaking the build.
+       */
+      macroContext.context.diagnose(
+        DiagnosticFactory.generalMessage(
+          message:
+            "'@SnapshotTest' does not support the return type '\(returnType)'; no snapshot test will be generated. Supported return types: \(supportedReturnTypes).",
+          node: macroContext.node
+        )
+      )
+      return nil
+    }
+
+    if unrepresentableDisplayNameArgument(in: macroContext.node) != nil {
+      macroContext.context.diagnose(
+        DiagnosticFactory.generalErrorMessage(
+          message:
+            "A '@SnapshotTest' display name must be a simple string literal; interpolation is not supported.",
+          node: macroContext.node
+        )
+      )
+      return nil
+    }
+
+    /*
+     A parameterised function with no configurations expands to a `makeGenerator(configuration:
+     .none)` call whose generic argument is the parameter tuple — a guaranteed type mismatch in
+     generated code. Reject it here with an actionable message instead.
+     */
+    /*
+     `inout` and variadic parameters cannot be represented as a tuple element in the generated
+     `SnapshotConfiguration<(…)>` generic — they produce a parse/type error in generated code.
+     Reject them with an actionable message.
+     */
+    if snapshotTestFunctionDecl.signature.hasUnsupportedParameterShape {
+      macroContext.context.diagnose(
+        DiagnosticFactory.generalErrorMessage(
+          message:
+            "'@SnapshotTest' does not support 'inout' or variadic parameters.",
+          node: macroContext.node
+        )
+      )
+      return nil
+    }
+
+    let macroArguments = SnapshotMacroArguments(node: macroContext.node)
+
+    if snapshotTestFunctionDecl.signature.parameterClause.parameters.isEmpty == false,
+      macroArguments.configurationsExpression == nil,
+      macroArguments.configurationValuesExpression == nil
+    {
+      macroContext.context.diagnose(
+        DiagnosticFactory.generalErrorMessage(
+          message:
+            "A parameterised '@SnapshotTest' function requires a 'configurations:' or 'configurationValues:' argument.",
+          node: macroContext.node
+        )
+      )
       return nil
     }
 
@@ -62,6 +181,10 @@ struct SnapshotTest {
       ?? snapshotTestFunctionDecl.name.identifierDisplayName
 
     self.containerName = makeContainerName(from: snapshotTestFunctionDecl)
+
+    self.availabilityAttributes = snapshotTestFunctionDecl
+      .attributes
+      .filter(\.isAvailabilityAttribute)
 
     self.returnType =
       if snapshotTestFunctionDecl.signature.parameterClause.parameters.isEmpty {
@@ -117,16 +240,6 @@ private func makeSuiteDisplayName(from lexicalContext: [Syntax]) -> String? {
     .flatMap(makeDisplayName)
 }
 
-private func makeDisplayName(from attribute: AttributeSyntax?) -> String? {
-  attribute?
-    .arguments?
-    .as(LabeledExprListSyntax.self)?
-    .first?
-    .expression
-    .as(StringLiteralExprSyntax.self)?
-    .representedLiteralValue
-}
-
 func makeArrayConfigurations(
   configurations: ArrayExprSyntax?,
   configurationGenericType: TupleTypeElementListSyntax
@@ -134,4 +247,15 @@ func makeArrayConfigurations(
   guard let configurations else { return nil }
 
   return "\(raw: configurations) as [\(.TypeName.snapshotConfiguration)<(\(configurationGenericType))>]"
+}
+
+extension AttributeListSyntax.Element {
+  var isAvailabilityAttribute: Bool {
+    if case .attribute(let attribute) = self {
+      attribute.attributeName.trimmedDescription.hasPrefix(Constants.AttributeName.available)
+    }
+    else {
+      false
+    }
+  }
 }

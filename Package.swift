@@ -70,6 +70,7 @@ let package = Package(
       name: "SnapshotSupport"
     ),
 
+
     // A client of the library, which is able to use the macro in its own code.
     .executableTarget(
       name: "SnapshotsClient",
@@ -90,28 +91,34 @@ let package = Package(
         "SnapshotTestingMacros",
         "SnapshotsMacros",
 
+        .product(name: "SwiftParser", package: "swift-syntax"),
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
         .product(name: "MacroTesting", package: "swift-macro-testing"),
-      ]
+      ],
+      exclude: ["ExpectSnapshot/__Snapshots__"]
     ),
 
     /*
      A test target for testing the suite during development.
     
-     Because our macro create tests in the form of snapshot tests, we can create integration tests using the snapshot images as our references.
+     Because our macro creates tests in the form of snapshot tests, we can create integration tests using the snapshot images as our references.
     
      Usually in a macro we'd just use 'main.swift' to test and debug the macro while developing, but we need to attach our macro to a test target to be able run the tests the macro creates, this is that test target.
     
      This test target simply wraps the SnapshotTestingMacros library so we can run those generated tests.
     
-     This must be run on an iPhone 16 running iOS 18.4 to guarantee matching the reference images with those generated during testing.
-     */
+     This must be run on an iPhone 17 running iOS 26.2 to guarantee matching the reference images with those generated during testing.
+      */
     .testTarget(
       name: "SnapshotsIntegrationTests",
       dependencies: [
         "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
+      ],
+      exclude: [
+        "ExpectSnapshot/__Snapshots__",
+        "SnapshotTest/__Snapshots__",
       ]
     ),
 
@@ -138,7 +145,8 @@ let package = Package(
         "SnapshotTestSupport",
         "SnapshotTestingMacros",
         "SnapshotsMacros",
-      ]
+      ],
+      exclude: ["__Snapshots__"]
     ),
 
     /*

@@ -24,6 +24,14 @@ or
 swift test
 ```
 
+For faster local iteration, prefer the focused unit suites used in the cross-Xcode CI matrix:
+```bash
+swift test --filter ExpectSnapshotAdapterTests
+swift test --filter ExpectSnapshotMacroTests
+swift test --filter SnapshotSuiteTests
+swift test --filter SnapshotTestTests
+```
+
 ### Integration Tests
 Integration tests require a specific simulator (iPhone 17, iOS 26.2) to match reference snapshots.
 

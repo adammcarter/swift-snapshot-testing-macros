@@ -20,6 +20,7 @@
 ///     func myView() -> some View { ... }
 /// }
 /// ```
+@available(*, deprecated, message: "Use native Swift Testing suites plus #expectSnapshot(...) instead.")
 @attached(member, names: arbitrary)
 public macro SnapshotSuite() = #externalMacro(module: "SnapshotsMacros", type: "SnapshotSuiteMacro")
 
@@ -41,6 +42,7 @@ public macro SnapshotSuite() = #externalMacro(module: "SnapshotsMacros", type: "
 ///     // ...
 /// }
 /// ```
+@available(*, deprecated, message: "Use native Swift Testing suites plus #expectSnapshot(...) instead.")
 @attached(member, names: arbitrary)
 public macro SnapshotSuite(
   _ displayName: String
@@ -64,6 +66,7 @@ public macro SnapshotSuite(
 ///     // ...
 /// }
 /// ```
+@available(*, deprecated, message: "Use native Swift Testing suites plus #expectSnapshot(...) instead.")
 @attached(member, names: arbitrary)
 public macro SnapshotSuite(
   _ traits: any SnapshotSuiteTrait...
@@ -89,6 +92,7 @@ public macro SnapshotSuite(
 ///     // ...
 /// }
 /// ```
+@available(*, deprecated, message: "Use native Swift Testing suites plus #expectSnapshot(...) instead.")
 @attached(member, names: arbitrary)
 public macro SnapshotSuite(
   _ displayName: String?,

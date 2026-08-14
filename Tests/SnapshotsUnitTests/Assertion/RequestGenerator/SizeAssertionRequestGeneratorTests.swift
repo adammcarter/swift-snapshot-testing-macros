@@ -9,7 +9,7 @@ import Testing
 @Suite
 struct SizeAssertionRequestGeneratorTests {
   @Test
-  func `generates all themes for two sizes`() async throws {
+  func generatesAllThemesForTwoSizes() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [
@@ -49,7 +49,7 @@ struct SizeAssertionRequestGeneratorTests {
   }
 
   @Test
-  func `throws no sizes available when sizes are empty`() async throws {
+  func throwsNoSizesAvailableWhenSizesAreEmpty() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [],
@@ -70,77 +70,145 @@ struct SizeAssertionRequestGeneratorTests {
     }
   }
 
-  @Test
-  func `throws zero size for fixed zero by zero`() async throws {
-    let context = AssertionRequestGeneratorTestSupport.makeContext(
-      traitConfiguration: .init(
-        sizes: [
-          .init(
-            width: .fixed(0),
-            height: .fixed(0),
-            displayName: "display_name_1",
-            debugDescription: "debug_description_1",
-            testNameDescription: "test_name_description_1"
-          )
-        ],
-        theme: .light,
-        strategy: .recursiveDescription
-      )
-    )
+  // MARK: - Fixed length and scale validation
+  //
+  // Non-positive or non-finite fixed lengths must fail identically in EVERY width/height
+  // combination. Before validation existed, `.fixed(0)` (or a negative value) combined with
+  // `.minimum` silently dropped the constraint and measured the fully-compressed size, and
+  // negative fixed sizes were misreported as "zero" errors.
 
-    do {
-      _ = try await SizeAssertionRequestGenerator(context: context).generateRequests()
-      Issue.record("Expected zeroSize")
+  @Test
+  func throwsInvalidFixedWidthBeforeInvalidFixedHeightForZeroByZero() async throws {
+    let error = await sizeError(width: .fixed(0), height: .fixed(0))
+
+    guard case .invalidFixedWidth(let value) = error else {
+      Issue.record("Expected invalidFixedWidth, got: \(String(describing: error))")
+      return
     }
-    catch let error as SizeAssertionRequestGenerator.SizeError {
-      guard case .zeroSize = error else {
-        Issue.record("Expected zeroSize, got: \(error.localizedDescription)")
-        return
-      }
-    }
+
+    #expect(value == 0)
   }
 
   @Test
-  func `throws zero width for fixed zero width`() async throws {
-    let context = AssertionRequestGeneratorTestSupport.makeContext(
-      traitConfiguration: .init(
-        sizes: [
-          .init(
-            width: .fixed(0),
-            height: .fixed(100),
-            displayName: "display_name_1",
-            debugDescription: "debug_description_1",
-            testNameDescription: "test_name_description_1"
-          )
-        ],
-        theme: .light,
-        strategy: .recursiveDescription
-      )
-    )
+  func throwsInvalidFixedWidthForZeroWidth() async throws {
+    let error = await sizeError(width: .fixed(0), height: .fixed(100))
 
-    do {
-      _ = try await SizeAssertionRequestGenerator(context: context).generateRequests()
-      Issue.record("Expected zeroWidth")
+    guard case .invalidFixedWidth(let value) = error else {
+      Issue.record("Expected invalidFixedWidth, got: \(String(describing: error))")
+      return
     }
-    catch let error as SizeAssertionRequestGenerator.SizeError {
-      guard case .zeroWidth = error else {
-        Issue.record("Expected zeroWidth, got: \(error.localizedDescription)")
-        return
-      }
-    }
+
+    #expect(value == 0)
   }
 
   @Test
-  func `throws zero height for fixed zero height`() async throws {
+  func throwsInvalidFixedHeightForZeroHeight() async throws {
+    let error = await sizeError(width: .fixed(100), height: .fixed(0))
+
+    guard case .invalidFixedHeight(let value) = error else {
+      Issue.record("Expected invalidFixedHeight, got: \(String(describing: error))")
+      return
+    }
+
+    #expect(value == 0)
+  }
+
+  /// The core regression: a non-positive fixed length must NOT be silently treated as
+  /// "unconstrained" just because the other dimension is `.minimum`.
+  @Test
+  func throwsInvalidFixedWidthForZeroWidthWithMinimumHeight() async throws {
+    let error = await sizeError(width: .fixed(0), height: .minimum)
+
+    guard case .invalidFixedWidth(let value) = error else {
+      Issue.record("Expected invalidFixedWidth, got: \(String(describing: error))")
+      return
+    }
+
+    #expect(value == 0)
+  }
+
+  @Test
+  func throwsInvalidFixedHeightForNegativeHeightWithMinimumWidth() async throws {
+    let error = await sizeError(width: .minimum, height: .fixed(-5))
+
+    guard case .invalidFixedHeight(let value) = error else {
+      Issue.record("Expected invalidFixedHeight, got: \(String(describing: error))")
+      return
+    }
+
+    #expect(value == -5)
+  }
+
+  /// Negative sizes must report the offending value instead of masquerading as "zero width".
+  @Test
+  func throwsInvalidFixedWidthForNegativeWidth() async throws {
+    let error = await sizeError(width: .fixed(-50), height: .fixed(200))
+
+    guard case .invalidFixedWidth(let value) = error else {
+      Issue.record("Expected invalidFixedWidth, got: \(String(describing: error))")
+      return
+    }
+
+    #expect(value == -50)
+  }
+
+  @Test
+  func throwsInvalidFixedWidthForNonFiniteWidth() async throws {
+    let error = await sizeError(width: .fixed(.infinity), height: .fixed(200))
+
+    guard case .invalidFixedWidth(let value) = error else {
+      Issue.record("Expected invalidFixedWidth, got: \(String(describing: error))")
+      return
+    }
+
+    #expect(value == .infinity)
+  }
+
+  @Test(arguments: [0.0, -1.0, Double.nan, Double.infinity])
+  func throwsInvalidScaleForNonPositiveOrNonFiniteScale(scale: Double) async throws {
+    let error = await sizeError(width: .fixed(100), height: .fixed(100), scale: scale)
+
+    guard case .invalidScale(let value) = error else {
+      Issue.record("Expected invalidScale, got: \(String(describing: error))")
+      return
+    }
+
+    #expect(value == scale || (value.isNaN && scale.isNaN))
+  }
+
+  @Test
+  func acceptsPositiveFiniteScale() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [
-          .init(
+          AssertionRequestGeneratorTestSupport.makeTraitSize(
             width: .fixed(100),
-            height: .fixed(0),
-            displayName: "display_name_1",
-            debugDescription: "debug_description_1",
-            testNameDescription: "test_name_description_1"
+            height: .fixed(100),
+            scale: 2
+          )
+        ],
+        theme: .light,
+        strategy: .recursiveDescription
+      )
+    )
+
+    let requests = try await SizeAssertionRequestGenerator(context: context).generateRequests()
+
+    #expect(requests.count == 1)
+  }
+
+  private func sizeError(
+    width: SizesSnapshotTrait.Length,
+    height: SizesSnapshotTrait.Length,
+    scale: Double? = nil
+  ) async -> SizeAssertionRequestGenerator.SizeError? {
+    let context = AssertionRequestGeneratorTestSupport.makeContext(
+      traitConfiguration: .init(
+        sizes: [
+          AssertionRequestGeneratorTestSupport.makeTraitSize(
+            width: width,
+            height: height,
+            scale: scale
           )
         ],
         theme: .light,
@@ -150,18 +218,19 @@ struct SizeAssertionRequestGeneratorTests {
 
     do {
       _ = try await SizeAssertionRequestGenerator(context: context).generateRequests()
-      Issue.record("Expected zeroHeight")
+      return nil
     }
     catch let error as SizeAssertionRequestGenerator.SizeError {
-      guard case .zeroHeight = error else {
-        Issue.record("Expected zeroHeight, got: \(error.localizedDescription)")
-        return
-      }
+      return error
+    }
+    catch {
+      Issue.record("Expected a SizeError, got: \(error)")
+      return nil
     }
   }
 
   @Test
-  func `uses context sizes and ignores task local sizes`() async throws {
+  func usesContextSizesAndIgnoresTaskLocalSizes() async throws {
     let context = AssertionRequestGeneratorTestSupport.makeContext(
       traitConfiguration: .init(
         sizes: [

@@ -9,7 +9,7 @@ import Testing
 @Suite
 struct NameAssertionRequestGeneratorTests {
   @Test(arguments: themeCases)
-  func `builds test name from context name size and theme`(
+  func buildsTestNameFromContextNameSizeAndTheme(
     theme: ThemeSnapshotTrait.Theme,
     expectedThemeName: String
   ) async throws {
@@ -24,7 +24,7 @@ struct NameAssertionRequestGeneratorTests {
   }
 
   @Test(arguments: themeCases)
-  func `prefixes test name with configuration when present`(
+  func prefixesTestNameWithConfigurationWhenPresent(
     theme: ThemeSnapshotTrait.Theme,
     expectedThemeName: String
   ) async throws {
@@ -39,7 +39,37 @@ struct NameAssertionRequestGeneratorTests {
   }
 
   @Test
-  func `passes metadata through to final request`() async throws {
+  func usesSlashDelimitedDisplayNamesAsFolderPlusFileWhenNoConfigurationIsPresent() async throws {
+    let request = try await makeRequest(
+      contextName: "dealer is verified and has reply/view",
+      sizeTestName: "test_name_description_1",
+      theme: .light
+    )
+
+    #expect(request.snapshotDirectory == "/tmp/dealer-is-verified-and-has-reply")
+    #expect(request.testName == "view_test_name_description_1_light")
+  }
+
+  /// The slash convention must mean the same thing for configured (parameterized) tests as it
+  /// does for plain ones. A configured test's snapshot directory already nests the slash-aware
+  /// test folder path (derived in `AssertionRequestGenerator`), so here only the name is
+  /// rewritten to the final path segment — the raw `/` must never leak into the test name
+  /// (and through it into the reference file name and pointfree's counter key).
+  @Test
+  func usesFinalSlashSegmentAsTestNameWhenConfigurationIsPresent() async throws {
+    let request = try await makeRequest(
+      contextName: "dealer is verified and has reply/view",
+      configurationName: "Name-1",
+      sizeTestName: "test_name_description_1",
+      theme: .light
+    )
+
+    #expect(request.snapshotDirectory == "/tmp")
+    #expect(request.testName == "Name-1_view_test_name_description_1_light")
+  }
+
+  @Test
+  func passesMetadataThroughToFinalRequest() async throws {
     let request = try await makeRequest(
       contextName: "base",
       sizeTestName: "test_name_description_1",

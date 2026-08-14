@@ -4,7 +4,8 @@ import Testing
 
 extension Trait where Self == SnapshotTesting._SnapshotsTestTrait {
   // Internal implementation detail:
-  // `@SnapshotSuite` applies this trait automatically for generated suites,
-  // so it does not need to be used directly.
+  // The deprecated `@SnapshotSuite` macro applies this trait automatically
+  // for generated suites, so native `@Suite` / `@Test` usage should not
+  // need to use it directly.
   public static var pointfreeSnapshots: Self { .snapshots }
 }

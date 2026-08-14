@@ -23,6 +23,7 @@
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest() = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
@@ -48,6 +49,7 @@ public macro SnapshotTest() = #externalMacro(module: "SnapshotsMacros", type: "S
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest(
   _ displayName: String
@@ -75,6 +77,7 @@ public macro SnapshotTest(
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest(
   _ traits: any SnapshotTestTrait...
@@ -104,6 +107,7 @@ public macro SnapshotTest(
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest(
   _ displayName: String,
@@ -137,6 +141,7 @@ public macro SnapshotTest(
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest<T: Sendable>(
   _ traits: any SnapshotTestTrait...,
@@ -175,6 +180,7 @@ public macro SnapshotTest<T: Sendable>(
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest<T: Sendable>(
   _ displayName: String?,
@@ -211,6 +217,7 @@ public macro SnapshotTest<T: Sendable>(
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest<T: Sendable>(
   _ traits: any SnapshotTestTrait...,
@@ -251,6 +258,7 @@ public macro SnapshotTest<T: Sendable>(
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest<T: Sendable>(
   _ displayName: String?,
@@ -282,6 +290,7 @@ public macro SnapshotTest<T: Sendable>(
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest<C: Sendable>(
   _ traits: any SnapshotTestTrait...,
@@ -317,6 +326,7 @@ public macro SnapshotTest<C: Sendable>(
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest<C: Sendable>(
   _ displayName: String?,
@@ -348,6 +358,7 @@ public macro SnapshotTest<C: Sendable>(
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest<C>(
   _ traits: any SnapshotTestTrait...,
@@ -384,6 +395,7 @@ where C: Collection & Sendable, C.Element: Sendable
 ///   }
 /// }
 /// ```
+@available(*, deprecated, message: "Use @Test plus #expectSnapshot(...) instead.")
 @attached(peer, names: arbitrary)
 public macro SnapshotTest<C>(
   _ displayName: String?,
