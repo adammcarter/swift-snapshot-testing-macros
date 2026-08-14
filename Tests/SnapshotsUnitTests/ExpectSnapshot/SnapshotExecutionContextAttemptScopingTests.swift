@@ -183,11 +183,10 @@ struct SnapshotContextAttemptScopingTests {
     #expect(first !== second)
   }
 
-  /// Without a trait-provided attempt token, assertion order has no safe lifetime owner.
-  /// Distinct source call sites therefore provide the stable identity that prevents two unnamed
-  /// assertions in one native test from resolving one reference.
+  /// Without a trait-provided attempt token, unnamed assertions use the same base name.
+  /// Distinct assertions must provide explicit names when they need separate references.
   @Test
-  func traitlessUnnamedAssertionsAtDistinctCallSitesResolveDistinctNames() {
+  func traitlessUnnamedAssertionsAtDistinctCallSitesResolveTheSameName() {
     let first = TaskLocalSnapshotExecutionContext.withCurrent(function: "profileCard()") {
       $0.resolvedAssertionName(named: nil)
     }
@@ -195,28 +194,21 @@ struct SnapshotContextAttemptScopingTests {
       $0.resolvedAssertionName(named: nil)
     }
 
-    #expect(first != second)
+    #expect(first == second)
   }
 
-  /// The source identity is part of the on-disk reference contract. Line and column are reversible
-  /// and collision-free within the source file whose path already owns the snapshot directory.
   @Test
-  func callSiteIdentityUsesTheExactSourceLocation() {
-    let name = TaskLocalSnapshotExecutionContext.withCurrent(
-      function: "profileCard()",
-      line: 10,
-      column: 5
-    ) {
+  func traitlessUnnamedAssertionUsesTheFunctionBaseName() {
+    let name = TaskLocalSnapshotExecutionContext.withCurrent(function: "profileCard()") {
       $0.resolvedAssertionName(named: nil)
     }
 
-    #expect(name == "profileCard-L10C5")
+    #expect(name == "profileCard")
   }
 
   /// (R3) Without any snapshot trait there is no attempt scope, and contexts must never be
   /// served from a cache keyed by recycled raw task pointers. A long run of short-lived
-  /// sequential tasks at one source assertion must always resolve the same call-site-qualified
-  /// name, regardless of task allocation reuse.
+  /// sequential tasks at one source assertion must always resolve the same base name.
   @Test
   func sequentialTasksWithoutASnapshotTraitNeverResolveADriftedName() async {
     var names = [String]()
@@ -232,6 +224,6 @@ struct SnapshotContextAttemptScopingTests {
     }
 
     #expect(Set(names).count == 1)
-    #expect(names.first?.hasPrefix("probe-L") == true)
+    #expect(names.first == "probe")
   }
 }

@@ -1,0 +1,18 @@
+name: Load snapshot config
+description: >
+  Pulls the snapshot rendering config (SNAPSHOT_XCODE, IOS_SIM_DESTINATION) from mise.toml [env]
+  into the job environment, so setup-xcode and the xcodebuild steps use the canonical
+  snapshot-rendering configuration.
+  The repository must already be checked out.
+
+runs:
+  using: composite
+  steps:
+    - uses: jdx/mise-action@v2
+
+    - name: Pull snapshot config from mise into GITHUB_ENV
+      shell: bash
+      run: |
+        echo "SNAPSHOT_XCODE=$(mise exec -- printenv SNAPSHOT_XCODE)" >> "$GITHUB_ENV"
+        echo "SNAPSHOT_MACOS=$(mise exec -- printenv SNAPSHOT_MACOS)" >> "$GITHUB_ENV"
+        echo "IOS_SIM_DESTINATION=$(mise exec -- printenv IOS_SIM_DESTINATION)" >> "$GITHUB_ENV"

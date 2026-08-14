@@ -113,4 +113,4 @@ struct TaggedSnapshots {
 
 ## Platform notes
 
-The same traits apply to SwiftUI, UIKit, and AppKit snapshots. In v1, UIKit and AppKit use the direct-value `#expectSnapshot(...)` overloads, while SwiftUI also supports the closure, `SnapshotConfiguration`, and `argument:` convenience forms.
+The same traits apply to SwiftUI, UIKit, and AppKit snapshots. All three platforms support direct values, closure builders, `SnapshotConfiguration`, and `argument:` forms. Closure, argument, and configuration builders support synchronous, throwing, async, and async-throwing paths; direct values support synchronous and throwing expressions. UIKit and AppKit builders are main-actor isolated.

@@ -1,0 +1,76 @@
+name: Ensure iOS simulator
+description: Create and boot the pinned snapshot simulator when the runner does not pre-provision it.
+
+runs:
+  using: composite
+  steps:
+    - name: Ensure iPhone 17 is available
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        device_name="iPhone 17"
+        device_type="com.apple.CoreSimulator.SimDeviceType.iPhone-17"
+        xcode_version="$(xcodebuild -version | awk '$1 == "Xcode" { print $2 }')"
+
+        find_latest_supported_runtime() {
+          xcrun simctl list runtimes available -j |
+            jq -r --arg xcode_version "$xcode_version" '
+              def version_prefix:
+                split(".")[:2] | map(tonumber);
+
+              ($xcode_version | version_prefix) as $maximum_version |
+              [
+                .runtimes[]
+                | select(
+                    .isAvailable == true
+                    and (.identifier | startswith("com.apple.CoreSimulator.SimRuntime.iOS-"))
+                    and ((.version | version_prefix) <= $maximum_version)
+                  )
+              ]
+              | sort_by(.version | split(".") | map(tonumber))
+              | last
+              | .identifier // empty
+            '
+        }
+
+        runtime_id="$(find_latest_supported_runtime)"
+
+        if [ -z "$runtime_id" ]; then
+          echo "::notice::No iOS simulator runtime is available; downloading the iOS platform."
+          xcodebuild -downloadPlatform iOS
+          runtime_id="$(find_latest_supported_runtime)"
+        fi
+
+        if [ -z "$runtime_id" ]; then
+          echo "::error::No available iOS simulator runtime supported by Xcode $xcode_version was found after downloading the iOS platform."
+          exit 1
+        fi
+
+        device_udid="$(
+          xcrun simctl list devices available -j |
+            jq -r \
+              --arg runtime "$runtime_id" \
+              --arg name "$device_name" \
+              --arg device_type "$device_type" \
+              '[.devices[$runtime][]? | select(.name == $name and .deviceTypeIdentifier == $device_type)] | first | .udid // empty'
+        )"
+
+        if [ -z "$device_udid" ]; then
+          echo "Creating $device_name with runtime $runtime_id."
+          device_udid="$(xcrun simctl create "$device_name" "$device_type" "$runtime_id")"
+        fi
+
+        device_state="$(
+          xcrun simctl list devices available -j |
+            jq -r --arg runtime "$runtime_id" --arg udid "$device_udid" \
+              '[.devices[$runtime][]? | select(.udid == $udid)] | first | .state // empty'
+        )"
+
+        if [ "$device_state" != "Booted" ]; then
+          xcrun simctl boot "$device_udid"
+        fi
+
+        xcrun simctl bootstatus "$device_udid" -b
+        echo "IOS_SIM_DESTINATION=platform=iOS Simulator,id=$device_udid" >> "$GITHUB_ENV"
+        xcrun simctl list devices available | grep -F "$device_name ($device_udid)"

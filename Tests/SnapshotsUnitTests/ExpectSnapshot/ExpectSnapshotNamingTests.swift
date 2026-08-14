@@ -4,6 +4,15 @@ import Testing
 
 struct ExpectSnapshotNamingTests {
   @Test
+  func unnamedNameUsesBaseNameWithoutSourceLocation() {
+    let name = TaskLocalSnapshotExecutionContext.withCurrent(function: "profileCard()") { context in
+      context.resolvedAssertionName(named: nil)
+    }
+
+    #expect(name == "profileCard")
+  }
+
+  @Test
   func explicitNameWinsOverBaseName() {
     let context = SnapshotExecutionContext(function: "profileCard()")
 

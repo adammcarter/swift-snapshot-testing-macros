@@ -57,6 +57,24 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
      before the template's `,`, commenting out the rest of the generated line.
      */
     let named = node.arguments.first { $0.label?.text == "named" }?.expression.trimmed ?? "nil"
+    let directThrowingValue =
+      argumentValue == nil
+      && makeValueExpression == nil
+      && value.map { expression in
+        var expression = expression
+        while let parenthesizedExpression = expression.as(TupleExprSyntax.self),
+          parenthesizedExpression.elements.count == 1,
+          let element = parenthesizedExpression.elements.first,
+          element.label == nil,
+          element.trailingComma == nil
+        {
+          expression = element.expression
+        }
+        guard let tryExpression = expression.as(TryExprSyntax.self) else {
+          return false
+        }
+        return tryExpression.questionOrExclamationMark == nil
+      } == true
     let makeValue =
       makeValueExpression.map {
         """
@@ -74,6 +92,7 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
       else {
         nil
       }
+    let throwingArgument = directThrowingValue ? ", throwingMarker: ()" : ""
     let leadingArguments = valueArgument.map { "  \($0),\n" } ?? ""
     let expansion =
       "SnapshotTestingMacros.__expectSnapshot(\n"
@@ -84,7 +103,7 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
           fileID: #fileID,
           filePath: #filePath,
           line: #line,
-          column: #column\(makeValue)
+          column: #column\(makeValue)\(throwingArgument)
         )
         """
 

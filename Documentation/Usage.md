@@ -66,11 +66,9 @@ up deterministically in assertion order, and every new run restarts at `.1` — 
 in-process test iterations and parallel tests always resolve the same reference files instead
 of depending on a process-wide counter.
 
-Without any snapshot trait there is no safe attempt-lifetime owner for an ordered counter.
-Each unnamed assertion therefore uses a deterministic source-location suffix, so distinct
-call sites cannot silently share one reference and the same call site stays stable across
-runs. Moving an assertion changes that suffix; use `named:` when the on-disk name must survive
-source movement. A loop that executes one call site for several values still needs an explicit
+Without any snapshot trait, each unnamed assertion uses the function's base name. Unnamed
+assertions therefore refer to the same snapshot; use distinct `named:` values when a test needs
+separate references. A loop that executes one call site for several values still needs an explicit
 `named:` value per iteration or a snapshot trait to provide an ordered attempt scope.
 
 ### Unnamed snapshots in parameterised tests
@@ -172,7 +170,34 @@ measured at their current frame size instead, so they do not need explicit size 
 snapshot. A frame-based view whose frame is zero still fails with a sizing error rather than
 recording an empty artifact.
 
-In v1, UIKit and AppKit support the direct-value overloads only. Closure forms, `SnapshotConfiguration`, and `argument:` helpers remain SwiftUI-only.
+UIKit and AppKit support the same direct, closure, `SnapshotConfiguration`, and `argument:` forms as
+SwiftUI. Their builders are main-actor isolated:
+
+```swift
+@Test(arguments: ["guest", "member"])
+func profile(state: String) {
+  #expectSnapshot(argument: state) { state in
+    makeProfileView(for: state)
+  }
+}
+
+@Test
+func throwingProfile() throws {
+  try #expectSnapshot(named: "throwing-profile") {
+    try makeProfileView()
+  }
+}
+
+@Test
+func throwingDirectProfile() throws {
+  try #expectSnapshot(try makeProfileView())
+}
+```
+
+Use `await` for async builders and `try await` for async-throwing builders. Throwing forms rethrow
+factory errors and snapshot-pipeline errors; non-throwing forms record those errors as test issues.
+`named:` labels the assertion, while `argument:` and `SnapshotConfiguration` provide parameterised
+case identity.
 
 ### macOS rendering semantics
 

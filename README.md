@@ -58,11 +58,14 @@ iOS 15+ and macOS 15+ only. watchOS, tvOS, and visionOS are not supported; build
 | Surface | Support |
 | --- | --- |
 | SwiftUI | Direct-value snapshots, `named:`, closure forms, `SnapshotConfiguration`, and `argument:` helpers |
-| UIKit / AppKit | Direct-value snapshots for `UIView` / `NSView` and `UIViewController` / `NSViewController` |
+| UIKit / AppKit | Direct values plus sync, throwing, async, and async-throwing closure, `SnapshotConfiguration`, and `argument:` snapshots for views and view controllers |
 
-In v1, the convenience builder forms are SwiftUI-only. UIKit and AppKit callers should build the view or controller first and then pass it to the direct-value `#expectSnapshot(...)` overload.
+UIKit and AppKit builders are main-actor isolated. Use `try #expectSnapshot(try makeView())` when a direct
+view/controller factory throws; throwing builders rethrow their factory and snapshot-pipeline errors.
 
-For UIKit and AppKit, keep the test itself as a regular `@Test` and pass a helper-backed expression such as `#expectSnapshot(makeViewController())`. The helper expression is evaluated on the main actor inside the snapshot operation.
+For UIKit and AppKit, keep the test itself as a regular `@Test` unless using an async builder, and pass a
+helper-backed expression such as `#expectSnapshot(makeViewController())`. Parameterised builders use
+`argument:` or `SnapshotConfiguration` in the same way as SwiftUI.
 
 ## Documentation
 
@@ -112,13 +115,20 @@ xcodebuild test \
   -destination 'platform=macOS'
 ```
 
+Integration tests render against committed references, so the Xcode and simulator destination are
+pinned once in `mise.toml`; run them through the mise task so they always use that configuration:
+
 ```shell
-xcodebuild test \
-  -scheme SnapshotsIntegrationTests \
-  -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64"
+mise run test-integration
 ```
 
-Latest-Xcode CI also runs fast macOS build-for-testing smoke checks on 26.4 and 26.5:
+Snapshot references are bound to the recording environment (Xcode **and** macOS), so if your machine
+differs from CI you cannot produce matching references locally. Instead, run the **Regenerate
+Snapshot References** workflow (Actions → Run workflow) on your branch — it re-records everything on
+the CI runner and commits the result onto your branch. See
+[CONTRIBUTING.md](CONTRIBUTING.md#regenerating-references-on-ci) for the full flow.
+
+Latest-Xcode CI also runs fast macOS build-for-testing smoke checks on 26.4, 26.5, and 26.6:
 
 ```shell
 xcodebuild build-for-testing \

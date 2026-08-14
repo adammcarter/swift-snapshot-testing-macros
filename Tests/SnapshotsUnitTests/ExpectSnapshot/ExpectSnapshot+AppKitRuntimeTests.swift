@@ -3,6 +3,10 @@ import AppKit
 import SnapshotTestingMacros
 import Testing
 
+private enum AppKitSnapshotFailure: Error {
+  case sentinel
+}
+
 struct ExpectSnapshotAppKitRuntimeTests {
   @Test
   func nsView() {
@@ -12,6 +16,125 @@ struct ExpectSnapshotAppKitRuntimeTests {
   @Test
   func nsViewController() {
     #expectSnapshot(makeController(labeled: "AppKit controller direct value"))
+  }
+
+  @Test
+  func throwingDirectNSViewRethrows() {
+    do {
+      try #expectSnapshot(try throwingView(), named: "unused")
+      Issue.record("Expected sentinel error")
+    }
+    catch AppKitSnapshotFailure.sentinel {
+    }
+    catch {
+      Issue.record("Expected sentinel error, got: \(error.localizedDescription)")
+    }
+  }
+
+  @Test
+  func throwingDirectNSViewControllerRethrows() {
+    do {
+      try #expectSnapshot(try throwingViewController(), named: "unused")
+      Issue.record("Expected sentinel error")
+    }
+    catch AppKitSnapshotFailure.sentinel {
+    }
+    catch {
+      Issue.record("Expected sentinel error, got: \(error.localizedDescription)")
+    }
+  }
+
+  @Test
+  func throwingConfigurationNSViewRethrows() {
+    let configuration = SnapshotConfiguration(name: nil, value: "guest")
+
+    do {
+      try #expectSnapshot(configuration, named: "unused") { (_: String) throws -> NSView in
+        throw AppKitSnapshotFailure.sentinel
+      }
+      Issue.record("Expected sentinel error")
+    }
+    catch AppKitSnapshotFailure.sentinel {
+    }
+    catch {
+      Issue.record("Expected sentinel error, got: \(error.localizedDescription)")
+    }
+  }
+
+  @Test
+  func asyncThrowingNSViewBuilderRethrows() async {
+    do {
+      try await #expectSnapshot(named: "unused") { @MainActor () async throws -> NSView in
+        await Task.yield()
+        throw AppKitSnapshotFailure.sentinel
+      }
+      Issue.record("Expected sentinel error")
+    }
+    catch AppKitSnapshotFailure.sentinel {
+    }
+    catch {
+      Issue.record("Expected sentinel error, got: \(error.localizedDescription)")
+    }
+  }
+
+  @Test(.record(.never), .theme(.light))
+  func asyncNSViewBuilderExecutesPipelineOnMainActorWithTestContext() async throws {
+    try #require(!currentThreadIsMain())
+    let probe = AppKitAsyncRenderProbe()
+    let assertionLine = #line + 3
+
+    await withKnownIssue {
+      await #expectSnapshot(named: "asyncAppKitBuilderProbe") { @MainActor () async -> NSView in
+        await Task.yield()
+        probe.recordBuilder(
+          sawTestContext: Test.current != nil,
+          sawMainThread: currentThreadIsMain()
+        )
+        return AppKitAsyncProbeView(probe: probe)
+      }
+    } matching: { issue in
+      issue.comments.contains { $0.rawValue.contains("No reference was found on disk") }
+        && issue.sourceLocation?.fileID == #fileID.description
+        && issue.sourceLocation?.line == assertionLine
+    }
+
+    #expect(probe.builderSawTestContext == true)
+    #expect(probe.builderSawMainThread == true)
+    #expect(probe.renderSawTestContext == true)
+    #expect(probe.renderSawMainThread == true)
+  }
+
+  @Test(.record(.never), .theme(.light))
+  func asyncThrowingNSViewBuilderExecutesPipelineOnMainActorWithTestContext() async throws {
+    try #require(!currentThreadIsMain())
+    let probe = AppKitAsyncRenderProbe()
+    let assertionLine = #line + 4
+
+    await withKnownIssue {
+      do {
+        try await #expectSnapshot(named: "asyncThrowingAppKitBuilderProbe") {
+          @MainActor () async throws -> NSView in
+          await Task.yield()
+          probe.recordBuilder(
+            sawTestContext: Test.current != nil,
+            sawMainThread: currentThreadIsMain()
+          )
+          return AppKitAsyncProbeView(probe: probe)
+        }
+      }
+      catch {
+        Issue.record("Expected the async throwing builder to complete, got: \(error)")
+      }
+    } matching: { issue in
+      issue.comments.contains { $0.rawValue.contains("No reference was found on disk") }
+        && issue.sourceLocation?.fileID == #fileID.description
+        && issue.sourceLocation?.line == assertionLine
+    }
+
+    #expect(probe.builderSawTestContext == true)
+    #expect(probe.builderSawMainThread == true)
+    #expect(probe.renderSawTestContext == true)
+    #expect(probe.renderSawMainThread == true)
   }
 
   @Test(
@@ -69,6 +192,16 @@ private func makeController(labeled string: String) -> NSViewController {
 }
 
 @MainActor
+private func throwingView() throws -> NSView {
+  throw AppKitSnapshotFailure.sentinel
+}
+
+@MainActor
+private func throwingViewController() throws -> NSViewController {
+  throw AppKitSnapshotFailure.sentinel
+}
+
+@MainActor
 private func makePlainView(width: Double, height: Double) -> NSView {
   let view = NSView(frame: .init(x: 0, y: 0, width: width, height: height))
   view.widthAnchor.constraint(equalToConstant: width).isActive = true
@@ -81,5 +214,59 @@ private func makePlainController(width: Double, height: Double) -> NSViewControl
   let controller = NSViewController()
   controller.view = makePlainView(width: width, height: height)
   return controller
+}
+
+private func currentThreadIsMain() -> Bool {
+  Thread.isMainThread
+}
+
+private final class AppKitAsyncRenderProbe: @unchecked Sendable {
+  private let lock = NSLock()
+  private var _builderSawTestContext = false
+  private var _builderSawMainThread = false
+  private var _renderSawTestContext = false
+  private var _renderSawMainThread = false
+
+  var builderSawTestContext: Bool { lock.withLock { _builderSawTestContext } }
+  var builderSawMainThread: Bool { lock.withLock { _builderSawMainThread } }
+  var renderSawTestContext: Bool { lock.withLock { _renderSawTestContext } }
+  var renderSawMainThread: Bool { lock.withLock { _renderSawMainThread } }
+
+  func recordBuilder(sawTestContext: Bool, sawMainThread: Bool) {
+    lock.withLock {
+      _builderSawTestContext = sawTestContext
+      _builderSawMainThread = sawMainThread
+    }
+  }
+
+  func recordRender(sawTestContext: Bool, sawMainThread: Bool) {
+    lock.withLock {
+      _renderSawTestContext = sawTestContext
+      _renderSawMainThread = sawMainThread
+    }
+  }
+}
+
+@MainActor
+private final class AppKitAsyncProbeView: NSView {
+  private let probe: AppKitAsyncRenderProbe
+
+  init(probe: AppKitAsyncRenderProbe) {
+    self.probe = probe
+    super.init(frame: .init(x: 0, y: 0, width: 160, height: 80))
+  }
+
+  @available(*, unavailable)
+  required init?(coder _: NSCoder) {
+    fatalError("AppKitAsyncProbeView does not support init(coder:)")
+  }
+
+  override func layout() {
+    super.layout()
+    probe.recordRender(
+      sawTestContext: Test.current != nil,
+      sawMainThread: Thread.isMainThread
+    )
+  }
 }
 #endif

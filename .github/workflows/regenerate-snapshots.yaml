@@ -1,0 +1,93 @@
+name: Regenerate Snapshot References
+
+# Re-records EVERY snapshot reference on the CI runner — the source of truth — and commits the
+# result straight onto the branch it ran on. Use it whenever references need updating: after a
+# deliberate rendering change, or when GitHub bumps the runner's macOS (the Snapshot Environment
+# check will have warned). It exists because references are bound to the recording environment
+# (Xcode + macOS), so a contributor whose local macOS differs from CI's cannot produce matching
+# references locally — they trigger this on their branch and the references land in their PR.
+#
+# Run it from the Actions tab (or `gh workflow run`) on your feature branch. It refuses the default
+# branch: references reach the default branch through a normal PR, never a direct push here. Needs
+# "Allow GitHub Actions to create and approve pull requests" in Settings → Actions → General.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    name: Regenerate on CI and commit to this branch
+    runs-on: macos-26
+    steps:
+      # Fail before spending ~20 minutes recording if this would push to the default branch.
+      - name: Refuse to run on the default branch
+        run: |
+          if [ "${{ github.ref_name }}" = "${{ github.event.repository.default_branch }}" ]; then
+            echo "::error::Regenerate commits directly to the branch it runs on, which must not be '${{ github.event.repository.default_branch }}'. Run it on a feature branch; references reach the default branch through your normal PR."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load snapshot config
+        uses: ./.github/actions/snapshot-config
+
+      - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.SNAPSHOT_XCODE }}
+
+      - name: Ensure iOS simulator
+        uses: ./.github/actions/ensure-ios-simulator
+
+      - name: Disable prebuilts
+        run: defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
+
+      # Clear every reference directory first, so a test that was removed or renamed drops its
+      # orphaned reference. Recording only re-creates references for tests that still exist, so the
+      # commit is the complete, true state — no stale files left behind. Uses the repo's own tool
+      # rather than a duplicated find.
+      - name: Clear all snapshot references
+        run: Tools/remove-snapshots
+
+      # Each suite records (first run) then must verify against what it just wrote (second run, no
+      # `|| true`) — a suite that cannot reproduce its own output fails the job before anything is
+      # committed.
+      - name: Record every suite on this runner
+        run: |
+          set -e
+          record() {
+            local scheme="$1" destination="$2"
+            xcodebuild test -scheme "$scheme" -destination "$destination" || true
+            xcodebuild test -scheme "$scheme" -destination "$destination"
+          }
+          record SnapshotsUnitTests 'platform=macOS'
+          record SnapshotsIntegrationTests "$IOS_SIM_DESTINATION"
+          record SnapshotsIntegrationRepetitionTests "$IOS_SIM_DESTINATION"
+
+      # The references were just recorded on this runner's macOS, so the marker must track it —
+      # otherwise the Snapshot Environment check would warn about the references it just made.
+      - name: Update the recorded-on macOS marker
+        run: |
+          macos=$(sw_vers -productVersion | cut -d. -f1,2)
+          sed -i '' "s/^SNAPSHOT_MACOS = .*/SNAPSHOT_MACOS = \"$macos\"/" mise.toml
+          echo "recorded on macOS $macos"
+
+      - name: Commit regenerated references to this branch
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "References already match this environment — nothing to commit."
+            exit 0
+          fi
+          macos=$(sw_vers -productVersion | cut -d. -f1,2)
+          git commit -m "Regenerate snapshot references on CI (Xcode $SNAPSHOT_XCODE, macOS $macos)"
+          git push origin "HEAD:${{ github.ref_name }}"
+          echo "::notice::Committed regenerated references to ${{ github.ref_name }}. Pull them, and re-run your PR's checks — a bot push does not re-trigger them automatically."

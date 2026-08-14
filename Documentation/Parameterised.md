@@ -45,7 +45,8 @@ Tuple-2 and tuple-3 configurations unpack into the builder closure parameters.
 
 If you also pass `named:`, the explicit name replaces only the assertion name. The configuration scope on disk still comes from the `SnapshotConfiguration`.
 
-Like the plain SwiftUI closure forms, both parameterised builders support synchronous, throwing, async, and async-throwing builders.
+SwiftUI, UIKit, and AppKit parameterised builders support synchronous, throwing, async, and async-throwing
+builders. UIKit and AppKit builders are `@MainActor` isolated.
 
 ## `argument:`
 
@@ -76,8 +77,18 @@ Just like the configuration form, `named:` changes only the assertion name. The 
 
 ## Platform scope
 
-In v1, `SnapshotConfiguration` and `argument:` are SwiftUI-only convenience forms. UIKit and AppKit callers should build the platform view or controller first and use the direct-value `#expectSnapshot(...)` overload instead.
+UIKit and AppKit support these same `SnapshotConfiguration` and `argument:` forms for both views and
+view controllers:
 
-For parameterised UIKit and AppKit tests, use the `SnapshotConfiguration` closure form shown in
-the migration guide. `named:` may label that configured assertion but is not case identity by
-itself.
+```swift
+@Test(arguments: ["guest", "member"])
+func configured(state: String) {
+  #expectSnapshot(argument: state) { state in
+    makeProfileView(for: state)
+  }
+}
+```
+
+Use `try`, `await`, or `try await` at the call site for throwing, async, or async-throwing builders.
+Throwing builders rethrow factory and snapshot-pipeline errors. `named:` labels the assertion but
+does not replace the case identity supplied by `argument:` or `SnapshotConfiguration`.
