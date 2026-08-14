@@ -1,7 +1,8 @@
 name: Load snapshot config
 description: >
   Pulls the snapshot rendering config (SNAPSHOT_XCODE, IOS_SIM_DESTINATION) from mise.toml [env]
-  into the job environment, so setup-xcode and the xcodebuild steps read a single source of truth.
+  into the job environment, so setup-xcode and the xcodebuild steps use the canonical
+  snapshot-rendering configuration.
   The repository must already be checked out.
 
 runs:

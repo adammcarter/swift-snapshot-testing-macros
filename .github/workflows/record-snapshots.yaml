@@ -20,8 +20,8 @@ on:
 
 jobs:
   # SNAPSHOT_XCODE and IOS_SIM_DESTINATION come from mise.toml [env] via the snapshot-config
-  # composite action — the same single source run-tests.yaml verifies against, so records and
-  # verifies can never drift onto different toolchains or simulators.
+  # composite action. run-tests.yaml uses the same configuration, so recording and verification
+  # cannot drift onto different toolchains or simulators.
   record:
     name: Record (${{ matrix.scheme }})
     runs-on: macos-26

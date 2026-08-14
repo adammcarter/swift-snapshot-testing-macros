@@ -116,7 +116,7 @@ xcodebuild test \
 ```
 
 Integration tests render against committed references, so the Xcode and simulator destination are
-pinned once in `mise.toml`; run them through the mise task so they always use that single source:
+pinned once in `mise.toml`; run them through the mise task so they always use that configuration:
 
 ```shell
 mise run test-integration

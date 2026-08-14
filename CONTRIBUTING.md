@@ -67,7 +67,7 @@ Your local macOS never matters; you only review the committed diff.
 
 ### Integration Tests
 The toolchain and the simulator destination are defined once in `mise.toml` (`[env]`), so use the
-mise task rather than a hand-written `xcodebuild` line — it always uses the single source:
+mise task rather than a hand-written `xcodebuild` line — it always uses that configuration:
 
 ```bash
 mise run test-integration

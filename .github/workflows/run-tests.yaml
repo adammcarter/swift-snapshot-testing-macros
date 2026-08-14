@@ -14,10 +14,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # SNAPSHOT_XCODE and IOS_SIM_DESTINATION are the single source of truth in mise.toml [env]. The
-  # snapshot-rendering jobs below pull them via the .github/actions/snapshot-config composite
-  # action. Version-independent logic and build jobs deliberately do NOT use them; they run across
-  # the whole supported range.
+  # SNAPSHOT_XCODE and IOS_SIM_DESTINATION are the canonical snapshot-rendering configuration in
+  # mise.toml [env]. The snapshot-rendering jobs below pull them via the
+  # .github/actions/snapshot-config composite action. Version-independent logic and build jobs
+  # deliberately do NOT use them; they run across the whole supported range.
   snapshot-environment:
     name: Snapshot Environment
     runs-on: macos-26

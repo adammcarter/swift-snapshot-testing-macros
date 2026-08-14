@@ -2,10 +2,10 @@
 swiftlint = "0.59.0"
 
 [env]
-# Single source of truth for snapshot rendering. CI pulls these into the job environment via the
+# Canonical snapshot-rendering configuration. CI pulls these into the job environment via the
 # .github/actions/snapshot-config composite action; the freshness checks in run-tests.yaml warn
 # when the runner drifts from them. The simulator runtime is intentionally absent from the
-# destination: the pinned Xcode's own newest runtime is the source of truth.
+# destination: the pinned Xcode's own newest runtime is selected by the simulator setup action.
 SNAPSHOT_XCODE = "26.6"
 IOS_SIM_DESTINATION = "platform=iOS Simulator,name=iPhone 17"
 
