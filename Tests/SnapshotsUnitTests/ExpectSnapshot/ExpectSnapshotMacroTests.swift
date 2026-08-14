@@ -92,6 +92,161 @@ struct ExpectSnapshotMacroTests {
   }
 
   @Test
+  func expandsThrowingDirectValueAsThrowingBuilder() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() throws {
+          try #expectSnapshot(try makeView(), named: "custom")
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() throws {
+          try SnapshotTestingMacros.__expectSnapshot(
+            try makeView(),
+            named: "custom",
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column, throwingMarker: ()
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
+  func expandsParenthesizedThrowingDirectValueAsThrowingBuilder() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() throws {
+          try #expectSnapshot((try makeView()), named: "custom")
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() throws {
+          try SnapshotTestingMacros.__expectSnapshot(
+            (try makeView()),
+            named: "custom",
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column, throwingMarker: ()
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
+  func expandsThrowingArgumentAndConfigurationExpressionsWithoutDirectValueMarker() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      func loadArgument() throws -> String {
+        "test"
+      }
+
+      func loadConfiguration() throws -> SnapshotConfiguration<String> {
+        SnapshotConfiguration(name: nil, value: "test")
+      }
+
+      struct MySnapshots {
+        @Test
+        func myView() throws {
+          try #expectSnapshot(argument: try loadArgument()) { value in
+            Text(value)
+          }
+
+          try #expectSnapshot(try loadConfiguration()) { value in
+            Text(value)
+          }
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      func loadArgument() throws -> String {
+        "test"
+      }
+
+      func loadConfiguration() throws -> SnapshotConfiguration<String> {
+        SnapshotConfiguration(name: nil, value: "test")
+      }
+
+      struct MySnapshots {
+        @Test
+        func myView() throws {
+          try SnapshotTestingMacros.__expectSnapshot(
+            argument: try loadArgument(),
+            named: nil,
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: { value in
+                Text(value)
+              }
+          )
+
+          try SnapshotTestingMacros.__expectSnapshot(
+            try loadConfiguration(),
+            named: nil,
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: { value in
+                Text(value)
+              }
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
   func expandsConfigurationAssertionWithTrailingClosure() {
     assertMacro {
       """

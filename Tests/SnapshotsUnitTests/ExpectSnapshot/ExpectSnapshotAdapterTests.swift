@@ -32,6 +32,32 @@ struct ExpectSnapshotAdapterTests {
   }
 
   @Test
+  func throwingDirectSwiftUIViewHelperCompilesAndRethrowsValueErrors() {
+    do {
+      try #expectSnapshot(try throwingSwiftUIView(), named: "unused")
+      Issue.record("Expected sentinel error")
+    }
+    catch SwiftUISnapshotFailure.sentinel {
+    }
+    catch {
+      Issue.record("Expected sentinel error, got: \(error.localizedDescription)")
+    }
+  }
+
+  @Test
+  func parenthesizedThrowingDirectSwiftUIViewHelperCompilesAndRethrowsValueErrors() {
+    do {
+      try #expectSnapshot((try throwingSwiftUIView()), named: "unused")
+      Issue.record("Expected sentinel error")
+    }
+    catch SwiftUISnapshotFailure.sentinel {
+    }
+    catch {
+      Issue.record("Expected sentinel error, got: \(error.localizedDescription)")
+    }
+  }
+
+  @Test
   func asyncThrowingClosureHelperRethrowsClosureErrors() async {
     do {
       try await __expectSnapshot(named: "unused") { () async throws -> Text in
@@ -213,5 +239,13 @@ struct ExpectSnapshotAdapterTests {
     _ = argumentAsync
     _ = configurationAsync
     #expect(Bool(true))
+  }
+
+  private enum SwiftUISnapshotFailure: Error {
+    case sentinel
+  }
+
+  private func throwingSwiftUIView() throws -> Text {
+    throw SwiftUISnapshotFailure.sentinel
   }
 }

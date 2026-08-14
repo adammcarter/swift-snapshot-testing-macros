@@ -172,7 +172,34 @@ measured at their current frame size instead, so they do not need explicit size 
 snapshot. A frame-based view whose frame is zero still fails with a sizing error rather than
 recording an empty artifact.
 
-In v1, UIKit and AppKit support the direct-value overloads only. Closure forms, `SnapshotConfiguration`, and `argument:` helpers remain SwiftUI-only.
+UIKit and AppKit support the same direct, closure, `SnapshotConfiguration`, and `argument:` forms as
+SwiftUI. Their builders are main-actor isolated:
+
+```swift
+@Test(arguments: ["guest", "member"])
+func profile(state: String) {
+  #expectSnapshot(argument: state) { state in
+    makeProfileView(for: state)
+  }
+}
+
+@Test
+func throwingProfile() throws {
+  try #expectSnapshot(named: "throwing-profile") {
+    try makeProfileView()
+  }
+}
+
+@Test
+func throwingDirectProfile() throws {
+  try #expectSnapshot(try makeProfileView())
+}
+```
+
+Use `await` for async builders and `try await` for async-throwing builders. Throwing forms rethrow
+factory errors and snapshot-pipeline errors; non-throwing forms record those errors as test issues.
+`named:` labels the assertion, while `argument:` and `SnapshotConfiguration` provide parameterised
+case identity.
 
 ### macOS rendering semantics
 

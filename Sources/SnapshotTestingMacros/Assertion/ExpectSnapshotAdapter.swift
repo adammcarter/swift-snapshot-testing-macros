@@ -286,6 +286,218 @@ enum ExpectSnapshotAdapter {
     )
   }
 
+  static func run(
+    view makeView: @escaping @MainActor () throws -> SnapshotView,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) throws {
+    try runSyncThrowing(
+      source: .direct(.none),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { _ in
+        SnapshotInjectedViewController(view: try makeView())
+      }
+    )
+  }
+
+  static func run(
+    viewController makeViewController: @escaping @MainActor () throws -> SnapshotViewController,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) throws {
+    try runSyncThrowing(
+      source: .direct(.none),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { _ in try makeViewController() }
+    )
+  }
+
+  static func run(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor () -> SnapshotView
+  ) {
+    run(
+      view: makeValue,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  static func run(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor () -> SnapshotViewController
+  ) {
+    run(
+      viewController: makeValue,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  static func run(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor () throws -> SnapshotView
+  ) throws {
+    try run(
+      view: makeValue,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  static func run(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor () throws -> SnapshotViewController
+  ) throws {
+    try run(
+      viewController: makeValue,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  static func run(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor () async -> SnapshotView
+  ) async {
+    await runAsyncPlatform(
+      source: .direct(.none),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { _ in
+        SnapshotInjectedViewController(view: await makeValue())
+      }
+    )
+  }
+
+  static func run(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor () async -> SnapshotViewController
+  ) async {
+    await runAsyncPlatform(
+      source: .direct(.none),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { _ in await makeValue() }
+    )
+  }
+
+  static func run(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor () async throws -> SnapshotView
+  ) async throws {
+    try await runAsyncPlatformThrowing(
+      source: .direct(.none),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { _ in
+        SnapshotInjectedViewController(view: try await makeValue())
+      }
+    )
+  }
+
+  static func run(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor () async throws -> SnapshotViewController
+  ) async throws {
+    try await runAsyncPlatformThrowing(
+      source: .direct(.none),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { _ in try await makeValue() }
+    )
+  }
+
   // MARK: - Argument shims
 
   static func run<V: View, Argument: Sendable>(
@@ -398,6 +610,182 @@ enum ExpectSnapshotAdapter {
 
     try await run(
       configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: makeValue
+    )
+  }
+
+  static func run<Argument: Sendable>(
+    argument: Argument,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (Argument) -> SnapshotView
+  ) {
+    run(
+      configuration: SnapshotConfiguration(name: nil, value: argument),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: makeValue
+    )
+  }
+
+  static func run<Argument: Sendable>(
+    argument: Argument,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (Argument) -> SnapshotViewController
+  ) {
+    run(
+      configuration: SnapshotConfiguration(name: nil, value: argument),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: makeValue
+    )
+  }
+
+  static func run<Argument: Sendable>(
+    argument: Argument,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (Argument) throws -> SnapshotView
+  ) throws {
+    try run(
+      configuration: SnapshotConfiguration(name: nil, value: argument),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: makeValue
+    )
+  }
+
+  static func run<Argument: Sendable>(
+    argument: Argument,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (Argument) throws -> SnapshotViewController
+  ) throws {
+    try run(
+      configuration: SnapshotConfiguration(name: nil, value: argument),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: makeValue
+    )
+  }
+
+  static func run<Argument: Sendable>(
+    argument: Argument,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (Argument) async -> SnapshotView
+  ) async {
+    await run(
+      configuration: SnapshotConfiguration(name: nil, value: argument),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: makeValue
+    )
+  }
+
+  static func run<Argument: Sendable>(
+    argument: Argument,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (Argument) async -> SnapshotViewController
+  ) async {
+    await run(
+      configuration: SnapshotConfiguration(name: nil, value: argument),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: makeValue
+    )
+  }
+
+  static func run<Argument: Sendable>(
+    argument: Argument,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (Argument) async throws -> SnapshotView
+  ) async throws {
+    try await run(
+      configuration: SnapshotConfiguration(name: nil, value: argument),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: makeValue
+    )
+  }
+
+  static func run<Argument: Sendable>(
+    argument: Argument,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (Argument) async throws -> SnapshotViewController
+  ) async throws {
+    try await run(
+      configuration: SnapshotConfiguration(name: nil, value: argument),
       named: named,
       function: function,
       fileID: fileID,
@@ -539,6 +927,144 @@ enum ExpectSnapshotAdapter {
     makeValue: @escaping @MainActor (ConfigurationValue) -> SnapshotViewController
   ) {
     runSync(
+      source: .derived(configuration),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: makeValue
+    )
+  }
+
+  static func run<ConfigurationValue: Sendable>(
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (ConfigurationValue) throws -> SnapshotView
+  ) throws {
+    try runSyncThrowing(
+      source: .derived(configuration),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { value in
+        SnapshotInjectedViewController(view: try makeValue(value))
+      }
+    )
+  }
+
+  static func run<ConfigurationValue: Sendable>(
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (ConfigurationValue) throws -> SnapshotViewController
+  ) throws {
+    try runSyncThrowing(
+      source: .derived(configuration),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: makeValue
+    )
+  }
+
+  static func run<ConfigurationValue: Sendable>(
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (ConfigurationValue) async -> SnapshotView
+  ) async {
+    await runAsyncPlatform(
+      source: .derived(configuration),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { value in
+        SnapshotInjectedViewController(view: await makeValue(value))
+      }
+    )
+  }
+
+  static func run<ConfigurationValue: Sendable>(
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (ConfigurationValue) async -> SnapshotViewController
+  ) async {
+    await runAsyncPlatform(
+      source: .derived(configuration),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { value in await makeValue(value) }
+    )
+  }
+
+  static func run<ConfigurationValue: Sendable>(
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (ConfigurationValue) async throws -> SnapshotView
+  ) async throws {
+    try await runAsyncPlatformThrowing(
+      source: .derived(configuration),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { value in
+        SnapshotInjectedViewController(view: try await makeValue(value))
+      }
+    )
+  }
+
+  static func run<ConfigurationValue: Sendable>(
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (ConfigurationValue) async throws -> SnapshotViewController
+  ) async throws {
+    try await runAsyncPlatformThrowing(
       source: .derived(configuration),
       named: named,
       function: function,
@@ -719,6 +1245,366 @@ enum ExpectSnapshotAdapter {
     line: UInt,
     column: UInt,
     makeValue: @escaping (A, B, C) async throws -> V
+  ) async throws {
+    try await run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in try await makeValue(value.0, value.1, value.2) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable>(
+    configuration: SnapshotConfiguration<(A, B)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B) -> SnapshotView
+  ) {
+    run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in makeValue(value.0, value.1) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable>(
+    configuration: SnapshotConfiguration<(A, B)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B) -> SnapshotViewController
+  ) {
+    run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in makeValue(value.0, value.1) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable>(
+    configuration: SnapshotConfiguration<(A, B)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B) throws -> SnapshotView
+  ) throws {
+    try run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in try makeValue(value.0, value.1) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable>(
+    configuration: SnapshotConfiguration<(A, B)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B) throws -> SnapshotViewController
+  ) throws {
+    try run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in try makeValue(value.0, value.1) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable>(
+    configuration: SnapshotConfiguration<(A, B)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B) async -> SnapshotView
+  ) async {
+    await run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in await makeValue(value.0, value.1) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable>(
+    configuration: SnapshotConfiguration<(A, B)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B) async -> SnapshotViewController
+  ) async {
+    await run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in await makeValue(value.0, value.1) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable>(
+    configuration: SnapshotConfiguration<(A, B)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B) async throws -> SnapshotView
+  ) async throws {
+    try await run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in try await makeValue(value.0, value.1) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable>(
+    configuration: SnapshotConfiguration<(A, B)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B) async throws -> SnapshotViewController
+  ) async throws {
+    try await run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in try await makeValue(value.0, value.1) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable, C: Sendable>(
+    // swiftlint:disable:next large_tuple
+    configuration: SnapshotConfiguration<(A, B, C)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B, C) -> SnapshotView
+  ) {
+    run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in makeValue(value.0, value.1, value.2) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable, C: Sendable>(
+    // swiftlint:disable:next large_tuple
+    configuration: SnapshotConfiguration<(A, B, C)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B, C) -> SnapshotViewController
+  ) {
+    run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in makeValue(value.0, value.1, value.2) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable, C: Sendable>(
+    // swiftlint:disable:next large_tuple
+    configuration: SnapshotConfiguration<(A, B, C)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B, C) throws -> SnapshotView
+  ) throws {
+    try run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in try makeValue(value.0, value.1, value.2) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable, C: Sendable>(
+    // swiftlint:disable:next large_tuple
+    configuration: SnapshotConfiguration<(A, B, C)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B, C) throws -> SnapshotViewController
+  ) throws {
+    try run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in try makeValue(value.0, value.1, value.2) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable, C: Sendable>(
+    // swiftlint:disable:next large_tuple
+    configuration: SnapshotConfiguration<(A, B, C)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B, C) async -> SnapshotView
+  ) async {
+    await run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in await makeValue(value.0, value.1, value.2) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable, C: Sendable>(
+    // swiftlint:disable:next large_tuple
+    configuration: SnapshotConfiguration<(A, B, C)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B, C) async -> SnapshotViewController
+  ) async {
+    await run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in await makeValue(value.0, value.1, value.2) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable, C: Sendable>(
+    // swiftlint:disable:next large_tuple
+    configuration: SnapshotConfiguration<(A, B, C)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B, C) async throws -> SnapshotView
+  ) async throws {
+    try await run(
+      configuration: configuration,
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: { value in try await makeValue(value.0, value.1, value.2) }
+    )
+  }
+
+  static func run<A: Sendable, B: Sendable, C: Sendable>(
+    // swiftlint:disable:next large_tuple
+    configuration: SnapshotConfiguration<(A, B, C)>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor (A, B, C) async throws -> SnapshotViewController
   ) async throws {
     try await run(
       configuration: configuration,
@@ -1015,6 +1901,99 @@ enum ExpectSnapshotAdapter {
     }
   }
 
+  /// The recording async core for UIKit/AppKit builders. The async builder remains
+  /// main-actor isolated and is resolved by the async generator on the same structured hop as
+  /// the snapshot pipeline.
+  private static func runAsyncPlatform<ConfigurationValue: Sendable>(
+    source: ConfigurationSource<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeViewController: @escaping @MainActor (ConfigurationValue) async throws -> SnapshotViewController
+  ) async {
+    do {
+      try await runAsyncPlatformThrowing(
+        source: source,
+        named: named,
+        function: function,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column,
+        makeViewController: makeViewController
+      )
+    }
+    catch {
+      recordIssue(
+        error,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+  }
+
+  /// The rethrowing async core for UIKit/AppKit builders.
+  private static func runAsyncPlatformThrowing<ConfigurationValue: Sendable>(
+    source: ConfigurationSource<ConfigurationValue>,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeViewController: @escaping @MainActor (ConfigurationValue) async throws -> SnapshotViewController
+  ) async throws {
+    guard
+      SnapshotRuntimePreconditions.requireActiveTestContext(
+        Test.current,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ) != nil
+    else {
+      return
+    }
+
+    try await TaskLocalSnapshotExecutionContext.withCurrent(
+      function: function,
+      line: line,
+      column: column,
+      isParameterizedCase: Test.Case.current?.isParameterized == true
+    ) { context in
+      guard
+        let configuration = resolveConfiguration(
+          from: source,
+          context: context,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      else {
+        return
+      }
+
+      try await runOnMainActorAsyncOperation(context: context) {
+        try await runMainActorSnapshotAsync(
+          context: context,
+          named: named,
+          configuration: configuration,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column,
+          makeViewController: makeViewController
+        )
+      }
+    }
+  }
+
   // MARK: - Main-actor bridging
 
   /// Runs `operation` on the main actor and records the snapshot failures it produced after
@@ -1093,6 +2072,24 @@ enum ExpectSnapshotAdapter {
     }
   }
 
+  /// Async counterpart for an async main-actor snapshot builder.
+  private static func runOnMainActorAsyncOperation(
+    context: SnapshotExecutionContext,
+    operation: @escaping @MainActor () async throws -> [SnapshotFailure]
+  ) async throws {
+    let runtimeState = ResolvedSnapshotRuntimeState.current
+
+    let failures = try await runOnMainActorIsolatedAsync(
+      context: context,
+      runtimeState: runtimeState,
+      operation: operation
+    )
+
+    for failure in failures {
+      failure.record()
+    }
+  }
+
   @MainActor
   private static func runOnMainActorIsolated(
     context: SnapshotExecutionContext,
@@ -1102,6 +2099,19 @@ enum ExpectSnapshotAdapter {
     try TaskLocalSnapshotExecutionContext.$current.withValue(context) {
       try runtimeState.withAppliedValues {
         try operation()
+      }
+    }
+  }
+
+  @MainActor
+  private static func runOnMainActorIsolatedAsync(
+    context: SnapshotExecutionContext,
+    runtimeState: ResolvedSnapshotRuntimeState,
+    operation: @escaping @MainActor () async throws -> [SnapshotFailure]
+  ) async throws -> [SnapshotFailure] {
+    try await TaskLocalSnapshotExecutionContext.$current.withValue(context) {
+      try await runtimeState.withAppliedValues {
+        try await operation()
       }
     }
   }
@@ -1160,6 +2170,55 @@ enum ExpectSnapshotAdapter {
     )
 
     return try collectSnapshotFailuresSync(with: generator)
+  }
+
+  @MainActor
+  private static func runMainActorSnapshotAsync<ConfigurationValue: Sendable>(
+    context: SnapshotExecutionContext,
+    named: String?,
+    configuration: SnapshotConfiguration<ConfigurationValue>,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeViewController: @escaping @MainActor (ConfigurationValue) async throws -> SnapshotViewController
+  ) async throws -> [SnapshotFailure] {
+    let disambiguatesUnnamedCase = configuration.name == nil
+    if disambiguatesUnnamedCase, context.isParameterizedCase {
+      return [
+        SnapshotFailure(
+          message: """
+            #expectSnapshot in a parameterized test has no stable case identity. Pass the case \
+            value through #expectSnapshot(argument:) or SnapshotConfiguration. The named: \
+            argument labels the assertion but cannot prove that every case uses a distinct value. \
+            The assertion was skipped instead of sharing a reference file with another case.
+            """,
+          error: nil,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      ]
+    }
+
+    let displayName = context.resolvedAssertionName(
+      named: named,
+      disambiguatesUnnamedCase: disambiguatesUnnamedCase
+    )
+
+    let generator = SnapshotViewGenerator(
+      displayName: displayName,
+      configuration: configuration,
+      makeValue: makeViewController,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+    let resolvedGenerator = try await resolvedSyncViewGenerator(from: generator)
+
+    return try collectSnapshotFailuresSync(with: resolvedGenerator)
   }
 
   private static func recordIssue(
