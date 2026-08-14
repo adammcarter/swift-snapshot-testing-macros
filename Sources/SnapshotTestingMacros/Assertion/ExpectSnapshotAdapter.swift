@@ -1772,8 +1772,6 @@ enum ExpectSnapshotAdapter {
 
     try TaskLocalSnapshotExecutionContext.withCurrent(
       function: function,
-      line: line,
-      column: column,
       isParameterizedCase: Test.Case.current?.isParameterized == true
     ) { context in
       guard
@@ -1867,8 +1865,6 @@ enum ExpectSnapshotAdapter {
 
     try await TaskLocalSnapshotExecutionContext.withCurrent(
       function: function,
-      line: line,
-      column: column,
       isParameterizedCase: Test.Case.current?.isParameterized == true
     ) { context in
       guard
@@ -1962,8 +1958,6 @@ enum ExpectSnapshotAdapter {
 
     try await TaskLocalSnapshotExecutionContext.withCurrent(
       function: function,
-      line: line,
-      column: column,
       isParameterizedCase: Test.Case.current?.isParameterized == true
     ) { context in
       guard
@@ -2155,8 +2149,7 @@ enum ExpectSnapshotAdapter {
     }
 
     let displayName = context.resolvedAssertionName(
-      named: named,
-      disambiguatesUnnamedCase: disambiguatesUnnamedCase
+      named: named
     )
 
     let generator = SnapshotViewGenerator(
@@ -2203,8 +2196,7 @@ enum ExpectSnapshotAdapter {
     }
 
     let displayName = context.resolvedAssertionName(
-      named: named,
-      disambiguatesUnnamedCase: disambiguatesUnnamedCase
+      named: named
     )
 
     let generator = SnapshotViewGenerator(

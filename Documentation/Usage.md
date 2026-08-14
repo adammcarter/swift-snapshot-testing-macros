@@ -66,11 +66,9 @@ up deterministically in assertion order, and every new run restarts at `.1` — 
 in-process test iterations and parallel tests always resolve the same reference files instead
 of depending on a process-wide counter.
 
-Without any snapshot trait there is no safe attempt-lifetime owner for an ordered counter.
-Each unnamed assertion therefore uses a deterministic source-location suffix, so distinct
-call sites cannot silently share one reference and the same call site stays stable across
-runs. Moving an assertion changes that suffix; use `named:` when the on-disk name must survive
-source movement. A loop that executes one call site for several values still needs an explicit
+Without any snapshot trait, each unnamed assertion uses the function's base name. Unnamed
+assertions therefore refer to the same snapshot; use distinct `named:` values when a test needs
+separate references. A loop that executes one call site for several values still needs an explicit
 `named:` value per iteration or a snapshot trait to provide an ordered attempt scope.
 
 ### Unnamed snapshots in parameterised tests

@@ -13,44 +13,24 @@ final class SnapshotExecutionContext: Sendable {
   /// Whether this context belongs to a parameterized Swift Testing case.
   let isParameterizedCase: Bool
 
-  /// Stable source identity used only when no trait-provided attempt token owns the context.
-  /// The call site replaces unsafe task-pointer/process-global ownership for bare native tests.
-  private let fallbackSourceLocationIdentity: String?
-
   private let nameState = SnapshotExecutionContextNameState()
 
   init(
     function: StaticString,
-    isParameterizedCase: Bool = false,
-    fallbackSourceLocationIdentity: String? = nil
+    isParameterizedCase: Bool = false
   ) {
     let raw = String(describing: function)
     let candidate = raw.split(separator: "(").first.map(String.init) ?? raw
     self.baseName = candidate.isEmpty ? "snapshot" : candidate
     self.isParameterizedCase = isParameterizedCase
-    self.fallbackSourceLocationIdentity = fallbackSourceLocationIdentity
   }
 
   /// Resolves the display name for one assertion, deduplicating repeats within this attempt.
   ///
-  /// An unnamed assertion outside a trait-provided attempt scope folds in its source call-site
-  /// discriminator, so two assertions in one bare native test cannot silently share a reference.
-  /// Scoped attempts keep their established ordered naming. A named assertion is the user's
+  /// An unnamed assertion uses the function's base name. A named assertion is the user's
   /// deliberate choice and is never rewritten.
-  func resolvedAssertionName(
-    named override: String?,
-    disambiguatesUnnamedCase: Bool = true
-  ) -> String {
-    let requestedName: String
-    if let override {
-      requestedName = override
-    }
-    else if disambiguatesUnnamedCase, let fallbackSourceLocationIdentity {
-      requestedName = "\(baseName)-\(fallbackSourceLocationIdentity)"
-    }
-    else {
-      requestedName = baseName
-    }
+  func resolvedAssertionName(named override: String?) -> String {
+    let requestedName = override ?? baseName
 
     return nameState.lock.withLock {
       if nameState.usedNames.insert(Self.dedupKey(for: requestedName)).inserted {

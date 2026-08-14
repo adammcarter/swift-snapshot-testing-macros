@@ -4,8 +4,6 @@ enum TaskLocalSnapshotExecutionContext {
 
   static func withCurrent<T>(
     function: StaticString,
-    line: UInt = #line,
-    column: UInt = #column,
     isParameterizedCase: Bool = false,
     perform work: (SnapshotExecutionContext) throws -> T
   ) rethrows -> T {
@@ -15,8 +13,6 @@ enum TaskLocalSnapshotExecutionContext {
 
     let context = resolveContext(
       function: function,
-      line: line,
-      column: column,
       isParameterizedCase: isParameterizedCase
     )
     return try $current.withValue(context) {
@@ -26,8 +22,6 @@ enum TaskLocalSnapshotExecutionContext {
 
   static func withCurrent<T>(
     function: StaticString,
-    line: UInt = #line,
-    column: UInt = #column,
     isParameterizedCase: Bool = false,
     perform work: (SnapshotExecutionContext) async throws -> T
   ) async rethrows -> T {
@@ -37,8 +31,6 @@ enum TaskLocalSnapshotExecutionContext {
 
     let context = resolveContext(
       function: function,
-      line: line,
-      column: column,
       isParameterizedCase: isParameterizedCase
     )
     return try await $current.withValue(context) {
@@ -54,20 +46,10 @@ enum TaskLocalSnapshotExecutionContext {
   /// gets a fresh token and therefore a fresh context.
   ///
   /// Without a token (a bare `@Test` without any snapshot trait) every assertion gets a fresh
-  /// context whose source call site is its stable identity. Contexts are deliberately never
-  /// cached here: they used to be cached under the
-  /// raw current-task pointer bits, but the allocator reuses a finished task's allocation for
-  /// the next task almost immediately, so new attempts and sequential child tasks frequently
-  /// resolved a stale context whose `usedNames` were already populated and unnamed artifact
-  /// names silently drifted to "-2"/"-3" suffixes. The residual limitation of the fresh-per-
-  /// assertion fallback therefore uses the exact line and column inside the source file that
-  /// already owns the snapshot directory, not unsafe execution identity: distinct source
-  /// assertions resolve distinct references, while repetitions of one source assertion resolve
-  /// the same reference across runs.
+  /// context and therefore uses the function's base name. Callers that need multiple distinct
+  /// assertions must provide explicit names or apply a snapshot trait to share an attempt scope.
   private static func resolveContext(
     function: StaticString,
-    line: UInt,
-    column: UInt,
     isParameterizedCase: Bool
   ) -> SnapshotExecutionContext {
     if let token = SnapshotAttemptToken.current {
@@ -76,8 +58,7 @@ enum TaskLocalSnapshotExecutionContext {
 
     return SnapshotExecutionContext(
       function: function,
-      isParameterizedCase: isParameterizedCase,
-      fallbackSourceLocationIdentity: "L\(line)C\(column)"
+      isParameterizedCase: isParameterizedCase
     )
   }
 }

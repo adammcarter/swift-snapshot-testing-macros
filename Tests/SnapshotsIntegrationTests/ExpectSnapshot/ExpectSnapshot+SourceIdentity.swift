@@ -8,9 +8,9 @@ import Testing
 
 struct SourceIdentitySnapshotTests {
   @Test
-  func traitlessUnnamedCallSitesUseSourceQualifiedReferences() {
-    #expectSnapshot(Text("first traitless call site"))
-    #expectSnapshot(Text("second traitless call site"))
+  func namedCallSitesUseExplicitReferences() {
+    #expectSnapshot(Text("first traitless call site"), named: "first")
+    #expectSnapshot(Text("second traitless call site"), named: "second")
   }
 }
 #endif
