@@ -59,19 +59,16 @@ private func makeMakeValue(
     .map { "\($1.name): $\($0)" }.map(ExprSyntax.init(stringLiteral:))
     .map { LabeledExprSyntax(expression: $0) }
 
+  /*
+   Always a zero-argument call: the peer macro cannot see the suite's initialisers (lexical
+   contexts have their member lists stripped), so any suite whose initialiser requires
+   arguments is rejected by the suite expansion instead of being called incorrectly here.
+   */
   let baseFunction = FunctionCallExprSyntax(
     calledExpression: DeclReferenceExprSyntax(baseName: suiteName).trimmed,
     leftParen: isStatic ? .none : .leftParenToken(),
     rightParen: isStatic ? .none : .rightParenToken(),
-    argumentsBuilder: {
-      if let initConfigurationToken = declaration.initConfigurationToken {
-        LabeledExprSyntax(
-          label: initConfigurationToken,
-          colon: .colonToken(trailingTrivia: .space),
-          expression: ExprSyntax(stringLiteral: Constants.Parameters.configuration)
-        )
-      }
-    }
+    argumentsBuilder: {}
   )
 
   var expression: ExprSyntaxProtocol = FunctionCallExprSyntax(

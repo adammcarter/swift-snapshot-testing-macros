@@ -17,7 +17,7 @@ extension SnapshotSuite.TestBlock.Test {
       let configurationGenericType = snapshotTestFunctionDecl.signature.parameterClauseAsTuple
 
       parametersExpr =
-        if configurationExpression != nil || configurationExpression?.as(ArrayExprSyntax.self)?.elements.isEmpty == false {
+        if configurationExpression != nil {
           FunctionParameterListSyntax {
             "\(.Parameters.configuration): \(.TypeName.snapshotConfiguration)<(\(configurationGenericType))>"
           }

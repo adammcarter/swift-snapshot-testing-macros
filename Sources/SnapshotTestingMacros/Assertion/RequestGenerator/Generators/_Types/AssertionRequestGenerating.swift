@@ -4,5 +4,11 @@ import Foundation
 protocol AssertionRequestGenerating {
   var context: AssertionRequestContext { get }
 
-  func generateRequests() async throws -> [any AssertionRequesting]
+  func generateRequestsSync() throws -> [any AssertionRequesting]
+}
+
+extension AssertionRequestGenerating {
+  func generateRequests() async throws -> [any AssertionRequesting] {
+    try generateRequestsSync()
+  }
 }

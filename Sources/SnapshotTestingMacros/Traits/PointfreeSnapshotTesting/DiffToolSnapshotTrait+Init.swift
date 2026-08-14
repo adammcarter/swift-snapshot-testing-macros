@@ -1,6 +1,7 @@
 import Foundation
+import Testing
 
-extension SnapshotTrait where Self == DiffToolSnapshotTrait {
+extension Testing.Trait where Self == DiffToolSnapshotTrait {
   /// Configures the diff tool to use when snapshot tests fail.
   ///
   /// - Parameter diffTool: The diff tool configuration to use.
@@ -8,11 +9,13 @@ extension SnapshotTrait where Self == DiffToolSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.diffTool(.ksdiff))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.diffTool(.ksdiff))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func diffTool(_ diffTool: DiffToolSnapshotTrait.DiffTool) -> Self {

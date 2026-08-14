@@ -33,3 +33,23 @@ extension SnapshotConfigurationParser {
     parse(arguments())
   }
 }
+
+/*
+ The `configurationValues:` macro overloads accept any `Collection & Sendable`, so the parser
+ the generated code calls must accept any `Collection` too. Without these overloads, passing
+ e.g. a range (`1...3`) or a `Set` compiles at the macro signature but fails to compile in the
+ generated code with "no exact matches in call to static method 'parse'".
+
+ `Array` arguments keep resolving to the more specialised `[T]` overloads above.
+ */
+extension SnapshotConfigurationParser {
+  public static func parse<C: Collection>(_ arguments: C) -> [SnapshotConfiguration<C.Element>]
+  where C.Element: Sendable {
+    parse(Array(arguments))
+  }
+
+  public static func parse<C: Collection>(_ arguments: () -> C) -> [SnapshotConfiguration<C.Element>]
+  where C.Element: Sendable {
+    parse(arguments())
+  }
+}

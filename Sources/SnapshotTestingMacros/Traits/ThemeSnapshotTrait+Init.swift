@@ -1,6 +1,7 @@
 import Foundation
+import Testing
 
-extension SnapshotTrait where Self == ThemeSnapshotTrait {
+extension Testing.Trait where Self == ThemeSnapshotTrait {
   /// Allows the snapshot to specify a theme.
   ///
   /// - Parameter theme: The theme to use.
@@ -8,11 +9,13 @@ extension SnapshotTrait where Self == ThemeSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.theme(.dark))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.theme(.dark))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func theme(

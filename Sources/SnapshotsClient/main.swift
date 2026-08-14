@@ -1,5 +1,7 @@
 /**
- Open `Tests/SnapshotsIntegrationTests/[SnapshotSuite | SnapshotTest]` folders to develop and use the macro instead of this file.
+ Open `Tests/SnapshotsIntegrationTests/ExpectSnapshot` while developing the native Swift Testing API.
 
- Or alternatively, open `Tests/SnapshotsIntegrationTests/Playground.swift` to try out the snapshot suite while developing.
+ The retained deprecated migration fixtures live under `Tests/SnapshotsIntegrationTests/SnapshotSuite`
+ and `Tests/SnapshotsIntegrationTests/SnapshotTest`, with repetition-specific coverage in
+ `Tests/SnapshotsIntegrationRepetitionTests/LegacySnapshotRepetitionMigration.swift`.
  */
