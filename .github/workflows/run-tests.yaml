@@ -78,6 +78,8 @@ jobs:
             os: macos-26
           - xcode: '26.5'
             os: macos-26
+          - xcode: '26.6'
+            os: macos-26
 
     steps:
       - name: Select Xcode version (${{ matrix.xcode }})
@@ -202,7 +204,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        xcode: ['26.4', '26.5']
+        xcode: ['26.4', '26.5', '26.6']
         scheme: ['SnapshotsUnitTests', 'SnapshotsIntegrationTests']
         # Both platforms, in parallel. macOS alone compiles out everything behind
         # `#if canImport(UIKit)`, so an iOS-only break passes it unnoticed; iOS alone

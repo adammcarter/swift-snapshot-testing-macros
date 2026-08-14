@@ -128,7 +128,7 @@ Snapshot References** workflow (Actions → Run workflow) on your branch — it 
 the CI runner and commits the result onto your branch. See
 [CONTRIBUTING.md](CONTRIBUTING.md#regenerating-references-on-ci) for the full flow.
 
-Latest-Xcode CI also runs fast macOS build-for-testing smoke checks on 26.4 and 26.5:
+Latest-Xcode CI also runs fast macOS build-for-testing smoke checks on 26.4, 26.5, and 26.6:
 
 ```shell
 xcodebuild build-for-testing \
