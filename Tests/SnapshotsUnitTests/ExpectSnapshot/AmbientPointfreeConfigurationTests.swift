@@ -13,6 +13,14 @@ import Testing
 /// which itself falls back to pointfree's defaults.
 @MainActor
 struct AmbientPointfreeConfigurationTests {
+  private final class NonSendableResult {
+    let record: RecordSnapshotTrait.RecordKind?
+
+    init(record: RecordSnapshotTrait.RecordKind?) {
+      self.record = record
+    }
+  }
+
   /// A consumer-level `withSnapshotTesting(record: .never)` around a native assertion must be
   /// honoured when no `.record` trait is set: the missing reference is NOT recorded.
   ///
@@ -94,6 +102,20 @@ struct AmbientPointfreeConfigurationTests {
 
     #expect(failures.count == 1)
     #expect(try Self.referenceFileNames(in: directory).isEmpty)
+  }
+
+  @Test
+  func capturedRuntimeStateCarriesTraitConfigurationAcrossAsyncOperation() async {
+    let runtimeState = RecordSnapshotTrait.$current.withValue(.never) {
+      ResolvedSnapshotRuntimeState.current
+    }
+
+    let result = await runtimeState.withAppliedValues {
+      await Task.yield()
+      return NonSendableResult(record: RecordSnapshotTrait.current)
+    }
+
+    #expect(result.record == .never)
   }
 
   @MainActor

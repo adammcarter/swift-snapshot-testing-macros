@@ -48,6 +48,7 @@ struct ResolvedSnapshotRuntimeState {
     }
   }
 
+  #if compiler(>=6.2)
   @MainActor
   func withAppliedValues<T>(
     _ operation: () async throws -> T
@@ -68,4 +69,26 @@ struct ResolvedSnapshotRuntimeState {
       }
     }
   }
+  #else
+  @MainActor
+  func withAppliedValues<T>(
+    _ operation: @MainActor () async throws -> T
+  ) async rethrows -> T {
+    try await SnapshotTestingConfiguration.$current._unsafeInheritExecutor_withValue(pointfreeConfiguration) {
+      try await RecordSnapshotTrait.$current._unsafeInheritExecutor_withValue(record) {
+        try await DiffToolSnapshotTrait.$current._unsafeInheritExecutor_withValue(diffTool) {
+          try await StrategySnapshotTrait.$current._unsafeInheritExecutor_withValue(strategy) {
+            try await ThemeSnapshotTrait.$current._unsafeInheritExecutor_withValue(theme) {
+              try await SizesSnapshotTrait.$current._unsafeInheritExecutor_withValue(sizes) {
+                try await __SnapshotViewDecoratorConfiguration.$value._unsafeInheritExecutor_withValue(decoratorConfiguration) {
+                  try await operation()
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  #endif
 }
