@@ -73,7 +73,7 @@ struct ExpectSnapshotViewBuilderShapesFixture {
   func forEachBody() {
     #expectSnapshot(named: "unused") {
       Text("header")
-      ForEach(0..<3, id: \.self) { index in
+      ForEach(0 ..< 3, id: \.self) { index in
         Text("row \(index)")
       }
     }
@@ -176,7 +176,7 @@ struct ExpectSnapshotViewBuilderShapesFixture {
   func configurationAsyncForEachBody() async {
     await #expectSnapshot(Self.configuration, named: "unused") { state in
       Text(await asyncTitle())
-      ForEach(0..<2, id: \.self) { index in
+      ForEach(0 ..< 2, id: \.self) { index in
         Text("\(state)\(index)")
       }
     }

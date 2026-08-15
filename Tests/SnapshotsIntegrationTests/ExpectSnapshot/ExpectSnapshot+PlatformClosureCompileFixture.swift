@@ -21,7 +21,10 @@
 import SnapshotTestingMacros
 import Testing
 
-@MainActor private func platformTitle() -> String { "probe" }
+@MainActor
+private func platformTitle() -> String {
+  "probe"
+}
 
 private enum PlatformClosureFixtureError: Error {
   case sentinel
