@@ -11,6 +11,12 @@ public struct __TestScopingBox: Testing.TestScoping {
     self.snapshotTestScoping = snapshotTestScoping
   }
 
+  /// The boxed trait, so package-internal checks that inspect a declaration's trait list can
+  /// see the trait the author actually wrote rather than the box the expansion applied.
+  var wrappedScoping: any SnapshotTestScoping {
+    snapshotTestScoping
+  }
+
   /// Forwards the wrapped trait's comments so boxing does not strip them.
   public var comments: [Comment] {
     snapshotTestScoping.comments

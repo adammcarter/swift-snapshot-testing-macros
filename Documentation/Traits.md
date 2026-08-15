@@ -56,6 +56,25 @@ Fixed lengths and explicit scales are validated when the assertion runs: a `.fix
 or `scale:` that is zero, negative, or non-finite fails the test with a clear sizing error
 in every width/height combination — it is never silently treated as "unconstrained".
 
+Only one `.strategy` may apply to a given `@Test` or `@Suite`. Unlike `.theme` and `.sizes`, the
+strategy does not fan out into several snapshots, so a second one on the same declaration is a
+contradiction rather than an addition:
+
+```swift
+@Test(.strategy(.image), .strategy(.recursiveDescription))  // fails the test
+func card() { … }
+```
+
+The declaration fails before its body runs, naming both strategies:
+
+> Conflicting .strategy traits: image, recursiveDescription. Only one snapshot strategy may
+> apply to a test or suite, and .strategy does not fan out the way .theme and .sizes do — the
+> last trait applied would silently replace the others. Keep a single .strategy trait, or move
+> the others onto a different suite or test.
+
+A suite-level `.strategy` that a test-level one overrides is the ordinary trait hierarchy below,
+not a conflict, and is unaffected.
+
 The `.strategy(.recursiveDescription)` text strategy participates in the same size/theme
 fan-out as `.image`: each reference is laid out at the request's computed size with the
 request's theme applied before the hierarchy is dumped, so the size and theme components in
