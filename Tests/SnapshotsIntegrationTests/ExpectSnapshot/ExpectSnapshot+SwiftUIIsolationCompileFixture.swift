@@ -2,10 +2,15 @@
 //
 // Every SwiftUI builder is `@MainActor`, like its UIKit/AppKit counterpart, so the same call
 // site has to compile from a `@MainActor` suite — the shape README recommends — *and* from a
-// nonisolated one. Before the builders were isolated there was no isolation that satisfied
-// all four effect cells: from a `@MainActor` suite the `async` and `async throws` forms were
-// rejected ("sending value of non-Sendable type '() async -> Text' risks causing data
-// races"), and from a nonisolated suite no form could reach main-actor state at all.
+// nonisolated one. Before the builders were isolated, the nonisolated half of that was
+// measurably broken: all four effect cells failed with "Call to main actor-isolated global
+// function … in a synchronous nonisolated context" (22 errors across this file's cells).
+//
+// A `@MainActor` suite was separately reported to reject the `async` and `async throws` forms
+// with "sending value of non-Sendable type '() async -> Text' risks causing data races". That
+// half did not reproduce on Xcode 27 beta and is recorded here as unconfirmed on this
+// toolchain — it does not change what these fixtures pin, which is that both isolations
+// compile now.
 //
 // Every cell therefore reads main-actor state *synchronously* inside the builder — that is
 // the property the isolation buys, and a builder that regressed to nonisolated cannot compile
