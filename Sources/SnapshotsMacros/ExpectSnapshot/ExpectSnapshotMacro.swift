@@ -57,33 +57,55 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
      before the template's `,`, commenting out the rest of the generated line.
      */
     let named = node.arguments.first { $0.label?.text == "named" }?.expression.trimmed ?? "nil"
-    let directThrowingValue =
-      argumentValue == nil
-      && makeValueExpression == nil
-      && value.map { expression in
-        var expression = expression
-        while let parenthesizedExpression = expression.as(TupleExprSyntax.self),
-          parenthesizedExpression.elements.count == 1,
-          let element = parenthesizedExpression.elements.first,
-          element.label == nil,
-          element.trailingComma == nil
+    /*
+     The direct-value form — `#expectSnapshot(someView)` — is spliced into the `makeValue:`
+     builder closure rather than passed positionally, even though the runtime surface could
+     accept it as an `@autoclosure`.
+
+     An autoclosure parameter fixes the effects of the expression it wraps at the point the
+     overload is declared, and an autoclosure cannot be `async` at all. That is what forced the
+     previous expansion to classify the value syntactically — a root-level `try` earned a
+     `throwingMarker: ()` argument that routed the call to a throwing autoclosure overload — and
+     it is why every other effect shape failed inside the expansion buffer, at a source location
+     the author cannot open: `await` and `try await` with "'async' call in an autoclosure that
+     does not support concurrency", and a `try` nested anywhere but the root (say,
+     `Wrapper(inner: try make())`) with "Call can throw, but it is executed in a non-throwing
+     autoclosure".
+
+     A closure literal carries its own effects, so the compiler infers them from the spliced
+     expression and picks the matching `makeValue:` overload itself — sync, `throws`, `async`, or
+     `async throws` — with no marker argument and no syntactic classification here. `try?` and
+     `try!` handle the error inside the expression, so they land on the non-throwing overload for
+     free, which is what a reader would expect.
+
+     Evaluation semantics are unchanged: the runtime's direct-value entry points already
+     forwarded straight to the `makeValue:` builders, so the value was, and still is, produced
+     lazily inside the main-actor hop — once per size/theme request — rather than at the call
+     site.
+     */
+    let isDirectValue = argumentValue == nil && makeValueExpression == nil
+    let directValue = isDirectValue ? value : nil
+    let builderExpression =
+      makeValueExpression.map { "\($0.trimmed)" }
+      ?? directValue.map {
+        """
         {
-          expression = element.expression
-        }
-        guard let tryExpression = expression.as(TryExprSyntax.self) else {
-          return false
-        }
-        return tryExpression.questionOrExclamationMark == nil
-      } == true
+            \($0.trimmed)
+          }
+        """
+      }
     let makeValue =
-      makeValueExpression.map {
+      builderExpression.map {
         """
         ,
-          makeValue: \($0.trimmed)
+          makeValue: \($0)
         """
       } ?? ""
     let valueArgument: String? =
-      if let value, argumentValue == nil {
+      if directValue != nil {
+        nil
+      }
+      else if let value, argumentValue == nil {
         "\(value.trimmed)"
       }
       else if let value {
@@ -92,7 +114,6 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
       else {
         nil
       }
-    let throwingArgument = directThrowingValue ? ", throwingMarker: ()" : ""
     let leadingArguments = valueArgument.map { "  \($0),\n" } ?? ""
     let expansion =
       "SnapshotTestingMacros.__expectSnapshot(\n"
@@ -103,7 +124,7 @@ public struct ExpectSnapshotMacro: ExpressionMacro {
           fileID: #fileID,
           filePath: #filePath,
           line: #line,
-          column: #column\(makeValue)\(throwingArgument)
+          column: #column\(makeValue)
         )
         """
 

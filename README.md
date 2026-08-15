@@ -60,8 +60,10 @@ iOS 15+ and macOS 15+ only. watchOS, tvOS, and visionOS are not supported; build
 | SwiftUI | Direct-value snapshots, `named:`, `@ViewBuilder` closure forms, `SnapshotConfiguration`, and `argument:` helpers |
 | UIKit / AppKit | Direct values plus sync, throwing, async, and async-throwing closure, `SnapshotConfiguration`, and `argument:` snapshots for views and view controllers |
 
-Every builder is main-actor isolated, SwiftUI and platform alike. Use `try #expectSnapshot(try makeView())` when a direct
-view/controller factory throws; throwing builders rethrow their factory and snapshot-pipeline errors.
+Every builder is main-actor isolated, SwiftUI and platform alike. A direct value carries whatever effects its expression
+has — `try #expectSnapshot(try makeView())`, `await #expectSnapshot(await makeView())` and
+`try await #expectSnapshot(try await makeView())` all compose, and a `try` nested inside a larger expression counts.
+Throwing builders rethrow their factory and snapshot-pipeline errors.
 
 For UIKit and AppKit, keep the test itself as a regular `@Test` unless using an async builder, and pass a
 helper-backed expression such as `#expectSnapshot(makeViewController())`. Parameterised builders use

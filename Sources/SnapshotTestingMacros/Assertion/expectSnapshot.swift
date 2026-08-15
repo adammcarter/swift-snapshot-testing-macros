@@ -18,142 +18,15 @@ import SwiftUI
    Disfavouring the platform overloads breaks the tie in the only direction that can type
    check; it cannot change which overload a `SnapshotView` or `SnapshotViewController` body
    reaches, because no SwiftUI overload is viable for those.
+
+ There is deliberately no positional direct-value landing pad. `#expectSnapshot(someView)` is
+ spliced into `makeValue:` as a closure literal, so the value's effects belong to the closure
+ and the compiler selects the sync / `throws` / `async` / `async throws` overload itself. The
+ `@autoclosure` overloads this replaced could not express `async` at all, and needed a
+ `throwingMarker: ()` argument synthesized from a syntactic `try` check in the macro to reach
+ their throwing halves — a mechanism that silently missed `try` anywhere but the root of the
+ expression. See `ExpectSnapshotMacro` for the full account.
  */
-
-@_documentation(visibility: private)
-// swiftlint:disable:next identifier_name
-public func __expectSnapshot<V: View>(
-  _ value: @autoclosure @escaping @MainActor () -> V,
-  named: String? = nil,
-  function: StaticString = #function,
-  fileID: StaticString = #fileID,
-  filePath: StaticString = #filePath,
-  line: UInt = #line,
-  column: UInt = #column
-) {
-  ExpectSnapshotAdapter.run(
-    value: value,
-    named: named,
-    function: function,
-    fileID: fileID,
-    filePath: filePath,
-    line: line,
-    column: column
-  )
-}
-
-@_documentation(visibility: private)
-// swiftlint:disable:next identifier_name
-public func __expectSnapshot<V: View>(
-  _ value: @autoclosure @escaping @MainActor () throws -> V,
-  named: String? = nil,
-  function: StaticString = #function,
-  fileID: StaticString = #fileID,
-  filePath: StaticString = #filePath,
-  line: UInt = #line,
-  column: UInt = #column,
-  throwingMarker _: Void
-) throws {
-  try ExpectSnapshotAdapter.run(
-    named: named,
-    function: function,
-    fileID: fileID,
-    filePath: filePath,
-    line: line,
-    column: column,
-    makeValue: value
-  )
-}
-
-@_documentation(visibility: private)
-// swiftlint:disable:next identifier_name
-public func __expectSnapshot(
-  _ value: @autoclosure @escaping @MainActor () -> SnapshotView,
-  named: String? = nil,
-  function: StaticString = #function,
-  fileID: StaticString = #fileID,
-  filePath: StaticString = #filePath,
-  line: UInt = #line,
-  column: UInt = #column
-) {
-  ExpectSnapshotAdapter.run(
-    view: value,
-    named: named,
-    function: function,
-    fileID: fileID,
-    filePath: filePath,
-    line: line,
-    column: column
-  )
-}
-
-@_documentation(visibility: private)
-// swiftlint:disable:next identifier_name
-public func __expectSnapshot(
-  _ value: @autoclosure @escaping @MainActor () -> SnapshotViewController,
-  named: String? = nil,
-  function: StaticString = #function,
-  fileID: StaticString = #fileID,
-  filePath: StaticString = #filePath,
-  line: UInt = #line,
-  column: UInt = #column
-) {
-  ExpectSnapshotAdapter.run(
-    viewController: value,
-    named: named,
-    function: function,
-    fileID: fileID,
-    filePath: filePath,
-    line: line,
-    column: column
-  )
-}
-
-@_documentation(visibility: private)
-// swiftlint:disable:next identifier_name
-public func __expectSnapshot(
-  _ value: @autoclosure @escaping @MainActor () throws -> SnapshotView,
-  named: String? = nil,
-  function: StaticString = #function,
-  fileID: StaticString = #fileID,
-  filePath: StaticString = #filePath,
-  line: UInt = #line,
-  column: UInt = #column,
-  throwingMarker _: Void = ()
-) throws {
-  try ExpectSnapshotAdapter.run(
-    view: value,
-    named: named,
-    function: function,
-    fileID: fileID,
-    filePath: filePath,
-    line: line,
-    column: column
-  )
-}
-
-@_documentation(visibility: private)
-// swiftlint:disable:next identifier_name
-public func __expectSnapshot(
-  _ value: @autoclosure @escaping @MainActor () throws -> SnapshotViewController,
-  named: String? = nil,
-  function: StaticString = #function,
-  fileID: StaticString = #fileID,
-  filePath: StaticString = #filePath,
-  line: UInt = #line,
-  column: UInt = #column,
-  throwingMarker _: Void = ()
-) throws {
-  try ExpectSnapshotAdapter.run(
-    viewController: value,
-    named: named,
-    function: function,
-    fileID: fileID,
-    filePath: filePath,
-    line: line,
-    column: column
-  )
-}
 
 @_documentation(visibility: private)
 @_disfavoredOverload

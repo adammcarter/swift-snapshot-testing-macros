@@ -38,13 +38,15 @@ struct ExpectSnapshotMacroTests {
         @Test
         func myView() {
           SnapshotTestingMacros.__expectSnapshot(
-            Text("test"),
             named: nil,
             function: #function,
             fileID: #fileID,
             filePath: #filePath,
             line: #line,
-            column: #column
+            column: #column,
+            makeValue: {
+              Text("test")
+            }
           )
         }
       }
@@ -77,13 +79,15 @@ struct ExpectSnapshotMacroTests {
         @Test
         func myView() {
           SnapshotTestingMacros.__expectSnapshot(
-            Text("test"),
             named: "custom",
             function: #function,
             fileID: #fileID,
             filePath: #filePath,
             line: #line,
-            column: #column
+            column: #column,
+            makeValue: {
+              Text("test")
+            }
           )
         }
       }
@@ -92,7 +96,7 @@ struct ExpectSnapshotMacroTests {
   }
 
   @Test
-  func expandsThrowingDirectValueAsThrowingBuilder() {
+  func expandsThrowingDirectValueAsBuilderClosure() {
     assertMacro {
       """
       import SnapshotTestingMacros
@@ -116,13 +120,15 @@ struct ExpectSnapshotMacroTests {
         @Test
         func myView() throws {
           try SnapshotTestingMacros.__expectSnapshot(
-            try makeView(),
             named: "custom",
             function: #function,
             fileID: #fileID,
             filePath: #filePath,
             line: #line,
-            column: #column, throwingMarker: ()
+            column: #column,
+            makeValue: {
+              try makeView()
+            }
           )
         }
       }
@@ -131,7 +137,7 @@ struct ExpectSnapshotMacroTests {
   }
 
   @Test
-  func expandsParenthesizedThrowingDirectValueAsThrowingBuilder() {
+  func expandsParenthesizedThrowingDirectValueAsBuilderClosure() {
     assertMacro {
       """
       import SnapshotTestingMacros
@@ -155,13 +161,196 @@ struct ExpectSnapshotMacroTests {
         @Test
         func myView() throws {
           try SnapshotTestingMacros.__expectSnapshot(
-            (try makeView()),
             named: "custom",
             function: #function,
             fileID: #fileID,
             filePath: #filePath,
             line: #line,
-            column: #column, throwingMarker: ()
+            column: #column,
+            makeValue: {
+              (try makeView())
+            }
+          )
+        }
+      }
+      """
+    }
+  }
+
+  /// `await`, `try await`, and a `try` nested inside a larger expression all reach the same
+  /// builder-closure expansion: the effects are the closure's, so the compiler picks the
+  /// matching `makeValue:` overload without the macro classifying the expression at all.
+  @Test
+  func expandsAwaitingDirectValueAsBuilderClosure() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() async {
+          await #expectSnapshot(await makeView(), named: "custom")
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() async {
+          await SnapshotTestingMacros.__expectSnapshot(
+            named: "custom",
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: {
+              await makeView()
+            }
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
+  func expandsThrowingAwaitingDirectValueAsBuilderClosure() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() async throws {
+          try await #expectSnapshot(try await makeView(), named: "custom")
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() async throws {
+          try await SnapshotTestingMacros.__expectSnapshot(
+            named: "custom",
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: {
+              try await makeView()
+            }
+          )
+        }
+      }
+      """
+    }
+  }
+
+  @Test
+  func expandsNestedThrowingDirectValueAsBuilderClosure() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() throws {
+          try #expectSnapshot(Wrapper(inner: try makeView()), named: "custom")
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() throws {
+          try SnapshotTestingMacros.__expectSnapshot(
+            named: "custom",
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: {
+              Wrapper(inner: try makeView())
+            }
+          )
+        }
+      }
+      """
+    }
+  }
+
+  /// `try?` and `try!` handle the error inside the expression, so the builder closure stays
+  /// non-throwing and the call site needs no `try`.
+  @Test
+  func expandsOptionalAndForcedTryDirectValuesAsNonThrowingBuilderClosures() {
+    assertMacro {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          #expectSnapshot(try? makeView(), named: "optional")
+          #expectSnapshot(try! makeView(), named: "forced")
+        }
+      }
+      """
+    } expansion: {
+      """
+      import SnapshotTestingMacros
+      import SwiftUI
+      import Testing
+
+      struct MySnapshots {
+        @Test
+        func myView() {
+          SnapshotTestingMacros.__expectSnapshot(
+            named: "optional",
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: {
+              try? makeView()
+            }
+          )
+          SnapshotTestingMacros.__expectSnapshot(
+            named: "forced",
+            function: #function,
+            fileID: #fileID,
+            filePath: #filePath,
+            line: #line,
+            column: #column,
+            makeValue: {
+              try! makeView()
+            }
           )
         }
       }
@@ -527,13 +716,15 @@ struct ExpectSnapshotMacroTests {
         @Test
         func myView() {
           SnapshotTestingMacros.__expectSnapshot(
-            Text("test"),
             named: nil,
             function: #function,
             fileID: #fileID,
             filePath: #filePath,
             line: #line,
-            column: #column
+            column: #column,
+            makeValue: {
+              Text("test")
+            }
           )
         }
       }
@@ -569,13 +760,15 @@ struct ExpectSnapshotMacroTests {
         @Test
         func myView() {
           SnapshotTestingMacros.__expectSnapshot(
-            Text("test"),
             named: "custom",
             function: #function,
             fileID: #fileID,
             filePath: #filePath,
             line: #line,
-            column: #column
+            column: #column,
+            makeValue: {
+              Text("test")
+            }
           )
         }
       }

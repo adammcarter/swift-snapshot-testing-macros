@@ -25,6 +25,33 @@ straight from main-actor state, in all four effect flavours. A nonisolated suite
 identically: the isolation lives on the builder, not on the call site, so
 `#expectSnapshot { MyView(model: mainActorModel) }` compiles from either.
 
+### Direct values carry effects
+
+A direct value is spliced into the assertion's builder closure, so it may carry any effect the
+enclosing test can. All four flavours compose, for SwiftUI and platform values alike:
+
+```swift
+#expectSnapshot(Text("Sync"))
+try #expectSnapshot(try makeView())
+await #expectSnapshot(await makeView())
+try await #expectSnapshot(try await makeView())
+```
+
+The effect is read from the expression, not from where the keyword sits, so a `try` nested
+inside a larger expression works the same way:
+
+```swift
+try #expectSnapshot(ProfileCard(header: try makeHeader()))
+```
+
+`try?` and `try!` handle the error inside the expression, so those assertions stay
+non-throwing and need no `try` at the call site.
+
+Like every builder, the value is produced inside the main-actor hop rather than at the call
+site — so a `@MainActor` factory can be called from a nonisolated suite, and an expression with
+side effects is evaluated once per size/theme request rather than once per assertion. Hoist
+anything that must happen exactly once into a `let` before the assertion.
+
 ## Named snapshots
 
 `@Test("...")` changes the test's display name in Swift Testing output. `named:` changes the snapshot artifact name on disk.
@@ -231,6 +258,11 @@ func throwingProfile() throws {
 @Test
 func throwingDirectProfile() throws {
   try #expectSnapshot(try makeProfileView())
+}
+
+@Test
+func asyncThrowingDirectProfile() async throws {
+  try await #expectSnapshot(try await loadProfileView())
 }
 ```
 

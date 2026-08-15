@@ -184,26 +184,6 @@ enum ExpectSnapshotAdapter {
     )
   }
 
-  static func run<V: View>(
-    value makeValue: @escaping @MainActor () -> V,
-    named: String?,
-    function: StaticString,
-    fileID: StaticString,
-    filePath: StaticString,
-    line: UInt,
-    column: UInt
-  ) {
-    run(
-      named: named,
-      function: function,
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column,
-      makeValue: makeValue
-    )
-  }
-
   // MARK: - Platform view shims
 
   static func run(

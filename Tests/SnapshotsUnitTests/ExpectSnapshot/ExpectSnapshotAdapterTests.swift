@@ -81,6 +81,63 @@ struct ExpectSnapshotAdapterTests {
     }
   }
 
+  /// The headline of the direct-value effect matrix: `try await` on a direct value used to be
+  /// unrepresentable, because the expansion put the expression in a sync `@autoclosure` and the
+  /// compiler reported "'async' call in an autoclosure that does not support concurrency" at
+  /// line 2 of a macro expansion buffer the author cannot open.
+  @Test
+  func asyncThrowingDirectSwiftUIValueRethrowsValueErrors() async {
+    do {
+      try await #expectSnapshot(try await throwingSwiftUIViewAfterSuspension(), named: "unused")
+      Issue.record("Expected sentinel error")
+    }
+    catch SwiftUISnapshotFailure.sentinel {
+    }
+    catch {
+      Issue.record("Expected sentinel error, got: \(error.localizedDescription)")
+    }
+  }
+
+  /// A `try` nested inside a larger expression is still a throwing direct value. The previous
+  /// expansion only recognized a `try` at the very root of the expression, so this shape failed
+  /// with "Call can throw, but it is executed in a non-throwing autoclosure".
+  @Test
+  func nestedThrowingDirectSwiftUIValueRethrowsValueErrors() {
+    do {
+      try #expectSnapshot(DirectValueWrapper(inner: try throwingSwiftUIView()), named: "unused")
+      Issue.record("Expected sentinel error")
+    }
+    catch SwiftUISnapshotFailure.sentinel {
+    }
+    catch {
+      Issue.record("Expected sentinel error, got: \(error.localizedDescription)")
+    }
+  }
+
+  @Test(.record(.never))
+  func awaitingDirectSwiftUIValueIsEvaluatedInsideTheSnapshotHop() async {
+    let sawContext = BuilderObservationBox(false)
+
+    await withKnownIssue {
+      await #expectSnapshot(await Self.suspendingView(recording: sawContext), named: "unused")
+    } matching: { issue in
+      issue.comments.contains { $0.rawValue.contains("No reference was found on disk") }
+    }
+
+    #expect(sawContext.value)
+  }
+
+  /// `try?` and `try!` handle the error inside the expression, so the assertion stays
+  /// non-throwing and needs no `try` at the call site.
+  @Test(.record(.never))
+  func optionalTryDirectSwiftUIValueDoesNotRethrow() {
+    withKnownIssue {
+      #expectSnapshot(try? succeedingSwiftUIView(), named: "unused")
+    } matching: { issue in
+      issue.comments.contains { $0.rawValue.contains("No reference was found on disk") }
+    }
+  }
+
   @Test
   func asyncThrowingClosureHelperRethrowsClosureErrors() async {
     do {
@@ -282,11 +339,40 @@ struct ExpectSnapshotAdapterTests {
     throw ClosureFailure.sentinel
   }
 
+  private static func suspendingView(recording box: BuilderObservationBox<Bool>) async -> Text {
+    await Task.yield()
+    box.record(TaskLocalSnapshotExecutionContext.current != nil)
+
+    return Text("suspended")
+  }
+
   private enum SwiftUISnapshotFailure: Error {
     case sentinel
   }
 
   private func throwingSwiftUIView() throws -> Text {
     throw SwiftUISnapshotFailure.sentinel
+  }
+
+  /// A `throws`-declared factory that never actually throws, so `try?` produces a renderable
+  /// value rather than `nil` — the point of the characterization is that the assertion stays
+  /// non-throwing, not that an empty optional renders.
+  private func succeedingSwiftUIView() throws -> Text {
+    Text("optional")
+  }
+
+  private func throwingSwiftUIViewAfterSuspension() async throws -> Text {
+    await Task.yield()
+
+    throw SwiftUISnapshotFailure.sentinel
+  }
+}
+
+/// Wraps a direct value so a `try` can sit somewhere other than the root of the expression.
+private struct DirectValueWrapper: View {
+  let inner: Text
+
+  var body: some View {
+    inner
   }
 }
