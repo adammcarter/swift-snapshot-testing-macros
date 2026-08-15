@@ -30,11 +30,11 @@ struct ProfileCardSnapshots {
 }
 ```
 
-`@MainActor` on the suite is worth adding from the start. A SwiftUI `View`'s initialiser is
-main-actor isolated, so constructing one inside a non-isolated test produces
-`call to main actor-isolated initializer … in a synchronous nonisolated context` warnings under
-Swift 6. Snapshots always render on the main actor regardless; the annotation just stops the
-compiler pointing it out at every call site.
+`@MainActor` on the suite is worth adding from the start, and every form works from it: snapshot
+values and builders are main-actor isolated, so a test can reach main-actor state — a view model,
+a `@MainActor` factory — directly inside `#expectSnapshot`, with or without `async`. Nonisolated
+suites work too and get the same reach, because the builder carries the isolation rather than the
+call site.
 
 ### Running under xcodebuild
 
@@ -57,10 +57,10 @@ iOS 15+ and macOS 15+ only. watchOS, tvOS, and visionOS are not supported; build
 
 | Surface | Support |
 | --- | --- |
-| SwiftUI | Direct-value snapshots, `named:`, closure forms, `SnapshotConfiguration`, and `argument:` helpers |
+| SwiftUI | Direct-value snapshots, `named:`, `@ViewBuilder` closure forms, `SnapshotConfiguration`, and `argument:` helpers |
 | UIKit / AppKit | Direct values plus sync, throwing, async, and async-throwing closure, `SnapshotConfiguration`, and `argument:` snapshots for views and view controllers |
 
-UIKit and AppKit builders are main-actor isolated. Use `try #expectSnapshot(try makeView())` when a direct
+Every builder is main-actor isolated, SwiftUI and platform alike. Use `try #expectSnapshot(try makeView())` when a direct
 view/controller factory throws; throwing builders rethrow their factory and snapshot-pipeline errors.
 
 For UIKit and AppKit, keep the test itself as a regular `@Test` unless using an async builder, and pass a

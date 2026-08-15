@@ -1,9 +1,29 @@
 import SwiftUI
 
+/*
+ The runtime landing pads for `#expectSnapshot`'s expansion. Two attributes on this surface
+ are load-bearing rather than decorative:
+
+ - `@ViewBuilder` on the SwiftUI builders has to be *here*, not only on the macro declaration:
+   the expansion re-type-checks its argument against these functions, so a builder attribute
+   that lives only on the macro moves the failure into the expansion buffer instead of fixing
+   it. It is what lets a snapshot body hold sibling views, `if` / `else`, `switch` and
+   `ForEach` like any other SwiftUI closure. A body containing an explicit `return` opts out
+   of the transform (SE-0289), which is what keeps `{ await …; return SomeView() }` working.
+
+ - `@_disfavoredOverload` on the UIKit/AppKit builders is what keeps the SwiftUI builders
+   usable. Every family's builder is `@escaping @MainActor`, and the macro expands to one
+   argument label set for all of them, so a `@ViewBuilder` body that the platform overloads
+   cannot possibly accept still ties with them ("Ambiguous use of '__expectSnapshot(…)'").
+   Disfavouring the platform overloads breaks the tie in the only direction that can type
+   check; it cannot change which overload a `SnapshotView` or `SnapshotViewController` body
+   reaches, because no SwiftUI overload is viable for those.
+ */
+
 @_documentation(visibility: private)
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<V: View>(
-  _ value: sending V,
+  _ value: @autoclosure @escaping @MainActor () -> V,
   named: String? = nil,
   function: StaticString = #function,
   fileID: StaticString = #fileID,
@@ -12,7 +32,7 @@ public func __expectSnapshot<V: View>(
   column: UInt = #column
 ) {
   ExpectSnapshotAdapter.run(
-    value,
+    value: value,
     named: named,
     function: function,
     fileID: fileID,
@@ -25,7 +45,7 @@ public func __expectSnapshot<V: View>(
 @_documentation(visibility: private)
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<V: View>(
-  _ value: @autoclosure @escaping () throws -> V,
+  _ value: @autoclosure @escaping @MainActor () throws -> V,
   named: String? = nil,
   function: StaticString = #function,
   fileID: StaticString = #fileID,
@@ -136,6 +156,7 @@ public func __expectSnapshot(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot(
   named: String? = nil,
@@ -158,6 +179,7 @@ public func __expectSnapshot(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot(
   named: String? = nil,
@@ -180,6 +202,7 @@ public func __expectSnapshot(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot(
   named: String? = nil,
@@ -202,6 +225,7 @@ public func __expectSnapshot(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot(
   named: String? = nil,
@@ -224,6 +248,7 @@ public func __expectSnapshot(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot(
   named: String? = nil,
@@ -246,6 +271,7 @@ public func __expectSnapshot(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot(
   named: String? = nil,
@@ -268,6 +294,7 @@ public func __expectSnapshot(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot(
   named: String? = nil,
@@ -290,6 +317,7 @@ public func __expectSnapshot(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot(
   named: String? = nil,
@@ -320,7 +348,7 @@ public func __expectSnapshot<V: View>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping () -> V
+  @ViewBuilder makeValue: @escaping @MainActor () -> V
 ) {
   ExpectSnapshotAdapter.run(
     named: named,
@@ -342,7 +370,7 @@ public func __expectSnapshot<V: View>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping () throws -> V
+  @ViewBuilder makeValue: @escaping @MainActor () throws -> V
 ) throws {
   try ExpectSnapshotAdapter.run(
     named: named,
@@ -364,7 +392,7 @@ public func __expectSnapshot<V: View>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping () async -> V
+  @ViewBuilder makeValue: @escaping @MainActor () async -> V
 ) async {
   await ExpectSnapshotAdapter.run(
     named: named,
@@ -386,7 +414,7 @@ public func __expectSnapshot<V: View>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping () async throws -> V
+  @ViewBuilder makeValue: @escaping @MainActor () async throws -> V
 ) async throws {
   try await ExpectSnapshotAdapter.run(
     named: named,
@@ -409,7 +437,7 @@ public func __expectSnapshot<V: View, Argument: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (Argument) -> V
+  @ViewBuilder makeValue: @escaping @MainActor (Argument) -> V
 ) {
   ExpectSnapshotAdapter.run(
     argument: argument,
@@ -433,7 +461,7 @@ public func __expectSnapshot<V: View, Argument: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (Argument) throws -> V
+  @ViewBuilder makeValue: @escaping @MainActor (Argument) throws -> V
 ) throws {
   try ExpectSnapshotAdapter.run(
     argument: argument,
@@ -457,7 +485,7 @@ public func __expectSnapshot<V: View, Argument: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (Argument) async -> V
+  @ViewBuilder makeValue: @escaping @MainActor (Argument) async -> V
 ) async {
   await ExpectSnapshotAdapter.run(
     argument: argument,
@@ -481,7 +509,7 @@ public func __expectSnapshot<V: View, Argument: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (Argument) async throws -> V
+  @ViewBuilder makeValue: @escaping @MainActor (Argument) async throws -> V
 ) async throws {
   try await ExpectSnapshotAdapter.run(
     argument: argument,
@@ -496,6 +524,7 @@ public func __expectSnapshot<V: View, Argument: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<Argument: Sendable>(
   argument: Argument,
@@ -520,6 +549,7 @@ public func __expectSnapshot<Argument: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<Argument: Sendable>(
   argument: Argument,
@@ -544,6 +574,7 @@ public func __expectSnapshot<Argument: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<Argument: Sendable>(
   argument: Argument,
@@ -568,6 +599,7 @@ public func __expectSnapshot<Argument: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<Argument: Sendable>(
   argument: Argument,
@@ -592,6 +624,7 @@ public func __expectSnapshot<Argument: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<Argument: Sendable>(
   argument: Argument,
@@ -616,6 +649,7 @@ public func __expectSnapshot<Argument: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<Argument: Sendable>(
   argument: Argument,
@@ -640,6 +674,7 @@ public func __expectSnapshot<Argument: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<Argument: Sendable>(
   argument: Argument,
@@ -664,6 +699,7 @@ public func __expectSnapshot<Argument: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<Argument: Sendable>(
   argument: Argument,
@@ -697,7 +733,7 @@ public func __expectSnapshot<V: View, ConfigurationValue: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (ConfigurationValue) -> V
+  @ViewBuilder makeValue: @escaping @MainActor (ConfigurationValue) -> V
 ) {
   ExpectSnapshotAdapter.run(
     configuration: configuration,
@@ -721,7 +757,7 @@ public func __expectSnapshot<V: View, ConfigurationValue: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (ConfigurationValue) throws -> V
+  @ViewBuilder makeValue: @escaping @MainActor (ConfigurationValue) throws -> V
 ) throws {
   try ExpectSnapshotAdapter.run(
     configuration: configuration,
@@ -745,7 +781,7 @@ public func __expectSnapshot<V: View, ConfigurationValue: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (ConfigurationValue) async -> V
+  @ViewBuilder makeValue: @escaping @MainActor (ConfigurationValue) async -> V
 ) async {
   await ExpectSnapshotAdapter.run(
     configuration: configuration,
@@ -769,7 +805,7 @@ public func __expectSnapshot<V: View, ConfigurationValue: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (ConfigurationValue) async throws -> V
+  @ViewBuilder makeValue: @escaping @MainActor (ConfigurationValue) async throws -> V
 ) async throws {
   try await ExpectSnapshotAdapter.run(
     configuration: configuration,
@@ -784,6 +820,7 @@ public func __expectSnapshot<V: View, ConfigurationValue: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
@@ -808,6 +845,7 @@ public func __expectSnapshot<ConfigurationValue: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
@@ -832,6 +870,7 @@ public func __expectSnapshot<ConfigurationValue: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
@@ -856,6 +895,7 @@ public func __expectSnapshot<ConfigurationValue: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
@@ -880,6 +920,7 @@ public func __expectSnapshot<ConfigurationValue: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
@@ -904,6 +945,7 @@ public func __expectSnapshot<ConfigurationValue: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
@@ -928,6 +970,7 @@ public func __expectSnapshot<ConfigurationValue: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
@@ -952,6 +995,7 @@ public func __expectSnapshot<ConfigurationValue: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
@@ -985,7 +1029,7 @@ public func __expectSnapshot<V: View, A: Sendable, B: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (A, B) -> V
+  @ViewBuilder makeValue: @escaping @MainActor (A, B) -> V
 ) {
   ExpectSnapshotAdapter.run(
     configuration: configuration,
@@ -1009,7 +1053,7 @@ public func __expectSnapshot<V: View, A: Sendable, B: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (A, B) throws -> V
+  @ViewBuilder makeValue: @escaping @MainActor (A, B) throws -> V
 ) throws {
   try ExpectSnapshotAdapter.run(
     configuration: configuration,
@@ -1033,7 +1077,7 @@ public func __expectSnapshot<V: View, A: Sendable, B: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (A, B) async -> V
+  @ViewBuilder makeValue: @escaping @MainActor (A, B) async -> V
 ) async {
   await ExpectSnapshotAdapter.run(
     configuration: configuration,
@@ -1057,7 +1101,7 @@ public func __expectSnapshot<V: View, A: Sendable, B: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (A, B) async throws -> V
+  @ViewBuilder makeValue: @escaping @MainActor (A, B) async throws -> V
 ) async throws {
   try await ExpectSnapshotAdapter.run(
     configuration: configuration,
@@ -1082,7 +1126,7 @@ public func __expectSnapshot<V: View, A: Sendable, B: Sendable, C: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (A, B, C) -> V
+  @ViewBuilder makeValue: @escaping @MainActor (A, B, C) -> V
 ) {
   ExpectSnapshotAdapter.run(
     configuration: configuration,
@@ -1097,6 +1141,7 @@ public func __expectSnapshot<V: View, A: Sendable, B: Sendable, C: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
@@ -1121,6 +1166,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
@@ -1145,6 +1191,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
@@ -1169,6 +1216,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
@@ -1193,6 +1241,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
@@ -1217,6 +1266,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
@@ -1241,6 +1291,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
@@ -1265,6 +1316,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
@@ -1289,6 +1341,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
   // swiftlint:disable:next large_tuple
@@ -1314,6 +1367,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
   // swiftlint:disable:next large_tuple
@@ -1339,6 +1393,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
   // swiftlint:disable:next large_tuple
@@ -1364,6 +1419,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
   // swiftlint:disable:next large_tuple
@@ -1389,6 +1445,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
   // swiftlint:disable:next large_tuple
@@ -1414,6 +1471,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
   // swiftlint:disable:next large_tuple
@@ -1439,6 +1497,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
   // swiftlint:disable:next large_tuple
@@ -1464,6 +1523,7 @@ public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
 }
 
 @_documentation(visibility: private)
+@_disfavoredOverload
 // swiftlint:disable:next identifier_name
 public func __expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
   // swiftlint:disable:next large_tuple
@@ -1499,7 +1559,7 @@ public func __expectSnapshot<V: View, A: Sendable, B: Sendable, C: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (A, B, C) throws -> V
+  @ViewBuilder makeValue: @escaping @MainActor (A, B, C) throws -> V
 ) throws {
   try ExpectSnapshotAdapter.run(
     configuration: configuration,
@@ -1524,7 +1584,7 @@ public func __expectSnapshot<V: View, A: Sendable, B: Sendable, C: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (A, B, C) async -> V
+  @ViewBuilder makeValue: @escaping @MainActor (A, B, C) async -> V
 ) async {
   await ExpectSnapshotAdapter.run(
     configuration: configuration,
@@ -1549,7 +1609,7 @@ public func __expectSnapshot<V: View, A: Sendable, B: Sendable, C: Sendable>(
   filePath: StaticString = #filePath,
   line: UInt = #line,
   column: UInt = #column,
-  makeValue: @escaping (A, B, C) async throws -> V
+  @ViewBuilder makeValue: @escaping @MainActor (A, B, C) async throws -> V
 ) async throws {
   try await ExpectSnapshotAdapter.run(
     configuration: configuration,

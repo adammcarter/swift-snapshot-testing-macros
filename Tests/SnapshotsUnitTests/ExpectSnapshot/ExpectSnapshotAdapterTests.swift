@@ -1,7 +1,31 @@
+import Foundation
 import SwiftUI
 import Testing
 
 @testable import SnapshotTestingMacros
+
+/// Records what a `#expectSnapshot` builder observed from inside the main-actor hop.
+///
+/// Every SwiftUI and platform builder is `@MainActor`, and a main-actor-isolated closure is
+/// `Sendable`, so a test cannot simply capture a local `var` in one. The hop is an exclusive
+/// hand-off — the builder runs once while the caller is blocked or suspended — but that is not
+/// something the compiler can prove, hence `@unchecked` plus the lock.
+final class BuilderObservationBox<Value>: @unchecked Sendable {
+  private let lock = NSLock()
+  private var storedValue: Value
+
+  init(_ value: Value) {
+    storedValue = value
+  }
+
+  var value: Value {
+    lock.withLock { storedValue }
+  }
+
+  func record(_ value: Value) {
+    lock.withLock { storedValue = value }
+  }
+}
 
 struct ExpectSnapshotAdapterTests {
   private enum ClosureFailure: Error {
@@ -19,7 +43,7 @@ struct ExpectSnapshotAdapterTests {
   func throwingClosureHelperRethrowsClosureErrors() {
     do {
       try __expectSnapshot(named: "unused") { () throws -> Text in
-        throw ClosureFailure.sentinel
+        try Self.failingView()
       }
 
       Issue.record("Expected sentinel error")
@@ -61,8 +85,7 @@ struct ExpectSnapshotAdapterTests {
   func asyncThrowingClosureHelperRethrowsClosureErrors() async {
     do {
       try await __expectSnapshot(named: "unused") { () async throws -> Text in
-        await Task.yield()
-        throw ClosureFailure.sentinel
+        try await Self.failingViewAfterSuspension()
       }
 
       Issue.record("Expected sentinel error")
@@ -78,7 +101,7 @@ struct ExpectSnapshotAdapterTests {
   func throwingArgumentHelperRethrowsClosureErrors() {
     do {
       try #expectSnapshot(argument: "guest", named: "unused") { (_: String) throws -> Text in
-        throw ClosureFailure.sentinel
+        try Self.failingView()
       }
 
       Issue.record("Expected sentinel error")
@@ -94,8 +117,7 @@ struct ExpectSnapshotAdapterTests {
   func asyncThrowingArgumentHelperRethrowsClosureErrors() async {
     do {
       try await #expectSnapshot(argument: "guest", named: "unused") { (_: String) async throws -> Text in
-        await Task.yield()
-        throw ClosureFailure.sentinel
+        try await Self.failingViewAfterSuspension()
       }
 
       Issue.record("Expected sentinel error")
@@ -113,7 +135,7 @@ struct ExpectSnapshotAdapterTests {
       let configuration = SnapshotConfiguration(name: nil, value: "guest")
 
       try #expectSnapshot(configuration, named: "unused") { (_: String) throws -> Text in
-        throw ClosureFailure.sentinel
+        try Self.failingView()
       }
 
       Issue.record("Expected sentinel error")
@@ -131,8 +153,7 @@ struct ExpectSnapshotAdapterTests {
       let configuration = SnapshotConfiguration(name: nil, value: "guest")
 
       try await #expectSnapshot(configuration, named: "unused") { (_: String) async throws -> Text in
-        await Task.yield()
-        throw ClosureFailure.sentinel
+        try await Self.failingViewAfterSuspension()
       }
 
       Issue.record("Expected sentinel error")
@@ -146,12 +167,13 @@ struct ExpectSnapshotAdapterTests {
 
   @Test
   func throwingArgumentHelperExecutesInsideSnapshotExecutionContext() {
-    var sawContext = false
+    let sawContext = BuilderObservationBox(false)
 
     do {
       try #expectSnapshot(argument: "guest", named: "unused") { (_: String) throws -> Text in
-        sawContext = TaskLocalSnapshotExecutionContext.current != nil
-        throw ClosureFailure.sentinel
+        sawContext.record(TaskLocalSnapshotExecutionContext.current != nil)
+
+        return try Self.failingView()
       }
 
       Issue.record("Expected sentinel error")
@@ -162,21 +184,22 @@ struct ExpectSnapshotAdapterTests {
       Issue.record("Expected sentinel error, got: \(error.localizedDescription)")
     }
 
-    #expect(sawContext)
+    #expect(sawContext.value)
   }
 
   @Test
   func asyncThrowingTuple2ConfigurationHelperExecutesInsideSnapshotExecutionContextAndForwardsValuesInOrder() async {
     let configuration = SnapshotConfiguration(name: nil, value: ("first", "second"))
-    var sawContext = false
-    var received: (String, String)?
+    let sawContext = BuilderObservationBox(false)
+    let received = BuilderObservationBox<(String, String)?>(nil)
 
     do {
       try await #expectSnapshot(configuration, named: "unused") { first, second async throws -> Text in
         await Task.yield()
-        sawContext = TaskLocalSnapshotExecutionContext.current != nil
-        received = (first, second)
-        throw ClosureFailure.sentinel
+        sawContext.record(TaskLocalSnapshotExecutionContext.current != nil)
+        received.record((first, second))
+
+        return try Self.failingView()
       }
 
       Issue.record("Expected sentinel error")
@@ -187,24 +210,25 @@ struct ExpectSnapshotAdapterTests {
       Issue.record("Expected sentinel error, got: \(error.localizedDescription)")
     }
 
-    #expect(sawContext)
-    #expect(received?.0 == "first")
-    #expect(received?.1 == "second")
+    #expect(sawContext.value)
+    #expect(received.value?.0 == "first")
+    #expect(received.value?.1 == "second")
   }
 
   @Test
   func asyncThrowingTuple3ConfigurationHelperExecutesInsideSnapshotExecutionContextAndForwardsValuesInOrder() async {
     let configuration = SnapshotConfiguration(name: nil, value: ("first", "second", "third"))
-    var sawContext = false
+    let sawContext = BuilderObservationBox(false)
     // swiftlint:disable:next large_tuple
-    var received: (String, String, String)?
+    let received = BuilderObservationBox<(String, String, String)?>(nil)
 
     do {
       try await #expectSnapshot(configuration, named: "unused") { first, second, third async throws -> Text in
         await Task.yield()
-        sawContext = TaskLocalSnapshotExecutionContext.current != nil
-        received = (first, second, third)
-        throw ClosureFailure.sentinel
+        sawContext.record(TaskLocalSnapshotExecutionContext.current != nil)
+        received.record((first, second, third))
+
+        return try Self.failingView()
       }
 
       Issue.record("Expected sentinel error")
@@ -215,10 +239,10 @@ struct ExpectSnapshotAdapterTests {
       Issue.record("Expected sentinel error, got: \(error.localizedDescription)")
     }
 
-    #expect(sawContext)
-    #expect(received?.0 == "first")
-    #expect(received?.1 == "second")
-    #expect(received?.2 == "third")
+    #expect(sawContext.value)
+    #expect(received.value?.0 == "first")
+    #expect(received.value?.1 == "second")
+    #expect(received.value?.2 == "third")
   }
 
   @Test
@@ -239,6 +263,23 @@ struct ExpectSnapshotAdapterTests {
     _ = argumentAsync
     _ = configurationAsync
     #expect(Bool(true))
+  }
+
+  /// A view factory that only ever throws.
+  ///
+  /// The SwiftUI builders are `@ViewBuilder`, and a builder body must be made of view
+  /// expressions, declarations and control flow — a bare `throw` statement transforms to
+  /// `EmptyView` and no longer satisfies the closure's declared result type. Routing the
+  /// sentinel through a `Text`-typed factory keeps these rethrow characterizations expressed
+  /// as ordinary builder bodies.
+  private static func failingView() throws -> Text {
+    throw ClosureFailure.sentinel
+  }
+
+  private static func failingViewAfterSuspension() async throws -> Text {
+    await Task.yield()
+
+    throw ClosureFailure.sentinel
   }
 
   private enum SwiftUISnapshotFailure: Error {

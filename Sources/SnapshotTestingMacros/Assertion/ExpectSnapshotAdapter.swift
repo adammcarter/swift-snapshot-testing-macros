@@ -2,23 +2,15 @@ import Foundation
 import SwiftUI
 import Testing
 
-/// Moves one non-`Sendable` payload into the adapter's main-actor hop.
+/// Tags an error thrown by the user's builder so the sync throwing SwiftUI overload can tell
+/// it apart from a pipeline error once both have crossed the main-actor hop.
 ///
-/// The invariant that makes every use sound is exclusive hand-off: the payload is placed in
-/// the box on the test's side of the hop, the caller never touches it again, and the hop
-/// guarantees the payload is consumed on the main actor with a happens-before edge from the
-/// caller (`DispatchQueue.main.sync`, `MainActor.assumeIsolated` on the main thread, or a
-/// structured `await`) — so no two threads ever access the payload concurrently. The boxed
-/// payload is either a snapshot value rendered exactly once inside the hop, or the user's
-/// `makeValue` closure invoked exactly once inside the hop. `sending` cannot express this
-/// hand-off across the oldest supported toolchains (Swift 6.0/6.1 region analysis rejects
-/// the capture), hence `@unchecked`.
-private final class UncheckedSendableBox<Wrapped>: @unchecked Sendable {
-  let wrapped: Wrapped
-
-  init(_ wrapped: Wrapped) {
-    self.wrapped = wrapped
-  }
+/// That overload rethrows builder errors but records pipeline errors; the two used to be
+/// distinguishable by position, because the builder ran eagerly on the caller's thread. Now
+/// that every SwiftUI builder is resolved inside the hop like its platform counterpart, the
+/// distinction is carried by this wrapper instead of by evaluation order.
+private struct BuilderError: Error {
+  let underlying: Error
 }
 
 /// Carries the hop's outcome back across `DispatchQueue.main.sync`.
@@ -61,9 +53,9 @@ private enum ConfigurationSource<ConfigurationValue: Sendable> {
 ///   assertion's source location; nothing escapes.
 /// - Throwing overloads **rethrow** errors to the caller — both `makeValue` errors and
 ///   pipeline errors (request generation and rendering inside the hop). The one historical
-///   exception is the no-configuration sync throwing overload, which evaluates `makeValue`
-///   eagerly on the caller's thread (rethrowing its errors) and then runs the recording sync
-///   core, so pipeline errors are recorded like its non-throwing sibling.
+///   exception is the no-configuration sync throwing overload, which rethrows only its
+///   `makeValue` errors (tagged as ``BuilderError`` as they cross the hop) and records
+///   pipeline errors like its non-throwing sibling.
 /// - Snapshot verification failures are never thrown: every flavor carries them across the
 ///   hop as ``SnapshotFailure`` values and records them on the test's task.
 enum ExpectSnapshotAdapter {
@@ -86,150 +78,8 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping () -> V
+    makeValue: @escaping @MainActor () -> V
   ) {
-    guard
-      SnapshotRuntimePreconditions.requireActiveTestContext(
-        Test.current,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      ) != nil
-    else {
-      return
-    }
-
-    // `makeValue` runs on the caller's thread, before the main-actor hop.
-    run(
-      makeValue(),
-      named: named,
-      function: function,
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column
-    )
-  }
-
-  /// The historical hybrid of the throwing overloads: `makeValue` is evaluated eagerly on
-  /// the caller's thread and its errors rethrow, but the assertion itself runs the recording
-  /// sync core, so pipeline errors are recorded instead of rethrown.
-  static func run<V: View>(
-    named: String?,
-    function: StaticString,
-    fileID: StaticString,
-    filePath: StaticString,
-    line: UInt,
-    column: UInt,
-    makeValue: @escaping () throws -> V
-  ) throws {
-    guard
-      SnapshotRuntimePreconditions.requireActiveTestContext(
-        Test.current,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      ) != nil
-    else {
-      return
-    }
-
-    run(
-      try makeValue(),
-      named: named,
-      function: function,
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column
-    )
-  }
-
-  static func run<V: View>(
-    named: String?,
-    function: StaticString,
-    fileID: StaticString,
-    filePath: StaticString,
-    line: UInt,
-    column: UInt,
-    makeValue: @escaping () async -> V
-  ) async {
-    guard
-      SnapshotRuntimePreconditions.requireActiveTestContext(
-        Test.current,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      ) != nil
-    else {
-      return
-    }
-
-    // `makeValue` is awaited on the test's task, before the execution context is bound.
-    let valueBox = UncheckedSendableBox(await makeValue())
-
-    await runAsync(
-      source: .direct(.none),
-      named: named,
-      function: function,
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column,
-      makeValue: { _ in valueBox.wrapped }
-    )
-  }
-
-  static func run<V: View>(
-    named: String?,
-    function: StaticString,
-    fileID: StaticString,
-    filePath: StaticString,
-    line: UInt,
-    column: UInt,
-    makeValue: @escaping () async throws -> V
-  ) async throws {
-    guard
-      SnapshotRuntimePreconditions.requireActiveTestContext(
-        Test.current,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      ) != nil
-    else {
-      return
-    }
-
-    // `makeValue` is awaited on the test's task, before the execution context is bound.
-    let valueBox = UncheckedSendableBox(try await makeValue())
-
-    try await runAsyncThrowing(
-      source: .direct(.none),
-      named: named,
-      function: function,
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column,
-      makeValue: { _ in valueBox.wrapped }
-    )
-  }
-
-  static func run<V: View>(
-    _ value: sending V,
-    named: String?,
-    function: StaticString,
-    fileID: StaticString,
-    filePath: StaticString,
-    line: UInt,
-    column: UInt
-  ) {
-    let valueBox = UncheckedSendableBox(value)
-
     runSync(
       source: .direct(.none),
       named: named,
@@ -238,7 +88,119 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeViewController: { _ in makeSnapshotHostingController(for: valueBox.wrapped) }
+      makeViewController: { _ in makeSnapshotHostingController(for: makeValue()) }
+    )
+  }
+
+  /// The historical hybrid of the throwing overloads: `makeValue`'s own errors rethrow, but
+  /// the assertion runs the recording sync core, so pipeline errors are recorded instead of
+  /// rethrown. `makeValue` is resolved inside the main-actor hop like every other builder, so
+  /// its errors are tagged as ``BuilderError`` to stay distinguishable on the way back out.
+  static func run<V: View>(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor () throws -> V
+  ) throws {
+    do {
+      try runSyncThrowing(
+        source: .direct(.none),
+        named: named,
+        function: function,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column,
+        makeViewController: { _ in
+          let value: V
+
+          do {
+            value = try makeValue()
+          }
+          catch {
+            throw BuilderError(underlying: error)
+          }
+
+          return makeSnapshotHostingController(for: value)
+        }
+      )
+    }
+    catch let error as BuilderError {
+      throw error.underlying
+    }
+    catch {
+      recordIssue(
+        error,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+  }
+
+  static func run<V: View>(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor () async -> V
+  ) async {
+    await runAsync(
+      source: .direct(.none),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { _ in makeSnapshotHostingController(for: await makeValue()) }
+    )
+  }
+
+  static func run<V: View>(
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt,
+    makeValue: @escaping @MainActor () async throws -> V
+  ) async throws {
+    try await runAsyncThrowing(
+      source: .direct(.none),
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeViewController: { _ in makeSnapshotHostingController(for: try await makeValue()) }
+    )
+  }
+
+  static func run<V: View>(
+    value makeValue: @escaping @MainActor () -> V,
+    named: String?,
+    function: StaticString,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) {
+    run(
+      named: named,
+      function: function,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column,
+      makeValue: makeValue
     )
   }
 
@@ -419,7 +381,7 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor () async -> SnapshotView
   ) async {
-    await runAsyncPlatform(
+    await runAsync(
       source: .direct(.none),
       named: named,
       function: function,
@@ -442,7 +404,7 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor () async -> SnapshotViewController
   ) async {
-    await runAsyncPlatform(
+    await runAsync(
       source: .direct(.none),
       named: named,
       function: function,
@@ -463,7 +425,7 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor () async throws -> SnapshotView
   ) async throws {
-    try await runAsyncPlatformThrowing(
+    try await runAsyncThrowing(
       source: .direct(.none),
       named: named,
       function: function,
@@ -486,7 +448,7 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor () async throws -> SnapshotViewController
   ) async throws {
-    try await runAsyncPlatformThrowing(
+    try await runAsyncThrowing(
       source: .direct(.none),
       named: named,
       function: function,
@@ -508,7 +470,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (Argument) -> V
+    makeValue: @escaping @MainActor (Argument) -> V
   ) {
     // `name: nil` routes the argument through the shared derivation in
     // `resolvedConfiguration(from:context:...)`, which also guards derived names against
@@ -538,7 +500,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (Argument) throws -> V
+    makeValue: @escaping @MainActor (Argument) throws -> V
   ) throws {
     // `name: nil` routes the argument through the shared derivation in
     // `resolvedConfiguration(from:context:...)`, which also guards derived names against
@@ -568,7 +530,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (Argument) async -> V
+    makeValue: @escaping @MainActor (Argument) async -> V
   ) async {
     // `name: nil` routes the argument through the shared derivation in
     // `resolvedConfiguration(from:context:...)`, which also guards derived names against
@@ -598,7 +560,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (Argument) async throws -> V
+    makeValue: @escaping @MainActor (Argument) async throws -> V
   ) async throws {
     // `name: nil` routes the argument through the shared derivation in
     // `resolvedConfiguration(from:context:...)`, which also guards derived names against
@@ -806,10 +768,8 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (ConfigurationValue) -> V
+    makeValue: @escaping @MainActor (ConfigurationValue) -> V
   ) {
-    let makeValueBox = UncheckedSendableBox(makeValue)
-
     runSync(
       source: .derived(configuration),
       named: named,
@@ -819,7 +779,7 @@ enum ExpectSnapshotAdapter {
       line: line,
       column: column,
       makeViewController: { value in
-        makeSnapshotHostingController(for: makeValueBox.wrapped(value))
+        makeSnapshotHostingController(for: makeValue(value))
       }
     )
   }
@@ -832,10 +792,8 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (ConfigurationValue) throws -> V
+    makeValue: @escaping @MainActor (ConfigurationValue) throws -> V
   ) throws {
-    let makeValueBox = UncheckedSendableBox(makeValue)
-
     try runSyncThrowing(
       source: .derived(configuration),
       named: named,
@@ -845,7 +803,7 @@ enum ExpectSnapshotAdapter {
       line: line,
       column: column,
       makeViewController: { value in
-        makeSnapshotHostingController(for: try makeValueBox.wrapped(value))
+        makeSnapshotHostingController(for: try makeValue(value))
       }
     )
   }
@@ -858,7 +816,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (ConfigurationValue) async -> V
+    makeValue: @escaping @MainActor (ConfigurationValue) async -> V
   ) async {
     await runAsync(
       source: .derived(configuration),
@@ -868,7 +826,9 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: makeValue
+      makeViewController: { value in
+        makeSnapshotHostingController(for: await makeValue(value))
+      }
     )
   }
 
@@ -880,7 +840,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (ConfigurationValue) async throws -> V
+    makeValue: @escaping @MainActor (ConfigurationValue) async throws -> V
   ) async throws {
     try await runAsyncThrowing(
       source: .derived(configuration),
@@ -890,7 +850,9 @@ enum ExpectSnapshotAdapter {
       filePath: filePath,
       line: line,
       column: column,
-      makeValue: makeValue
+      makeViewController: { value in
+        makeSnapshotHostingController(for: try await makeValue(value))
+      }
     )
   }
 
@@ -994,7 +956,7 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor (ConfigurationValue) async -> SnapshotView
   ) async {
-    await runAsyncPlatform(
+    await runAsync(
       source: .derived(configuration),
       named: named,
       function: function,
@@ -1018,7 +980,7 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor (ConfigurationValue) async -> SnapshotViewController
   ) async {
-    await runAsyncPlatform(
+    await runAsync(
       source: .derived(configuration),
       named: named,
       function: function,
@@ -1040,7 +1002,7 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor (ConfigurationValue) async throws -> SnapshotView
   ) async throws {
-    try await runAsyncPlatformThrowing(
+    try await runAsyncThrowing(
       source: .derived(configuration),
       named: named,
       function: function,
@@ -1064,7 +1026,7 @@ enum ExpectSnapshotAdapter {
     column: UInt,
     makeValue: @escaping @MainActor (ConfigurationValue) async throws -> SnapshotViewController
   ) async throws {
-    try await runAsyncPlatformThrowing(
+    try await runAsyncThrowing(
       source: .derived(configuration),
       named: named,
       function: function,
@@ -1086,7 +1048,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (A, B) -> V
+    makeValue: @escaping @MainActor (A, B) -> V
   ) {
     run(
       configuration: configuration,
@@ -1108,7 +1070,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (A, B) throws -> V
+    makeValue: @escaping @MainActor (A, B) throws -> V
   ) throws {
     try run(
       configuration: configuration,
@@ -1130,7 +1092,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (A, B) async -> V
+    makeValue: @escaping @MainActor (A, B) async -> V
   ) async {
     await run(
       configuration: configuration,
@@ -1152,7 +1114,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (A, B) async throws -> V
+    makeValue: @escaping @MainActor (A, B) async throws -> V
   ) async throws {
     try await run(
       configuration: configuration,
@@ -1175,7 +1137,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (A, B, C) -> V
+    makeValue: @escaping @MainActor (A, B, C) -> V
   ) {
     run(
       configuration: configuration,
@@ -1198,7 +1160,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (A, B, C) throws -> V
+    makeValue: @escaping @MainActor (A, B, C) throws -> V
   ) throws {
     try run(
       configuration: configuration,
@@ -1221,7 +1183,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (A, B, C) async -> V
+    makeValue: @escaping @MainActor (A, B, C) async -> V
   ) async {
     await run(
       configuration: configuration,
@@ -1244,7 +1206,7 @@ enum ExpectSnapshotAdapter {
     filePath: StaticString,
     line: UInt,
     column: UInt,
-    makeValue: @escaping (A, B, C) async throws -> V
+    makeValue: @escaping @MainActor (A, B, C) async throws -> V
   ) async throws {
     try await run(
       configuration: configuration,
@@ -1803,104 +1765,10 @@ enum ExpectSnapshotAdapter {
   }
 
   /// The recording async core: pipeline errors are recorded as issues instead of escaping.
-  private static func runAsync<V: View, ConfigurationValue: Sendable>(
-    source: ConfigurationSource<ConfigurationValue>,
-    named: String?,
-    function: StaticString,
-    fileID: StaticString,
-    filePath: StaticString,
-    line: UInt,
-    column: UInt,
-    makeValue: @escaping (ConfigurationValue) async throws -> V
-  ) async {
-    do {
-      try await runAsyncThrowing(
-        source: source,
-        named: named,
-        function: function,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column,
-        makeValue: makeValue
-      )
-    }
-    catch {
-      recordIssue(
-        error,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
-    }
-  }
-
-  /// The rethrowing async core: verification failures are recorded on the test's task, every
-  /// error — from `makeValue` or the pipeline — is rethrown to the caller.
   ///
-  /// `makeValue` is awaited on the test's task inside the execution-context binding, before
-  /// the main-actor hop; only the resolved value crosses to the main actor.
-  private static func runAsyncThrowing<V: View, ConfigurationValue: Sendable>(
-    source: ConfigurationSource<ConfigurationValue>,
-    named: String?,
-    function: StaticString,
-    fileID: StaticString,
-    filePath: StaticString,
-    line: UInt,
-    column: UInt,
-    makeValue: @escaping (ConfigurationValue) async throws -> V
-  ) async throws {
-    guard
-      SnapshotRuntimePreconditions.requireActiveTestContext(
-        Test.current,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      ) != nil
-    else {
-      return
-    }
-
-    try await TaskLocalSnapshotExecutionContext.withCurrent(
-      function: function,
-      isParameterizedCase: Test.Case.current?.isParameterized == true
-    ) { context in
-      guard
-        let configuration = resolveConfiguration(
-          from: source,
-          context: context,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      else {
-        return
-      }
-
-      let valueBox = UncheckedSendableBox(try await makeValue(configuration.value))
-
-      try await runOnMainActorAsync(context: context) {
-        try runMainActorSnapshot(
-          context: context,
-          named: named,
-          configuration: configuration,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column,
-          makeViewController: { _ in makeSnapshotHostingController(for: valueBox.wrapped) }
-        )
-      }
-    }
-  }
-
-  /// The recording async core for UIKit/AppKit builders. The async builder remains
-  /// main-actor isolated and is resolved by the async generator on the same structured hop as
-  /// the snapshot pipeline.
-  private static func runAsyncPlatform<ConfigurationValue: Sendable>(
+  /// Every async builder — SwiftUI and UIKit/AppKit alike — is main-actor isolated and is
+  /// resolved by the async generator on the same structured hop as the snapshot pipeline.
+  private static func runAsync<ConfigurationValue: Sendable>(
     source: ConfigurationSource<ConfigurationValue>,
     named: String?,
     function: StaticString,
@@ -1911,7 +1779,7 @@ enum ExpectSnapshotAdapter {
     makeViewController: @escaping @MainActor (ConfigurationValue) async throws -> SnapshotViewController
   ) async {
     do {
-      try await runAsyncPlatformThrowing(
+      try await runAsyncThrowing(
         source: source,
         named: named,
         function: function,
@@ -1933,8 +1801,9 @@ enum ExpectSnapshotAdapter {
     }
   }
 
-  /// The rethrowing async core for UIKit/AppKit builders.
-  private static func runAsyncPlatformThrowing<ConfigurationValue: Sendable>(
+  /// The rethrowing async core: verification failures are recorded on the test's task, every
+  /// error — from `makeViewController` or the pipeline — is rethrown to the caller.
+  private static func runAsyncThrowing<ConfigurationValue: Sendable>(
     source: ConfigurationSource<ConfigurationValue>,
     named: String?,
     function: StaticString,

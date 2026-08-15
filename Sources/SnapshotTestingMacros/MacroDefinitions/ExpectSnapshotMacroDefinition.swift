@@ -1,5 +1,25 @@
 import SwiftUI
 
+/*
+ The public `#expectSnapshot` surface. Each declaration exists to accept a call shape; the
+ expansion is identical for all of them and the real contract lives on the `__expectSnapshot`
+ functions in `Assertion/expectSnapshot.swift`, which the expansion is re-type-checked against.
+
+ Two deliberate asymmetries with those functions:
+
+ - The SwiftUI builders carry `@ViewBuilder` here as well, so the surface describes itself —
+   but the attribute only takes effect on the runtime function.
+
+ - The SwiftUI builders are *not* marked `@MainActor` here, although the runtime functions are
+   and the UIKit/AppKit declarations below are. Adding it makes every `@ViewBuilder` body
+   ambiguous ("Ambiguous use of 'expectSnapshot(named:_:)'"): the SwiftUI and platform
+   declarations then differ only in the closure's result type, and a result-builder body ties
+   between them. The runtime functions break that tie with `@_disfavoredOverload`, which macro
+   declarations cannot carry. The isolation is unaffected — it is enforced where the closure is
+   actually consumed, and `ExpectSnapshot+SwiftUIIsolationCompileFixture` pins that from both a
+   `@MainActor` and a nonisolated suite.
+ */
+
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View>(
   _ value: V,
@@ -21,25 +41,25 @@ public macro expectSnapshot(
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View>(
   named: String? = nil,
-  _ makeValue: @escaping () -> V
+  @ViewBuilder _ makeValue: @escaping () -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View>(
   named: String? = nil,
-  _ makeValue: @escaping () throws -> V
+  @ViewBuilder _ makeValue: @escaping () throws -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View>(
   named: String? = nil,
-  _ makeValue: @escaping () async -> V
+  @ViewBuilder _ makeValue: @escaping () async -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View>(
   named: String? = nil,
-  _ makeValue: @escaping () async throws -> V
+  @ViewBuilder _ makeValue: @escaping () async throws -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
@@ -94,28 +114,28 @@ public macro expectSnapshot(
 public macro expectSnapshot<V: SwiftUI.View, Argument: Sendable>(
   argument: Argument,
   named: String? = nil,
-  _ makeValue: @escaping (Argument) -> V
+  @ViewBuilder _ makeValue: @escaping (Argument) -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View, Argument: Sendable>(
   argument: Argument,
   named: String? = nil,
-  _ makeValue: @escaping (Argument) throws -> V
+  @ViewBuilder _ makeValue: @escaping (Argument) throws -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View, Argument: Sendable>(
   argument: Argument,
   named: String? = nil,
-  _ makeValue: @escaping (Argument) async -> V
+  @ViewBuilder _ makeValue: @escaping (Argument) async -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View, Argument: Sendable>(
   argument: Argument,
   named: String? = nil,
-  _ makeValue: @escaping (Argument) async throws -> V
+  @ViewBuilder _ makeValue: @escaping (Argument) async throws -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
@@ -178,28 +198,28 @@ public macro expectSnapshot<Argument: Sendable>(
 public macro expectSnapshot<V: SwiftUI.View, ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
   named: String? = nil,
-  _ makeValue: @escaping (ConfigurationValue) -> V
+  @ViewBuilder _ makeValue: @escaping (ConfigurationValue) -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View, ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
   named: String? = nil,
-  _ makeValue: @escaping (ConfigurationValue) throws -> V
+  @ViewBuilder _ makeValue: @escaping (ConfigurationValue) throws -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View, ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
   named: String? = nil,
-  _ makeValue: @escaping (ConfigurationValue) async -> V
+  @ViewBuilder _ makeValue: @escaping (ConfigurationValue) async -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View, ConfigurationValue: Sendable>(
   _ configuration: SnapshotConfiguration<ConfigurationValue>,
   named: String? = nil,
-  _ makeValue: @escaping (ConfigurationValue) async throws -> V
+  @ViewBuilder _ makeValue: @escaping (ConfigurationValue) async throws -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
@@ -382,28 +402,28 @@ public macro expectSnapshot<A: Sendable, B: Sendable, C: Sendable>(
 public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
   named: String? = nil,
-  _ makeValue: @escaping (A, B) -> V
+  @ViewBuilder _ makeValue: @escaping (A, B) -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
   named: String? = nil,
-  _ makeValue: @escaping (A, B) throws -> V
+  @ViewBuilder _ makeValue: @escaping (A, B) throws -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
   named: String? = nil,
-  _ makeValue: @escaping (A, B) async -> V
+  @ViewBuilder _ makeValue: @escaping (A, B) async -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
 public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable>(
   _ configuration: SnapshotConfiguration<(A, B)>,
   named: String? = nil,
-  _ makeValue: @escaping (A, B) async throws -> V
+  @ViewBuilder _ makeValue: @escaping (A, B) async throws -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
@@ -411,7 +431,7 @@ public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable, C: Sendab
   // swiftlint:disable:next large_tuple
   _ configuration: SnapshotConfiguration<(A, B, C)>,
   named: String? = nil,
-  _ makeValue: @escaping (A, B, C) -> V
+  @ViewBuilder _ makeValue: @escaping (A, B, C) -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
@@ -419,7 +439,7 @@ public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable, C: Sendab
   // swiftlint:disable:next large_tuple
   _ configuration: SnapshotConfiguration<(A, B, C)>,
   named: String? = nil,
-  _ makeValue: @escaping (A, B, C) throws -> V
+  @ViewBuilder _ makeValue: @escaping (A, B, C) throws -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
@@ -427,7 +447,7 @@ public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable, C: Sendab
   // swiftlint:disable:next large_tuple
   _ configuration: SnapshotConfiguration<(A, B, C)>,
   named: String? = nil,
-  _ makeValue: @escaping (A, B, C) async -> V
+  @ViewBuilder _ makeValue: @escaping (A, B, C) async -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")
 
 @freestanding(expression)
@@ -435,5 +455,5 @@ public macro expectSnapshot<V: SwiftUI.View, A: Sendable, B: Sendable, C: Sendab
   // swiftlint:disable:next large_tuple
   _ configuration: SnapshotConfiguration<(A, B, C)>,
   named: String? = nil,
-  _ makeValue: @escaping (A, B, C) async throws -> V
+  @ViewBuilder _ makeValue: @escaping (A, B, C) async throws -> V
 ) = #externalMacro(module: "SnapshotsMacros", type: "ExpectSnapshotMacro")

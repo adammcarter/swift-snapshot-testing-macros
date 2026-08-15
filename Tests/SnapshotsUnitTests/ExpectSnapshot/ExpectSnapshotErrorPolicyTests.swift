@@ -17,10 +17,10 @@ import Testing
 /// - Non-throwing overloads (sync and async) record pipeline errors on the invoking test.
 /// - Throwing overloads rethrow pipeline errors — with one historical exception: the
 ///   no-configuration sync throwing overload only rethrows errors from its `makeValue`
-///   closure (evaluated eagerly on the caller's thread) and records pipeline errors like its
-///   non-throwing sibling.
-/// - The no-configuration sync closure runs on the caller's thread before the main-actor
-///   hop; configuration-based sync closures run on the main actor inside the hop.
+///   closure and records pipeline errors like its non-throwing sibling.
+/// - Every SwiftUI closure is main-actor isolated and runs inside the main-actor hop, like
+///   its UIKit/AppKit counterpart — the no-configuration ones included, which used to be
+///   evaluated on the caller's thread ahead of the hop.
 extension ExpectSnapshotAdapterTests {
   private static let invalidWidthMessageFragment = "Invalid fixed width"
 
@@ -38,20 +38,20 @@ extension ExpectSnapshotAdapterTests {
   }
 
   @Test(.sizes(width: .fixed(-1), height: .fixed(10)), .record(.never))
-  func syncClosureOverloadRecordsPipelineErrorsAndEvaluatesMakeValueOnTheCallersThread() throws {
+  func syncClosureOverloadRecordsPipelineErrorsAndEvaluatesMakeValueOnTheMainActor() throws {
     try #require(!Thread.isMainThread)
-    var sawMainThread: Bool?
+    let sawMainThread = BuilderObservationBox<Bool?>(nil)
 
     withKnownIssue {
       __expectSnapshot(named: "unused") { () -> Text in
-        sawMainThread = Thread.isMainThread
+        sawMainThread.record(Thread.isMainThread)
         return Text("pipeline")
       }
     } matching: { issue in
       Self.isInvalidWidthIssue(issue)
     }
 
-    #expect(sawMainThread == false)
+    #expect(sawMainThread.value == true)
   }
 
   /// The sync throwing overload's historical hybrid: `makeValue` errors rethrow (see
@@ -104,18 +104,18 @@ extension ExpectSnapshotAdapterTests {
   func syncConfigurationOverloadRecordsPipelineErrorsAndEvaluatesMakeValueOnTheMainActor() throws {
     try #require(!Thread.isMainThread)
     let configuration = SnapshotConfiguration(name: "probe", value: "guest")
-    var sawMainThread: Bool?
+    let sawMainThread = BuilderObservationBox<Bool?>(nil)
 
     withKnownIssue {
       #expectSnapshot(configuration, named: "unused") { (_: String) -> Text in
-        sawMainThread = Thread.isMainThread
+        sawMainThread.record(Thread.isMainThread)
         return Text("pipeline")
       }
     } matching: { issue in
       Self.isInvalidWidthIssue(issue)
     }
 
-    #expect(sawMainThread == true)
+    #expect(sawMainThread.value == true)
   }
 
   @Test(.sizes(width: .fixed(-1), height: .fixed(10)), .record(.never))
