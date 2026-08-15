@@ -19,11 +19,38 @@ struct MySnapshots {
 }
 ```
 
-Mark the suite `@MainActor`. A SwiftUI `View`'s initialiser is main-actor isolated, so building
-one in a non-isolated test warns under Swift 6 (`call to main actor-isolated initializer … in a
-synchronous nonisolated context`). Standard-library views like `Text` above happen not to, which
-makes the warning easy to miss until a custom view appears. Rendering is on the main actor either
-way — this only quiets the diagnostic.
+Mark the suite `@MainActor`. Snapshot values and builders are main-actor isolated for every
+family — SwiftUI as much as UIKit and AppKit — so a `@MainActor` suite can build its view
+straight from main-actor state, in all four effect flavours. A nonisolated suite works
+identically: the isolation lives on the builder, not on the call site, so
+`#expectSnapshot { MyView(model: mainActorModel) }` compiles from either.
+
+### Direct values carry effects
+
+A direct value is spliced into the assertion's builder closure, so it may carry any effect the
+enclosing test can. All four flavours compose, for SwiftUI and platform values alike:
+
+```swift
+#expectSnapshot(Text("Sync"))
+try #expectSnapshot(try makeView())
+await #expectSnapshot(await makeView())
+try await #expectSnapshot(try await makeView())
+```
+
+The effect is read from the expression, not from where the keyword sits, so a `try` nested
+inside a larger expression works the same way:
+
+```swift
+try #expectSnapshot(ProfileCard(header: try makeHeader()))
+```
+
+`try?` and `try!` handle the error inside the expression, so those assertions stay
+non-throwing and need no `try` at the call site.
+
+Like every builder, the value is produced inside the main-actor hop rather than at the call
+site — so a `@MainActor` factory can be called from a nonisolated suite, and an expression with
+side effects is evaluated once per size/theme request rather than once per assertion. Hoist
+anything that must happen exactly once into a `let` before the assertion.
 
 ## Named snapshots
 
@@ -119,6 +146,42 @@ struct ClosureSnapshots {
 }
 ```
 
+The closure is a `@ViewBuilder`, so a snapshot body reads like any other SwiftUI body — sibling
+views, `if` / `else`, a bare `if`, `switch` and `ForEach` all work, in every effect flavour and
+in the `argument:`, `SnapshotConfiguration` and tuple forms:
+
+```swift
+#expectSnapshot(named: "builder-body") {
+  Text("Header")
+
+  if isCompact {
+    CompactRow()
+  }
+  else {
+    ExpandedRow()
+  }
+
+  ForEach(items, id: \.id) { item in
+    Row(item: item)
+  }
+}
+```
+
+An explicit `return` opts a closure out of the builder, exactly as it does elsewhere in Swift.
+That is what lets an async body do its work first and hand back a single view:
+
+```swift
+await #expectSnapshot(named: "async-closure") {
+  await viewModel.load()
+
+  return ProfileCard(viewModel: viewModel)
+}
+```
+
+Without the `return`, every statement in the body has to be a view — `await viewModel.load()`
+produces `Void`, which no builder accepts. Either add the `return`, or fold the work into the
+view expression itself (`ProfileCard(state: await loadState())`).
+
 ## Failure reporting and concurrency
 
 `#expectSnapshot` renders and verifies on the main actor, but every failure is recorded on
@@ -136,6 +199,9 @@ func knownMismatch() {
 
 The `async` overloads bridge to the main actor structurally (`await`), staying on the test's
 task for the render — they do not block the calling thread while the snapshot runs.
+
+Your builder is resolved inside that main-actor hop, not on the calling thread, which is why a
+nonisolated suite can still read main-actor state from inside `#expectSnapshot`.
 
 ## UIKit and AppKit direct values
 
@@ -171,7 +237,8 @@ snapshot. A frame-based view whose frame is zero still fails with a sizing error
 recording an empty artifact.
 
 UIKit and AppKit support the same direct, closure, `SnapshotConfiguration`, and `argument:` forms as
-SwiftUI. Their builders are main-actor isolated:
+SwiftUI, and their builders are main-actor isolated in the same way (they are not `@ViewBuilder` —
+there is no result builder for `UIView` or `NSView`):
 
 ```swift
 @Test(arguments: ["guest", "member"])
@@ -191,6 +258,11 @@ func throwingProfile() throws {
 @Test
 func throwingDirectProfile() throws {
   try #expectSnapshot(try makeProfileView())
+}
+
+@Test
+func asyncThrowingDirectProfile() async throws {
+  try await #expectSnapshot(try await loadProfileView())
 }
 ```
 

@@ -113,4 +113,4 @@ struct TaggedSnapshots {
 
 ## Platform notes
 
-The same traits apply to SwiftUI, UIKit, and AppKit snapshots. All three platforms support direct values, closure builders, `SnapshotConfiguration`, and `argument:` forms. Closure, argument, and configuration builders support synchronous, throwing, async, and async-throwing paths; direct values support synchronous and throwing expressions. UIKit and AppKit builders are main-actor isolated.
+The same traits apply to SwiftUI, UIKit, and AppKit snapshots. All three platforms support direct values, closure builders, `SnapshotConfiguration`, and `argument:` forms, each in synchronous, throwing, async, and async-throwing flavours — a direct value carries whatever effects its expression has. Every builder is main-actor isolated, and the SwiftUI ones are `@ViewBuilder`.

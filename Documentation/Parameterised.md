@@ -46,7 +46,7 @@ Tuple-2 and tuple-3 configurations unpack into the builder closure parameters.
 If you also pass `named:`, the explicit name replaces only the assertion name. The configuration scope on disk still comes from the `SnapshotConfiguration`.
 
 SwiftUI, UIKit, and AppKit parameterised builders support synchronous, throwing, async, and async-throwing
-builders. UIKit and AppKit builders are `@MainActor` isolated.
+builders. Every builder is `@MainActor` isolated.
 
 ## `argument:`
 
