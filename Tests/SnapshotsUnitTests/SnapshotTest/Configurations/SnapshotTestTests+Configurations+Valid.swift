@@ -478,6 +478,65 @@ extension SnapshotTestTests.Configurations {
         """#
       }
     }
+
+    @Test
+    func testConfigurationValuesStrideSequence() {
+      assertMacro {
+        #"""
+        @MainActor
+        @Suite
+        @SnapshotSuite
+        struct Tests {
+          @SnapshotTest(
+            configurationValues: stride(from: 0.0, to: 0.31, by: 0.1)
+          )
+          func makeMyView(value: Double) -> some View {
+            Text("\(value)")
+          }
+        }
+        """#
+      } expansion: {
+        #"""
+        @MainActor
+        @Suite
+        struct Tests {
+          func makeMyView(value: Double) -> some View {
+            Text("\(value)")
+          }
+
+          enum __generator_container_makeMyView {
+            @MainActor
+            static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<(Double)>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
+              SnapshotTestingMacros.SnapshotViewGenerator<(Double)>(
+                displayName: "makeMyView",
+                configuration: configuration,
+                makeValue: {
+                  Tests().makeMyView(value: $0)
+                },
+                fileID: #fileID,
+                filePath: #filePath,
+                line: 5,
+                column: 3
+              )
+            }
+          }
+
+          @MainActor
+          @Suite(.pointfreeSnapshots)
+          struct Tests_GeneratedSnapshotSuite {
+
+            @MainActor
+            @Test(arguments: SnapshotTestingMacros.SnapshotConfigurationParser.parse(stride(from: 0.0, to: 0.31, by: 0.1)))
+            func makeMyView_snapshotTest(configuration: SnapshotConfiguration<(Double)>) async throws {
+              let generator = __generator_container_makeMyView.makeGenerator(configuration: configuration)
+
+              try await SnapshotTestingMacros.assertSnapshot(with: generator)
+            }
+          }
+        }
+        """#
+      }
+    }
   }
 }
 #endif

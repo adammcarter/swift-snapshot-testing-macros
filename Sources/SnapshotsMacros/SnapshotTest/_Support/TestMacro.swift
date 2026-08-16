@@ -30,7 +30,10 @@ extension SnapshotSuite.TestBlock.Test {
       }
     }
 
-    init(traits: [ExprSyntax], configurationExpression: ExprSyntax?) {
+    init(
+      traits: [ExprSyntax],
+      configurationExpression: ExprSyntax?
+    ) {
       self.traits = traits
       self.configurationExpression = configurationExpression
     }

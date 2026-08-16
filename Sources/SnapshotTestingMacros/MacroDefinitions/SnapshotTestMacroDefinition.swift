@@ -334,7 +334,7 @@ public macro SnapshotTest<C: Sendable>(
   configurationValues: () -> [C]
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
 
-/// Marks a function as a parameterized snapshot test with traits and configuration values collection.
+/// Marks a function as a parameterized snapshot test with traits and configuration values sequence.
 ///
 /// The following default traits are applied unless overridden:
 /// - Theme: `.theme(.all)` (Light and Dark mode)
@@ -345,7 +345,9 @@ public macro SnapshotTest<C: Sendable>(
 ///
 /// - Parameters:
 ///   - traits: The traits to apply to the test.
-///   - configurationValues: A collection of values to be used as configurations.
+///   - configurationValues: A sequence of values to be used as configurations.
+///
+/// - Important: `configurationValues` is consumed eagerly to build test arguments, so it must be finite.
 ///
 /// Example:
 /// ```swift
@@ -364,9 +366,9 @@ public macro SnapshotTest<C>(
   _ traits: any SnapshotTestTrait...,
   configurationValues: C
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
-where C: Collection & Sendable, C.Element: Sendable
+where C: Sequence & Sendable, C.Element: Sendable
 
-/// Marks a function as a parameterized snapshot test with a display name, traits, and configuration values collection.
+/// Marks a function as a parameterized snapshot test with a display name, traits, and configuration values sequence.
 ///
 /// The following default traits are applied unless overridden:
 /// - Theme: `.theme(.all)` (Light and Dark mode)
@@ -378,7 +380,9 @@ where C: Collection & Sendable, C.Element: Sendable
 /// - Parameters:
 ///   - displayName: The display name of the test.
 ///   - traits: The traits to apply to the test.
-///   - configurationValues: A collection of values to be used as configurations.
+///   - configurationValues: A sequence of values to be used as configurations.
+///
+/// - Important: `configurationValues` is consumed eagerly to build test arguments, so it must be finite.
 ///
 /// Example:
 /// ```swift
@@ -402,4 +406,4 @@ public macro SnapshotTest<C>(
   _ traits: any SnapshotTestTrait...,
   configurationValues: C
 ) = #externalMacro(module: "SnapshotsMacros", type: "SnapshotTestMacro")
-where C: Collection & Sendable, C.Element: Sendable
+where C: Sequence & Sendable, C.Element: Sendable

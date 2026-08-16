@@ -32,6 +32,16 @@ extension SnapshotConfigurationParser {
   public static func parse<T: Sendable>(_ arguments: () -> [T]) -> [SnapshotConfiguration<T>] {
     parse(arguments())
   }
+
+  public static func parse<S: Sequence>(_ arguments: S) -> [SnapshotConfiguration<S.Element>]
+  where S.Element: Sendable {
+    arguments.map { SnapshotConfiguration(name: "\($0)", value: $0) }
+  }
+
+  public static func parse<S: Sequence>(_ arguments: () -> S) -> [SnapshotConfiguration<S.Element>]
+  where S.Element: Sendable {
+    parse(arguments())
+  }
 }
 
 /*
