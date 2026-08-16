@@ -11,7 +11,7 @@ enum AssertionRequestGeneratorTestSupport {
     name: String = "base",
     configurationName: String? = nil,
     traitConfiguration: AssertionRequestContext.TraitConfiguration,
-    makeSnapshotView: @escaping @MainActor () async throws -> SnapshotViewController = makeSnapshotView
+    makeSnapshotView: @escaping @MainActor () throws -> SnapshotViewController = makeSnapshotView
   ) -> AssertionRequestContext {
     AssertionRequestContext(
       name: name,
@@ -29,6 +29,7 @@ enum AssertionRequestGeneratorTestSupport {
   static func makeTraitSize(
     width: SizesSnapshotTrait.Length = .fixed(120),
     height: SizesSnapshotTrait.Length = .fixed(80),
+    scale: Double? = nil,
     displayName: String = "display_name_1",
     debugDescription: String = "debug_description_1",
     testNameDescription: String = "test_name_description_1"
@@ -36,6 +37,7 @@ enum AssertionRequestGeneratorTestSupport {
     .init(
       width: width,
       height: height,
+      scale: scale,
       displayName: displayName,
       debugDescription: debugDescription,
       testNameDescription: testNameDescription
@@ -50,7 +52,7 @@ enum AssertionRequestGeneratorTestSupport {
     #expect(request.column == 1)
   }
 
-  static func makeSnapshotView() async throws -> SnapshotViewController {
+  static func makeSnapshotView() throws -> SnapshotViewController {
     let controller = SnapshotViewController()
     controller.view = SnapshotView(frame: .init(x: 0, y: 0, width: 200, height: 200))
     return controller

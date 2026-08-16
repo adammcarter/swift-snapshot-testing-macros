@@ -14,7 +14,16 @@ extension NSDirectionalEdgeInsets: @retroactive Equatable {
 extension NSView {
   var backgroundColor: NSColor? {
     get { layer?.backgroundColor.flatMap { .init(cgColor: $0) } }
-    set { layer?.backgroundColor = newValue?.cgColor }
+    set {
+      if newValue != nil {
+        // A backing layer only exists once the view opts into layer-backing; without this the
+        // write below would silently no-op through the `nil` layer (unlike UIKit, where every
+        // view is layer-backed).
+        wantsLayer = true
+      }
+
+      layer?.backgroundColor = newValue?.cgColor
+    }
   }
 }
 #endif

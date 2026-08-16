@@ -1,52 +1,143 @@
 [![Snapshot Tests](https://github.com/adammcarter/swift-snapshot-testing-macros/actions/workflows/run-tests.yaml/badge.svg)](https://github.com/adammcarter/swift-snapshot-testing-macros/actions/workflows/run-tests.yaml)
 
-# Overview
+# SnapshotTestingMacros
 
-`SnapshotTestingMacros` is a thin layer over [swift-testing](https://github.com/swiftlang/swift-testing) and [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing) to allow for macro based snapshots using a syntax similar to Swift Testing.
+`SnapshotTestingMacros` adds snapshot assertions and snapshot-specific traits to [Swift Testing](https://github.com/swiftlang/swift-testing) while continuing to use [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing) as the snapshot engine under the hood.
 
-Just as Swift Testing has `@Suite` and `@Test`, `SnapshotTestingMacros` uses `@SnapshotSuite` and `@SnapshotTest` to mark up code.
+The preferred API is native Swift Testing:
 
-This allows for snapshots to quickly be created by simply marking up functions that return views.
+- `@Suite`
+- `@Test`
+- `#expectSnapshot(...)`
+- Snapshot traits such as `.theme(...)`, `.sizes(...)`, `.padding(...)`, `.record(...)`, and `.strategy(...)`
 
-# Example code
+The legacy `@SnapshotSuite` and `@SnapshotTest` macros remain available as a migration surface, but they are deprecated.
 
-In the simplest case this is all that's needed for a snapshot test:
+## Quick start
 
 ```swift
-// ✅ Create a simple snapshot test for some SwiftUI text.
+import SnapshotTestingMacros
+import SwiftUI
+import Testing
 
-@Suite
-@SnapshotSuite
-struct MySnapshots {
-
-  @SnapshotTest
-  func myView() -> some View {
-    Text("Some text")
+@MainActor
+@Suite(.theme(.all), .sizes(.minimum))
+struct ProfileCardSnapshots {
+  @Test
+  func profileCard() {
+    #expectSnapshot(ProfileCard())
   }
 }
 ```
 
-> Note that while `@Suite` isn't explicitly needed to run the snapshots, it's currently recommneded so Xcode can pickup the generated Suite inside the macro. Due to macro limitations it seems that Xcode cannot see Suites when they're embedded inside macro expansion code.
+`@MainActor` on the suite is worth adding from the start, and every form works from it: snapshot
+values and builders are main-actor isolated, so a test can reach main-actor state — a view model,
+a `@MainActor` factory — directly inside `#expectSnapshot`, with or without `async`. Nonisolated
+suites work too and get the same reach, because the builder carries the isolation rather than the
+call site.
 
-# Documentation
+### Running under xcodebuild
 
-- [Usage](Documentation/Usage.md) - Basic usage, example code, and async support.
-- [Traits](Documentation/Traits.md) - Customising snapshots with traits (sizes, themes, padding, etc.).
-- [Parameterised Tests](Documentation/Parameterised.md) - Creating snapshots for multiple configurations.
+`swift test` needs nothing special. Building through `xcodebuild` does:
 
-# Supported views
+```shell
+xcodebuild test -scheme YourScheme -destination 'platform=macOS' -skipMacroValidation
+```
 
-- **SwiftUI**: Any view conforming to `View`
-- **UIKit** (iOS, tvOS, visionOS): `UIView`, `UIViewController`
-- **AppKit** (macOS): `NSView`, `NSViewController`
+Without `-skipMacroValidation`, xcodebuild refuses to expand the macro until it has been
+approved — *"Macro 'SnapshotsMacros' … must be enabled before it can be used"*. Locally that is
+a **Trust & Enable** prompt in Xcode. On CI there is nobody to click it, so the flag is required
+rather than optional.
 
+## Supported platforms
 
-# Running tests
+iOS 15+ and macOS 15+ only. watchOS, tvOS, and visionOS are not supported; building the package for those platforms fails with an explicit compile-time error.
 
-For detailed instructions on running tests, please see [CONTRIBUTING.md](CONTRIBUTING.md).
+## Supported native surface
 
-# Contributing
+| Surface | Support |
+| --- | --- |
+| SwiftUI | Direct-value snapshots, `named:`, `@ViewBuilder` closure forms, `SnapshotConfiguration`, and `argument:` helpers |
+| UIKit / AppKit | Direct values plus sync, throwing, async, and async-throwing closure, `SnapshotConfiguration`, and `argument:` snapshots for views and view controllers |
 
-This project uses [mise](https://mise.jdx.dev) to manage development tools.
+Every builder is main-actor isolated, SwiftUI and platform alike. A direct value carries whatever effects its expression
+has — `try #expectSnapshot(try makeView())`, `await #expectSnapshot(await makeView())` and
+`try await #expectSnapshot(try await makeView())` all compose, and a `try` nested inside a larger expression counts.
+Throwing builders rethrow their factory and snapshot-pipeline errors.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed setup and guidelines.
+For UIKit and AppKit, keep the test itself as a regular `@Test` unless using an async builder, and pass a
+helper-backed expression such as `#expectSnapshot(makeViewController())`. Parameterised builders use
+`argument:` or `SnapshotConfiguration` in the same way as SwiftUI.
+
+## Documentation
+
+- [Usage](Documentation/Usage.md)
+- [Traits](Documentation/Traits.md)
+- [Parameterised tests](Documentation/Parameterised.md)
+- [Migration](MIGRATION.md)
+
+## Migration
+
+Adopters moving from `@SnapshotSuite` / `@SnapshotTest` to native `@Suite` / `@Test` / `#expectSnapshot(...)` should use the migrator, which lives in its own repository because it is a one-time tool:
+
+**[swift-snapshot-testing-macros-migrator](https://github.com/adammcarter/swift-snapshot-testing-macros-migrator)**
+
+```shell
+git clone https://github.com/adammcarter/swift-snapshot-testing-macros-migrator
+cd swift-snapshot-testing-macros-migrator
+Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo            # dry run
+Tools/migrate-snapshot-tests --project-root /path/to/consumer-repo --apply
+```
+
+It rewrites the sources and renames the checked-in references in the same run. See [MIGRATION.md](MIGRATION.md) for the mapping, and that repository for the full guide — in particular what changes about macOS reference images and why you re-record once.
+
+## Development
+
+For local setup and detailed contributor guidance, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Common commands:
+
+```shell
+mise run lint
+swift test
+```
+
+For fast local iteration, prefer the focused unit suites CI also uses across Xcode versions:
+
+```shell
+swift test --filter ExpectSnapshotAdapterTests
+swift test --filter ExpectSnapshotMacroTests
+swift test --filter SnapshotSuiteTests
+swift test --filter SnapshotTestTests
+```
+
+```shell
+xcodebuild test \
+  -scheme SnapshotsUnitTests \
+  -destination 'platform=macOS'
+```
+
+Integration tests render against committed references, so the Xcode and simulator destination are
+pinned once in `mise.toml`; run them through the mise task so they always use that configuration:
+
+```shell
+mise run test-integration
+```
+
+Snapshot references are bound to the recording environment (Xcode **and** macOS), so if your machine
+differs from CI you cannot produce matching references locally. Instead, run the **Regenerate
+Snapshot References** workflow (Actions → Run workflow) on your branch — it re-records everything on
+the CI runner and commits the result onto your branch. See
+[CONTRIBUTING.md](CONTRIBUTING.md#regenerating-references-on-ci) for the full flow.
+
+Latest-Xcode CI also runs fast macOS build-for-testing smoke checks on 26.4, 26.5, and 26.6:
+
+```shell
+xcodebuild build-for-testing \
+  -scheme SnapshotsUnitTests \
+  -destination 'platform=macOS'
+
+xcodebuild build-for-testing \
+  -scheme SnapshotsIntegrationTests \
+  -destination 'platform=macOS'
+```

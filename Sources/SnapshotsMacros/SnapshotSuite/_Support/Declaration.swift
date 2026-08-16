@@ -6,47 +6,121 @@ struct Declaration {
   let isAsync: Bool
   let isThrows: Bool
   let isInitializable: Bool
-  let initConfigurationToken: TokenSyntax?
 
   init(declaration: some DeclSyntaxProtocol) {
     self.isInitializable = makeIsInitializable(declaration: declaration)
     self.isAsync = makeIsAsync(declaration: declaration)
     self.isThrows = makeIsThrows(declaration: declaration)
-    self.initConfigurationToken = makeInitConfigurationToken(declaration: declaration)
   }
 }
 
+/*
+ The generated code calls `Suite()` with no arguments — the peer macro that bakes the call
+ into the generator container cannot see the suite's initialisers (lexical contexts have their
+ member lists stripped), so it can never pass anything else. A suite therefore only counts as
+ initialisable when that exact zero-argument call compiles:
+
+ - with an explicit initialiser: the first one must be non-failable and require no arguments
+   (every parameter defaulted);
+ - without one: every stored instance property must already have a value, so the implicit
+   (or memberwise) initialiser accepts a zero-argument call.
+ */
 private func makeIsInitializable(declaration: some DeclSyntaxProtocol) -> Bool {
-  declaration.is(StructDeclSyntax.self)
-    || declaration.is(ClassDeclSyntax.self)
-    || declaration.is(ActorDeclSyntax.self)
+  guard
+    declaration.is(StructDeclSyntax.self)
+      || declaration.is(ClassDeclSyntax.self)
+      || declaration.is(ActorDeclSyntax.self)
+  else {
+    return false
+  }
+
+  let explicitInitializers = initializers(in: declaration)
+
+  guard explicitInitializers.isEmpty == false else {
+    return (declaration as? DeclGroupSyntax)
+      .map(storedInstancePropertiesAllHaveValues(in:)) ?? false
+  }
+
+  // `Suite()` resolves against *any* zero-argument initialiser, so the suite is initialisable
+  // as long as at least one explicit initialiser is callable with no arguments — regardless of
+  // member order or how many argument-taking initialisers are also declared.
+  return explicitInitializers.contains(where: isCallableWithoutArguments)
 }
 
-private func makeIsAsync(declaration: some DeclSyntaxProtocol) -> Bool {
-  initializer(in: declaration)?.signature.isAsync == true
-}
+private func isCallableWithoutArguments(_ initializerDecl: InitializerDeclSyntax) -> Bool {
+  guard initializerDecl.optionalMark == nil else { return false }
 
-private func makeIsThrows(declaration: some DeclSyntaxProtocol) -> Bool {
-  initializer(in: declaration)?.signature.isThrows == true
-}
-
-private func makeInitConfigurationToken(declaration: some DeclSyntaxProtocol) -> TokenSyntax? {
-  initializer(in: declaration)?
+  return initializerDecl
     .signature
     .parameterClause
     .parameters
-    .first {
-      $0.type.as(IdentifierTypeSyntax.self)?.name.identifier?.name == Constants.TypeName.snapshotConfiguration
-    }?
-    .name
+    .allSatisfy { $0.defaultValue != nil }
 }
 
-private func initializer(in declaration: some DeclSyntaxProtocol) -> InitializerDeclSyntax? {
-  (declaration as? DeclGroupSyntax)?
+private func storedInstancePropertiesAllHaveValues(in declGroup: DeclGroupSyntax) -> Bool {
+  declGroup
     .memberBlock
     .members
-    .lazy
-    .compactMap { $0.decl.as(InitializerDeclSyntax.self) }
-    .first
-    ?? declaration.as(InitializerDeclSyntax.self)
+    .allSatisfy { member in
+      guard
+        let variableDecl = member.decl.as(VariableDeclSyntax.self),
+        variableDecl.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) }) == false
+      else {
+        return true
+      }
+
+      return variableDecl.bindings.allSatisfy { binding in
+        guard isStoredBinding(binding) else { return true }
+
+        if binding.initializer != nil { return true }
+
+        // An optional `var` defaults to `nil` in implicit and memberwise initialisers.
+        return variableDecl.bindingSpecifier.tokenKind == .keyword(.var)
+          && binding.typeAnnotation?.type.is(OptionalTypeSyntax.self) == true
+      }
+    }
+}
+
+private func isStoredBinding(_ binding: PatternBindingSyntax) -> Bool {
+  switch binding.accessorBlock?.accessors {
+    case .none:
+      return true
+
+    case .getter:
+      return false
+
+    case .accessors(let accessors):
+      // Only observers (`willSet`/`didSet`) keep a binding stored.
+      return accessors.allSatisfy { accessor in
+        accessor.accessorSpecifier.tokenKind == .keyword(.willSet)
+          || accessor.accessorSpecifier.tokenKind == .keyword(.didSet)
+      }
+  }
+}
+
+private func makeIsAsync(declaration: some DeclSyntaxProtocol) -> Bool {
+  zeroArgumentInitializer(in: declaration)?.signature.isAsync == true
+}
+
+private func makeIsThrows(declaration: some DeclSyntaxProtocol) -> Bool {
+  zeroArgumentInitializer(in: declaration)?.signature.isThrows == true
+}
+
+/// The zero-argument initialiser `Suite()` actually resolves to — the effect specifiers that
+/// matter for the generated call come from *this* initialiser, not merely the first declared
+/// one. When several are callable with no arguments (an invalid overload the compiler will
+/// reject anyway), the first in member order is used.
+private func zeroArgumentInitializer(in declaration: some DeclSyntaxProtocol) -> InitializerDeclSyntax? {
+  initializers(in: declaration).first(where: isCallableWithoutArguments)
+}
+
+private func initializers(in declaration: some DeclSyntaxProtocol) -> [InitializerDeclSyntax] {
+  if let declGroup = declaration as? DeclGroupSyntax {
+    return declGroup
+      .memberBlock
+      .members
+      .compactMap { $0.decl.as(InitializerDeclSyntax.self) }
+  }
+
+  return declaration.as(InitializerDeclSyntax.self).map { [$0] } ?? []
 }

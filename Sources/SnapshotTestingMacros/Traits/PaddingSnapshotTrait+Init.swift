@@ -1,9 +1,9 @@
 #if canImport(SwiftUI)
 import SwiftUI
+import Testing
 
 /// The below callers match the .padding() SwiftUI modifier.
-@MainActor
-extension SnapshotTrait where Self == PaddingSnapshotTrait {
+extension Testing.Trait where Self == PaddingSnapshotTrait {
   /// Apply a padding to the views when the snapshot is taken.
   ///
   /// - Parameter insets: The specific edge insets to apply.
@@ -23,11 +23,13 @@ extension SnapshotTrait where Self == PaddingSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.padding(.all, 16))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.padding(.all, 16))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func padding(
@@ -44,11 +46,13 @@ extension SnapshotTrait where Self == PaddingSnapshotTrait {
   ///
   /// Example:
   /// ```swift
-  /// @SnapshotSuite
+  /// @Suite
   /// struct MySnapshotSuite {
   ///
-  ///   @SnapshotTest(.padding(20))
-  ///   func myView() -> some View { ... }
+  ///   @Test(.padding(20))
+  ///   func myView() {
+  ///     #expectSnapshot(MyView())
+  ///   }
   /// }
   /// ```
   public static func padding(

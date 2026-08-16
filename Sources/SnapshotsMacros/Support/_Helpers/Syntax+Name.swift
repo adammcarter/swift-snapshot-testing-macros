@@ -13,5 +13,6 @@ extension Syntax {
       ?? self.as(ClassDeclSyntax.self)?.attributes
       ?? self.as(EnumDeclSyntax.self)?.attributes
       ?? self.as(StructDeclSyntax.self)?.attributes
+      ?? self.as(ExtensionDeclSyntax.self)?.attributes
   }
 }

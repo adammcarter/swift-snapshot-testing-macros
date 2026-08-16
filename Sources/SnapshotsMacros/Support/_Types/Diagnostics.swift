@@ -15,6 +15,18 @@ extension DiagnosticProtocol where Self == DiagnosticFactory {
     )
   }
 
+  static func generalErrorMessage(
+    message: String,
+    node: some SyntaxProtocol,
+    fixIts: [FixIt] = []
+  ) -> Diagnostic {
+    .init(
+      node: node,
+      message: .generalErrorMessage(message),
+      fixIts: fixIts
+    )
+  }
+
   static func missingAttribute(
     _ attribute: String,
     suffix: String? = nil,
@@ -23,11 +35,30 @@ extension DiagnosticProtocol where Self == DiagnosticFactory {
   ) -> Diagnostic {
     let oldAttributes = declaration.attributes
 
-    var newAttributes = oldAttributes
-    newAttributes.insert(
-      .attributeNamed(attribute).with(\.leadingTrivia, .newline),
-      at: oldAttributes.startIndex
-    )
+    /*
+     Prepend the new attribute on its own line. The inserted attribute takes the position the
+     old first attribute held (inheriting its leading trivia), and the old first attribute is
+     pushed onto the next line. Giving only the inserted attribute a `.newline` leaves the
+     displaced one with empty leading trivia, which renders as `@Suite@MainActor` — two
+     attributes fused into invalid Swift. Reusing the old first attribute's own indentation
+     keeps the fix correct for nested, indented declarations too.
+     */
+    var elements = Array(oldAttributes)
+    let newAttributes: AttributeListSyntax
+
+    if let firstLeadingTrivia = elements.first?.leadingTrivia {
+      elements[0] = elements[0].with(\.leadingTrivia, .newline + firstLeadingTrivia.lineIndentation)
+      elements.insert(
+        .attributeNamed(attribute).with(\.leadingTrivia, firstLeadingTrivia),
+        at: 0
+      )
+      newAttributes = AttributeListSyntax(elements)
+    }
+    else {
+      newAttributes = AttributeListSyntax {
+        .attributeNamed(attribute)
+      }
+    }
 
     let declName = (declaration as? NamedDeclSyntax)?.name.text
 
@@ -119,6 +150,27 @@ extension DiagnosticProtocol where Self == DiagnosticFactory {
   }
 }
 
+private extension Trivia {
+  /// The run of horizontal whitespace after the final line break — the indentation a line
+  /// inserted after this trivia should reuse so it lines up with what preceded it.
+  var lineIndentation: Trivia {
+    var indentation: [TriviaPiece] = []
+
+    for piece in pieces {
+      switch piece {
+      case .spaces, .tabs:
+        indentation.append(piece)
+      default:
+        // A newline (or any non-space piece) starts the indentation run over: only the
+        // whitespace since the last line break is indentation.
+        indentation.removeAll()
+      }
+    }
+
+    return Trivia(pieces: indentation)
+  }
+}
+
 private extension DeclGroupSyntax {
   func appendingSnapshotTestFunction(
     returnType: String,
@@ -189,6 +241,14 @@ extension DiagnosticMessage where Self == DiagnosticWarningMessage {
   }
 }
 
+extension DiagnosticMessage where Self == DiagnosticErrorMessage {
+  static func generalErrorMessage(
+    _ message: String
+  ) -> DiagnosticErrorMessage {
+    .init(message: message)
+  }
+}
+
 extension FixItMessage where Self == FixItWarning {
   static func generalMessage(
     _ message: String
@@ -245,6 +305,15 @@ struct DiagnosticFactory: DiagnosticProtocol {
 struct DiagnosticWarningMessage: DiagnosticMessage {
   let message: String
   let severity: DiagnosticSeverity = .warning
+
+  var diagnosticID: MessageID {
+    .init(domain: "SnapshotsMacro", id: message)
+  }
+}
+
+struct DiagnosticErrorMessage: DiagnosticMessage {
+  let message: String
+  let severity: DiagnosticSeverity = .error
 
   var diagnosticID: MessageID {
     .init(domain: "SnapshotsMacro", id: message)

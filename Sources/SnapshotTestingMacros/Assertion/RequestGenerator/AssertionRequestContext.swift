@@ -4,7 +4,7 @@ struct AssertionRequestContext {
   let name: String
   let configurationName: String?
   let traitConfiguration: TraitConfiguration
-  let makeSnapshotView: @MainActor () async throws -> SnapshotViewController
+  let makeSnapshotView: @MainActor () throws -> SnapshotViewController
   let snapshotDirectory: String
   let fileID: StaticString
   let filePath: StaticString

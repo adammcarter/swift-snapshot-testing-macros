@@ -6,17 +6,21 @@ import SnapshotTesting
 struct AssertionRequestGenerator {
   let viewGenerator: any SnapshotViewGenerating
 
-  func generateRequests() async throws -> [any AssertionRequesting] {
-    let context = try await makeContext(with: viewGenerator)
+  func generateRequestsSync() throws -> [any AssertionRequesting] {
+    let context = try makeContext(with: viewGenerator)
 
     let requestGenerator = SizeAssertionRequestGenerator(context: context)
 
-    return try await requestGenerator.generateRequests()
+    return try requestGenerator.generateRequestsSync()
+  }
+
+  func generateRequests() async throws -> [any AssertionRequesting] {
+    try generateRequestsSync()
   }
 
   private func makeContext(
     with viewGenerator: some SnapshotViewGenerating
-  ) async throws -> AssertionRequestContext {
+  ) throws -> AssertionRequestContext {
     let traitConfiguration = AssertionRequestContext.TraitConfiguration(
       sizes: SizesSnapshotTrait.current,
       theme: ThemeSnapshotTrait.current,
@@ -24,15 +28,22 @@ struct AssertionRequestGenerator {
     )
 
     let configurationName = Self.normalizedNameComponent(from: viewGenerator.configuration.name)
+
+    /*
+     Slash-aware so the slash-as-subfolder display-name convention means the same thing for
+     configured (parameterized) tests as for plain ones: "Menu/Item" nests Menu/Item/ under
+     the test file's snapshot folder instead of flattening to a single "Menu-Item" folder.
+     `NameAssertionRequestGenerator` then keeps only the final segment as the artifact name.
+     */
     let testFolderName = configurationName.flatMap { _ in
-      Self.normalizedNameComponent(from: viewGenerator.displayName)
+      Self.normalizedPathName(from: viewGenerator.displayName)
     }
 
     return .init(
       name: viewGenerator.displayName,
       configurationName: configurationName,
       traitConfiguration: traitConfiguration,
-      makeSnapshotView: { try await viewGenerator.makeDecoratedView() },
+      makeSnapshotView: { try viewGenerator.makeDecoratedView() },
       snapshotDirectory: Self.makeSnapshotDirectory(
         filePath: viewGenerator.filePath,
         testFolderName: testFolderName
@@ -76,6 +87,15 @@ struct AssertionRequestGenerator {
     }
 
     let normalized = SnapshotNameNormalizer.folderComponent(from: name)
+    return normalized.isEmpty ? nil : normalized
+  }
+
+  private static func normalizedPathName(from name: String?) -> String? {
+    guard let name else {
+      return nil
+    }
+
+    let normalized = SnapshotNameNormalizer.folderPath(from: name)
     return normalized.isEmpty ? nil : normalized
   }
 }

@@ -1,8 +1,23 @@
 [tools]
 swiftlint = "0.59.0"
 
+[env]
+# Canonical snapshot-rendering configuration. CI pulls these into the job environment via the
+# .github/actions/snapshot-config composite action; the freshness checks in run-tests.yaml warn
+# when the runner drifts from them. The simulator runtime is intentionally absent from the
+# destination: the pinned Xcode's own newest runtime is selected by the simulator setup action.
+SNAPSHOT_XCODE = "26.6"
+IOS_SIM_DESTINATION = "platform=iOS Simulator,name=iPhone 17"
+
+# The macOS version the AppKit references were recorded on. Unlike Xcode this is NOT selectable —
+# GitHub's macos-26 runner provides whatever point release it provides (26.4 today) — so this is a
+# recorded-on marker, not a pin. AppKit/CoreText text rendering lives in the OS, so when the runner
+# bumps past this, the macOS freshness check warns that references need re-recording. To reproduce
+# references locally you need this macOS version as well as SNAPSHOT_XCODE.
+SNAPSHOT_MACOS = "26.4"
+
 [tasks]
 lint = ["./Tools/format-check", "./Tools/check-packages"]
 format = "./Tools/format"
 test = "swift test"
-test-integration = "xcodebuild test -scheme SnapshotsIntegrationTests -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2,arch=arm64'"
+test-integration = "xcodebuild test -scheme SnapshotsIntegrationTests -destination \"$IOS_SIM_DESTINATION\""

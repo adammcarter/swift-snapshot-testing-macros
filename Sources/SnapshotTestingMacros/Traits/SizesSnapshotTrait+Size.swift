@@ -7,8 +7,11 @@ extension SizesSnapshotTrait {
     let height: SizesSnapshotTrait.Length
 
     /**
-     When `nil`, inherit the scale from the device on which the tests are being run.
-    
+     When `nil`, inherit the scale from the device on which the tests are being run. On macOS
+     there is no deterministic device scale to inherit, so `nil` renders at a fixed two pixels
+     per point, keeping committed references independent of the recording machine's screen while
+     still matching the Retina density every shipping Mac actually renders at.
+
      This allows for backwards compatability to avoid breaking changes while allowing for a custom override when wanting to use a specific setup.
      */
     let scale: Double?
@@ -22,7 +25,8 @@ extension SizesSnapshotTrait {
     /// - Parameters:
     ///   - width: The width of the snapshot.
     ///   - height: The height of the snapshot.
-    ///   - scale: The scale factor (e.g., 2.0 or 3.0). If `nil`, inherits from the device.
+    ///   - scale: The scale factor (e.g., 2.0 or 3.0). If `nil`, inherits from the device
+    ///     (on macOS, `nil` renders at two pixels per point).
     public init(
       width: SizesSnapshotTrait.Length,
       height: SizesSnapshotTrait.Length,
@@ -34,15 +38,54 @@ extension SizesSnapshotTrait {
       self.displayName = "size"
       self.debugDescription = "width: \(width), height: \(height), scale: \(String(describing: scale))"
 
+      /*
+       Embed the concrete dimensions for any explicitly fixed length so multiple fixed sizes in
+       one test produce value-stable, order-independent reference names — without them the only
+       disambiguator is the positional `.N` counter, and editing the sizes array silently
+       re-maps every subsequent reference to a different geometry. The fully-minimum default
+       keeps its historical `min-size` name (when `scale` is `nil`) so committed references
+       recorded under it stay valid.
+       */
       let description =
         switch (width, height) {
-          case (.fixed, .fixed): "fixed size"
-          case (.fixed, .minimum): "min height"
-          case (.minimum, .fixed): "min width"
-          case (.minimum, .minimum): "min size"
+          case (.fixed(let width), .fixed(let height)):
+            "fixed-\(Self.lengthValueDescription(width))x\(Self.lengthValueDescription(height))"
+          case (.fixed(let width), .minimum):
+            "min-height-w\(Self.lengthValueDescription(width))"
+          case (.minimum, .fixed(let height)):
+            "min-width-h\(Self.lengthValueDescription(height))"
+          case (.minimum, .minimum):
+            "min-size"
         }
 
-      self.testNameDescription = description.replacingOccurrences(of: " ", with: "-")
+      let scaleSuffix = scale.map { "-\(Self.lengthValueDescription($0))x" } ?? ""
+
+      self.testNameDescription = description + scaleSuffix
+    }
+
+    /// Formats a dimension or scale value for use inside a reference file name.
+    ///
+    /// Integral values drop their fraction (`100.0` → `100`). A fractional value must encode its
+    /// decimal point as a *word* character (`100.5` → `100p5`) rather than folding it to `-`:
+    /// the `-` characters that delimit the width/height/scale fields (`fixed-{w}x{h}` and
+    /// `-{scale}x`) must never be producible by a value, or two distinct geometries collide
+    /// across a field boundary (e.g. `fixed(100)×fixed(2)@5.5` and `fixed(100)×fixed(2.5)@5`
+    /// both folding to `fixed-100x2-5-5x`). Any other non-word character a `Double` description
+    /// can emit (the `+`/`-` of scientific notation for extreme magnitudes) is likewise recoded
+    /// to a word character so a value can never emit a `-`. The result stays file-name safe:
+    /// every character is a word character or `p`/`n`.
+    private static func lengthValueDescription(_ value: Double) -> String {
+      if value.isFinite,
+        value == value.rounded(),
+        value.magnitude < 1_000_000_000_000
+      {
+        return String(Int(value))
+      }
+
+      return String(describing: value)
+        .replacingOccurrences(of: "+", with: "")
+        .replacingOccurrences(of: "-", with: "n")
+        .replacingOccurrences(of: ".", with: "p")
     }
 
     init(

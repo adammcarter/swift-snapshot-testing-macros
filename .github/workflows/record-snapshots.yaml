@@ -1,0 +1,94 @@
+name: Record Snapshot References
+
+# Rebaseline helper.
+#
+# Snapshot references must match the rendering of the environment that verifies them.
+# CI verifies with pinned runner OS / Xcode / simulator runtimes that can differ from any
+# local machine (font metrics, display scale, UIKit dump formats). This workflow deletes the
+# per-scheme reference directories, re-runs each suite twice on the CI runner itself (first
+# run records the missing references, second run must pass against them), and uploads the
+# recorded references as an artifact to download and commit.
+#
+# workflow_dispatch only works once the workflow exists on the default branch, so this also
+# triggers on pushes to record/** branches and runs from the pushed ref itself.
+
+on:
+  push:
+    branches:
+      - 'record/**'
+  workflow_dispatch:
+
+jobs:
+  # SNAPSHOT_XCODE and IOS_SIM_DESTINATION come from mise.toml [env] via the snapshot-config
+  # composite action. run-tests.yaml uses the same configuration, so recording and verification
+  # cannot drift onto different toolchains or simulators.
+  record:
+    name: Record (${{ matrix.scheme }})
+    runs-on: macos-26
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scheme: SnapshotsUnitTests
+            platform: macos
+            reference_paths: Tests/SnapshotsUnitTests/ExpectSnapshot/__Snapshots__
+          - scheme: SnapshotsIntegrationTests
+            platform: ios
+            reference_paths: Tests/SnapshotsIntegrationTests/ExpectSnapshot/__Snapshots__
+          - scheme: SnapshotsIntegrationRepetitionTests
+            platform: ios
+            reference_paths: Tests/SnapshotsIntegrationRepetitionTests/__Snapshots__
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load snapshot config
+        uses: ./.github/actions/snapshot-config
+
+      - name: Select Xcode version (${{ env.SNAPSHOT_XCODE }})
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.SNAPSHOT_XCODE }}
+
+      - name: Ensure iOS simulator
+        if: matrix.platform == 'ios'
+        uses: ./.github/actions/ensure-ios-simulator
+
+      # macOS needs no simulator; iOS uses the single-sourced destination. The runtime is
+      # unpinned so references track whatever the pinned Xcode's newest simulator ships.
+      - name: Resolve destination
+        run: |
+          if [ "${{ matrix.platform }}" = "ios" ]; then
+            echo "DESTINATION=$IOS_SIM_DESTINATION" >> "$GITHUB_ENV"
+          else
+            echo "DESTINATION=platform=macOS" >> "$GITHUB_ENV"
+          fi
+
+      - name: Disable prebuilts
+        run: |
+          defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts -bool NO
+          defaults read com.apple.dt.Xcode IDEPackageEnablePrebuilts
+
+      - name: Delete stale references
+        run: rm -rf ${{ matrix.reference_paths }}
+
+      - name: Record run (writes missing references, expected to fail)
+        continue-on-error: true
+        run: |
+          xcodebuild test \
+            -scheme ${{ matrix.scheme }} \
+            -destination "$DESTINATION"
+
+      - name: Verify run (must pass against recorded references)
+        run: |
+          xcodebuild test \
+            -scheme ${{ matrix.scheme }} \
+            -destination "$DESTINATION"
+
+      - name: Upload recorded references
+        uses: actions/upload-artifact@v4
+        with:
+          name: recorded-references-${{ matrix.scheme }}
+          path: Tests/**/__Snapshots__/**
+          if-no-files-found: error

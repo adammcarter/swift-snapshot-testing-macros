@@ -1,6 +1,8 @@
 import Foundation
 
-@available(*, message: "This is an implementation detail. Do not use this type directly.")
+/// This is an implementation detail of the snapshot trait machinery. Do not use this type
+/// directly. It is `public` only for macro-generated code and is hidden from documentation.
+@_documentation(visibility: private)
 // swiftlint:disable:next type_name
 public protocol __SnapshotTestScopingViewDecorator: SnapshotTestScoping {
   func updateConfiguration(_ configuration: inout __SnapshotViewDecoratorConfiguration) async throws

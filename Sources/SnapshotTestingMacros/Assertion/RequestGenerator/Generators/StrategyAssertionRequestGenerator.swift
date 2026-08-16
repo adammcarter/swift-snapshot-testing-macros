@@ -16,14 +16,14 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
   let displayScale: Double
   let testName: String
 
-  func generateRequests() async throws -> [any AssertionRequesting] {
+  func generateRequestsSync() throws -> [any AssertionRequesting] {
     let request: any AssertionRequesting
 
     switch context.traitConfiguration.strategy {
       case .recursiveDescription:
         request = AssertionRequest(
-          view: try await context.makeSnapshotView(),
-          snapshotting: .recursiveDescription,
+          view: try context.makeSnapshotView(),
+          snapshotting: makeRecursiveDescriptionSnapshotting(),
           snapshotDirectory: context.snapshotDirectory,
           testName: testName,
           fileID: context.fileID,
@@ -35,7 +35,7 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
       case .image:
         #if canImport(UIKit)
         request = AssertionRequest(
-          view: try await context.makeSnapshotView(),
+          view: try context.makeSnapshotView(),
           snapshotting: .image(
             size: size,
             traits: makeTraits()
@@ -48,9 +48,14 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
           column: context.column
         )
         #elseif canImport(AppKit)
+        // Pre-flight the render's bitmap allocation so a huge-but-finite `.fixed` size is
+        // recorded as a recoverable issue here (this is a `throws` context) rather than
+        // `fatalError`-ing the whole test process deep inside the lazy render pass.
+        try AppKitImageRenderer.validateRenderable(size: size, displayScale: displayScale)
+
         request = AssertionRequest(
-          view: try await context.makeSnapshotView(),
-          snapshotting: .image(size: size),
+          view: try context.makeSnapshotView(),
+          snapshotting: makeImageSnapshotting(),
           snapshotDirectory: context.snapshotDirectory,
           testName: testName,
           fileID: context.fileID,
@@ -63,6 +68,115 @@ struct StrategyAssertionRequestGenerator: AssertionRequestGenerating {
 
     return [request]
   }
+
+  /// Builds a recursive-description strategy that honours the request's size, theme, and
+  /// display scale so the dump matches the size/theme components baked into the reference
+  /// file's name. Without this, the size/theme fan-out would emit N×M identically-generated
+  /// text files whose names claim settings that were never applied: the view would dump with
+  /// whatever stale frame it happened to have, never the computed request size.
+  ///
+  /// The settings are applied at render time (not at request-generation time) because the
+  /// snapshot value can be a single cached instance shared by every request in the size/theme
+  /// fan-out, and all requests are generated before any of them renders — a generation-time
+  /// mutation would let the last-generated permutation win for every artifact.
+  private func makeRecursiveDescriptionSnapshotting() -> Snapshotting<SnapshotViewController, String> {
+    #if canImport(UIKit)
+    // pointfree's parameterised strategy re-hosts the view at `size` with the given traits
+    // (theme + display scale) and lays it out before dumping, mirroring the `.image` path.
+    return .recursiveDescription(on: .init(), size: size, traits: makeTraits())
+    #elseif canImport(AppKit)
+    // pointfree's AppKit variant never lays out and takes no size or appearance, so apply
+    // both here before delegating to it for the dump. The display scale has no textual
+    // representation in `_subtreeDescription`, so it cannot affect the artifact.
+    let size = size
+    let theme = theme
+    let fileID = context.fileID
+    let filePath = context.filePath
+    let line = context.line
+    let column = context.column
+
+    return Snapshotting<SnapshotView, String>.recursiveDescription
+      .pullback { viewController in
+        let box = MainActorResultBox<SnapshotView>()
+        MainActor.assumeIsolated {
+          let view = viewController.view
+          view.appearance = theme
+          view.frame.size = size
+          view.needsLayout = true
+          view.layoutSubtreeIfNeeded()
+          box.value = view
+        }
+        return SnapshotRuntimePreconditions.requireMainActorResult(
+          box.value,
+          fallback: SnapshotView(frame: .init(origin: .zero, size: size)),
+          message: "AppKit recursive-description preparation returned no view.",
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      }
+    #endif
+  }
+
+  #if canImport(AppKit)
+  /// Builds an image strategy that performs the full render pass — offscreen window hosting at
+  /// the request size, the theme's `NSAppearance`, the decorator background, an Auto Layout
+  /// pass, and the request's display scale — via ``AppKitImageRenderer``. This mirrors the UIKit
+  /// path, where the size is re-hosted per request and `userInterfaceStyle`/`displayScale` are
+  /// passed through the snapshotting strategy's trait collection and resolved at render time.
+  ///
+  /// Everything must be applied at render time rather than when the request is generated: the
+  /// snapshot value can be a single cached instance shared by every request in the size/theme
+  /// fan-out, and all requests are generated before any of them renders — so a generation-time
+  /// mutation would let the last-generated permutation win for every artifact.
+  private func makeImageSnapshotting() -> Snapshotting<SnapshotViewController, NSImage> {
+    let size = size
+    let theme = theme
+    let displayScale = displayScale
+    let fileID = context.fileID
+    let filePath = context.filePath
+    let line = context.line
+    let column = context.column
+    // Captured now, while the decorator trait's task-local is still bound; the render itself
+    // runs outside that scope. Re-applying the color per render (under the themed appearance)
+    // lets dynamic colors resolve differently for the light and dark artifacts.
+    let backgroundColor = __SnapshotViewDecoratorConfiguration.value?.backgroundColor
+
+    return Snapshotting<NSImage, NSImage>.image
+      .pullback { viewController in
+        let box = MainActorResultBox<NSImage>()
+        MainActor.assumeIsolated {
+          box.value = AppKitImageRenderer.render(
+            viewController: viewController,
+            size: size,
+            displayScale: displayScale,
+            appearance: theme,
+            backgroundColor: backgroundColor
+          )
+        }
+        return SnapshotRuntimePreconditions.requireMainActorResult(
+          box.value,
+          fallback: NSImage(size: size),
+          message: "AppKit snapshot render returned no image.",
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      }
+  }
+
+  /// Smuggles a non-`Sendable` AppKit result out of `MainActor.assumeIsolated`.
+  ///
+  /// Until Swift 6.2, `assumeIsolated` requires its result to be `Sendable`, and AppKit types
+  /// like `NSView`/`NSImage` never qualify — Xcode 16.x toolchains reject returning them
+  /// directly. The closure runs synchronously on the current (main) thread, so no value
+  /// actually crosses a concurrency boundary.
+  private final class MainActorResultBox<T>: @unchecked Sendable {
+    var value: T?
+  }
+  #endif
 
   #if canImport(UIKit)
   func makeTraits() -> UITraitCollection {

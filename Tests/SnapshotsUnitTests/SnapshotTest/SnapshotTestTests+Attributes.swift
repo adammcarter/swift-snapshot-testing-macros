@@ -85,6 +85,7 @@ extension SnapshotTestTests {
             Text("test")
           }
 
+          @available(iOS 26.0, *)
           enum __generator_container_myView {
             @MainActor
             static func makeGenerator(configuration: SnapshotTestingMacros.SnapshotConfiguration<Void>) -> any SnapshotTestingMacros.SnapshotViewGenerating {
